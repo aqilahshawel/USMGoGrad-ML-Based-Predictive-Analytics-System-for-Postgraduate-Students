@@ -1,0 +1,19 @@
+// For creating roles {{
+
+php artisan tinker
+
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
+// Create roles (Run this once in a tinker session)
+Role::create(['name' => 'admin']);
+Role::create(['name' => 'lecturer']);
+Role::create(['name' => 'student']);
+
+// Assign a role to a user
+$user = User::find(1);
+$user->assignRole('admin');  // Change this based on user type
+
+
+}}
+
