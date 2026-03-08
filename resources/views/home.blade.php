@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - USMGradView 360')
+@section('title', 'Dashboard - USMGoGrad')
 
 @section('content')
 
@@ -162,7 +162,7 @@
     <div class="row align-items-center">
         <div class="col-md-8">
             <h1><i class="fas fa-user-circle"></i> Welcome, {{ Auth::user()->name }}!</h1>
-            <p class="lead mb-0">Manage your academic journey with USMGradView 360</p>
+            <p class="lead mb-0">Manage your academic journey with USMGoGrad</p>
         </div>
         <div class="col-md-4 text-md-end">
             <div style="font-size: 3rem; opacity: 0.3;">
@@ -281,7 +281,7 @@
                                 <option value="">-- Select a Student --</option>
                                 @foreach($students as $student)
                                     <option value="{{ $student->id }}" {{ request('student_id') == $student->id ? 'selected' : '' }}>
-                                        {{ $student->name }}
+                                        {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
                                     </option>
                                 @endforeach
                             </select>
@@ -381,7 +381,7 @@
                                 <option value="">-- Select a Student --</option>
                                 @foreach($students as $student)
                                     <option value="{{ $student->id }}" {{ request('student_id') == $student->id ? 'selected' : '' }}>
-                                        {{ $student->name }}
+                                        {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
                                     </option>
                                 @endforeach
                             </select>

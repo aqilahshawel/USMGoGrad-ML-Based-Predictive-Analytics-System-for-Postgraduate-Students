@@ -50,21 +50,54 @@ class GoogleCalendarService
                 $parameters['timeMax'] = Carbon::parse($timeMax)->toRfc3339String();
             }
 
-            $events = $calendar->events->listEvents('primary', $parameters);
+            $calendarList = $calendar->calendarList->listCalendarList([
+                'showHidden' => false,
+            ]);
 
-            return collect($events->getItems())->map(function (GoogleCalendarEvent $event) {
-                $start = $event->getStart()?->getDateTime() ?: $event->getStart()?->getDate();
-                $end = $event->getEnd()?->getDateTime() ?: $event->getEnd()?->getDate();
+            $calendarEntries = collect($calendarList->getItems())
+                ->filter(fn ($entry) => ! empty($entry->getId()))
+                ->values();
 
-                return [
-                    'id' => $event->getId(),
-                    'title' => $event->getSummary() ?: '(No title)',
-                    'start' => $start,
-                    'end' => $end,
-                    'color' => 'blue',
-                    'source' => 'google',
-                ];
-            })->values()->all();
+            if ($calendarEntries->isEmpty()) {
+                $calendarEntries = collect([(object) ['id' => 'primary', 'summary' => 'Primary']]);
+            }
+
+            $allEvents = collect();
+
+            foreach ($calendarEntries as $entry) {
+                $calendarId = $entry->getId();
+                $calendarSummary = $entry->getSummary() ?: 'Calendar';
+
+                try {
+                    $events = $calendar->events->listEvents($calendarId, $parameters);
+
+                    $mapped = collect($events->getItems())->map(function (GoogleCalendarEvent $event) use ($calendarId, $calendarSummary) {
+                        $start = $event->getStart()?->getDateTime() ?: $event->getStart()?->getDate();
+                        $end = $event->getEnd()?->getDateTime() ?: $event->getEnd()?->getDate();
+
+                        return [
+                            'id' => $event->getId(),
+                            'title' => $event->getSummary() ?: '(No title)',
+                            'start' => $start,
+                            'end' => $end,
+                            'color' => 'blue',
+                            'source' => 'google',
+                            'calendar_id' => $calendarId,
+                            'calendar_name' => $calendarSummary,
+                        ];
+                    });
+
+                    $allEvents = $allEvents->merge($mapped);
+                } catch (Throwable) {
+                    continue;
+                }
+            }
+
+            return $allEvents
+                ->unique(fn ($event) => ($event['calendar_id'] ?? 'primary').'::'.($event['id'] ?? uniqid('', true)))
+                ->sortBy('start')
+                ->values()
+                ->all();
         });
     }
 

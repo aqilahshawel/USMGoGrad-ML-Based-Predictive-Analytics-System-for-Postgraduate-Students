@@ -9,18 +9,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
 
+    private const CLUSTERS = [
+        'Service Computing',
+        'Data to Knowledge',
+        'Enabling Technologies & Infrastructures',
+    ];
+
     public function showRegisterForm()
     {
-        return view('auth.register');
+        return view('auth.register', [
+            'clusters' => self::CLUSTERS,
+        ]);
     }
 
     public function register(Request $request)
     {
-        $request->validate([
+        $isStudent = str_ends_with($request->email ?? '', '@student.usm.my');
+
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => [
                 'required',
@@ -28,7 +39,14 @@ class AuthController extends Controller
                 'unique:users,email',
                 'regex:/@(student|lecturer|admin)\.usm\.my$/'
             ],
-        ]);
+            'cluster' => ['nullable', 'string', Rule::in(self::CLUSTERS)],
+        ];
+
+        if ($isStudent) {
+            $rules['cluster'] = ['required', 'string', Rule::in(self::CLUSTERS)];
+        }
+
+        $request->validate($rules);
     
         $randomPassword = Str::random(10); // Generate random password
     
@@ -36,10 +54,11 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($randomPassword),
+            'cluster' => $isStudent ? $request->cluster : null,
         ]);
     
         // Assign role based on email domain
-        if (str_ends_with($request->email, '@student.usm.my')) {
+        if ($isStudent) {
             $user->assignRole('student');
         } elseif (str_ends_with($request->email, '@lecturer.usm.my')) {
             $user->assignRole('lecturer');

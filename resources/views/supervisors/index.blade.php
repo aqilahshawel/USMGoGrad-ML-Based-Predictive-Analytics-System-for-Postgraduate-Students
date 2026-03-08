@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Supervisor Assignment - USMGradView 360')
+@section('title', 'Supervisor Assignment - USMGoGrad')
 
 @section('content')
 
@@ -220,7 +220,9 @@
                 <select name="student_id" id="student" class="form-select" required>
                     <option value="">-- Choose a Student --</option>
                     @foreach($students as $student)
-                        <option value="{{ $student->id }}">{{ $student->name }}</option>
+                        <option value="{{ $student->id }}">
+                            {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -259,7 +261,8 @@
                     <ul class="students-list">
                         @foreach($supervisor->students as $student)
                             <li>
-                                <i class="fas fa-user-graduate"></i> {{ $student->name }}
+                                <i class="fas fa-user-graduate"></i>
+                                {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
                             </li>
                         @endforeach
                     </ul>

@@ -12,6 +12,6 @@
     <div>{{ $feedback['description'] }}</div>
 
     <p>Thank you,</p>
-    <p>USMGradView 360</p>
+    <p>USMGoGrad</p>
 </body>
 </html>

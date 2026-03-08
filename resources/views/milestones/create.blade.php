@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Propose Milestone - USMGradView 360')
+@section('title', 'Propose Milestone - USMGoGrad')
 
 @section('content')
 

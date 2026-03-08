@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Messages - USMGradView 360')
+@section('title', 'Messages - USMGoGrad')
 
 @section('content')
 
@@ -123,7 +123,12 @@
                     </span>
                 @endif
             </div>
-            <small class="text-muted">Click below to open conversation</small>
+            <small class="text-muted">
+                @if($student->cluster)
+                    {{ $student->cluster }} | 
+                @endif
+                Click below to open conversation
+            </small>
         </div>
         <div class="student-actions">
             <a href="{{ route('lecturer.messages.student.chat', ['studentId' => $student->id]) }}" class="btn btn-primary">

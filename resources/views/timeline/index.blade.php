@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Timeline - USMGradView 360')
+@section('title', 'Timeline - USMGoGrad')
 
 @section('content')
 
@@ -202,7 +202,7 @@
                     <option value="">-- All Students --</option>
                     @foreach($students as $student)
                         <option value="{{ $student->id }}" {{ $selectedStudentId == $student->id ? 'selected' : '' }}>
-                            {{ $student->name }}
+                            {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
                         </option>
                     @endforeach
                 </select>

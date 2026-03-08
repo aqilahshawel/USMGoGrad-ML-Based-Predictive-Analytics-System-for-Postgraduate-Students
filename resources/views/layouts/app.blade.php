@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'USMGradView 360')</title>
+    <title>@yield('title', 'USMGoGrad')</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -64,92 +64,204 @@
             font-family: var(--font-body);
             background: var(--bg);
             color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             -webkit-font-smoothing: antialiased;
+            margin: 0;
         }
 
-        h1, h2, h3, .page-title, .navbar-brand {
+        h1, h2, h3, .page-title {
             font-family: var(--font-display);
         }
 
-        /* ── Navigation Bar ────────────────────────── */
-        .navbar {
-            background: var(--surface) !important;
-            box-shadow: 0 1px 0 var(--border);
-            padding: 0.85rem 0;
-            border-bottom: 2px solid var(--lav-200);
+        /* ── Layout Wrapper ──────────────────────── */
+        .layout-wrapper {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
         }
 
-        .navbar-brand {
+        /* ── Sidebar ───────────────────────────────── */
+        .sidebar {
+            width: 230px;
+            min-width: 230px;
+            background: var(--surface);
+            border-right: 2px solid var(--lav-200);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            padding: 1.4rem 1.25rem 1rem;
+            border-bottom: 1px solid var(--lav-200);
+        }
+
+        .sidebar-brand a {
+            font-family: var(--font-display);
             font-weight: 700;
-            font-size: 1.5rem;
-            letter-spacing: 0.3px;
+            font-size: 1.2rem;
             color: var(--lav-500) !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .navbar-brand i {
+        .sidebar-brand i {
             color: var(--gold-500);
         }
 
-        .nav-link {
-            margin: 0 4px;
-            font-weight: 500;
-            font-size: 0.92rem;
-            color: var(--n-700) !important;
-            transition: all 0.25s ease;
-            position: relative;
-            padding: 0.5rem 0.75rem !important;
+        .sidebar-nav {
+            flex: 1;
+            padding: 0.85rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.55rem 0.85rem;
             border-radius: 8px;
-        }
-
-        .nav-link:hover {
-            color: var(--lav-500) !important;
-            background: var(--lav-100);
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 2px;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--lav-400);
-            transition: all 0.25s ease;
-            transform: translateX(-50%);
-            border-radius: 1px;
-        }
-
-        .nav-link:hover::after {
-            width: 60%;
-        }
-
-        .navbar-toggler {
-            border-color: var(--lav-300);
-        }
-
-        .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%237c6fb3' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-        }
-
-        .dropdown-menu {
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            box-shadow: 0 8px 24px rgba(46, 41, 36, 0.08);
-            padding: 0.5rem;
-        }
-
-        .dropdown-item {
-            border-radius: 6px;
-            padding: 0.5rem 0.75rem;
+            font-weight: 500;
             font-size: 0.9rem;
-            transition: background 0.2s;
+            color: var(--n-700);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
 
-        .dropdown-item:hover {
+        .sidebar-nav-link:hover {
             background: var(--lav-100);
+            color: var(--lav-500);
+        }
+
+        .sidebar-nav-link.active {
+            background: var(--lav-200);
+            color: var(--lav-500);
+            font-weight: 600;
+        }
+
+        .sidebar-nav-link i {
+            width: 1.1rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid var(--lav-200);
+            margin: 0.25rem 0.85rem;
+        }
+
+        /* ── Sidebar User Dropdown ───────────────── */
+        .sidebar-user-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            gap: 0.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--lav-200);
+            user-select: none;
+        }
+
+        .sidebar-user-toggle:hover {
+            background: var(--lav-100);
+        }
+
+        .sidebar-user-toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: var(--lav-500);
+            font-family: var(--font-body);
+            min-width: 0;
+        }
+
+        .sidebar-user-toggle-left i.avatar-icon {
+            color: var(--lav-400);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-user-toggle-left span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sidebar-user-toggle .caret {
+            color: var(--n-700);
+            font-size: 0.7rem;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-user-toggle.open .caret {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-user-dropdown {
+            display: none;
+            flex-direction: column;
+            background: var(--lav-100);
+            border-bottom: 1px solid var(--lav-200);
+            padding: 0.35rem 0.6rem;
+        }
+
+        .sidebar-user-dropdown.open {
+            display: flex;
+        }
+
+        /* ── Sidebar Logout (bottom) ────────────── */
+        .sidebar-logout {
+            padding: 0.6rem 0.75rem;
+            border-top: 1px solid var(--lav-200);
+            margin-top: auto;
+        }
+
+        .sidebar-logout button {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            width: 100%;
+            padding: 0.55rem 0.85rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #cc4b4b;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            font-family: var(--font-body);
+        }
+
+        .sidebar-logout button:hover {
+            background: #fdecea;
+        }
+
+        .sidebar-logout button i {
+            width: 1.1rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* ── Main Wrapper ──────────────────────────── */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            min-width: 0;
         }
 
         /* ── Main Content ──────────────────────────── */
@@ -456,84 +568,119 @@
                 font-size: 1.75rem;
             }
 
-            .navbar-nav {
-                margin-top: 0.75rem;
-                padding-top: 0.75rem;
-                border-top: 1px solid var(--lav-200);
-            }
-
-            .nav-link {
-                margin: 2px 0;
+            .sidebar {
+                width: 200px;
+                min-width: 200px;
             }
 
             .container-main {
                 padding: 1.5rem 0;
             }
         }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                position: fixed;
+                left: -230px;
+                z-index: 1050;
+                transition: left 0.3s ease;
+                box-shadow: 4px 0 16px rgba(46,41,36,0.12);
+            }
+
+            .sidebar.sidebar-open {
+                left: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.3);
+                z-index: 1040;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .sidebar-toggle-btn {
+                display: flex !important;
+            }
+        }
     </style>
 
     @yield('styles')
+
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
 <body>
 
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">
-                <i class="fas fa-graduation-cap"></i> USMGradView 360
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    @auth
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/') }}"><i class="fas fa-home"></i> Home</a></li>
+    <div class="layout-wrapper">
 
-                        @role('lecturer')
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/timeline') }}"><i class="fas fa-timeline"></i> Timeline</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/milestones') }}"><i class="fas fa-flag"></i> Milestones</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/lecturer/messages') }}"><i class="fas fa-envelope"></i> Messenger</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/scheduling') }}"><i class="fas fa-calendar"></i> Schedule</a></li>
-                        @endrole
-
-                        @role('student')
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/timeline') }}"><i class="fas fa-timeline"></i> Timeline</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/student/messages') }}"><i class="fas fa-envelope"></i> Messenger</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/scheduling') }}"><i class="fas fa-calendar"></i> Schedule</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/chatbot') }}"><i class="fas fa-robot"></i> Chatbot</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/feedback') }}"><i class="fas fa-comment"></i> Feedback</a></li>
-                        @endrole
-
-                        @role('admin')
-                            <li class="nav-item"><a class="nav-link" href="{{ url('/supervisors') }}"><i class="fas fa-users"></i> Supervisors</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url('/register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
-                        @endrole
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle"></i> {{ Auth::user()->name }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="{{ route('password.change') }}"><i class="fas fa-key"></i> Change Password</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    @endauth
-                </ul>
+        <!-- Sidebar -->
+        <aside class="sidebar" id="appSidebar">
+            <div class="sidebar-brand">
+                <a href="{{ url('/') }}">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>USMGoGrad</span>
+                </a>
             </div>
-        </div>
-    </nav>
+
+            @auth
+            <!-- User section at top -->
+            <div class="sidebar-user-toggle" id="sidebarUserToggle">
+                <div class="sidebar-user-toggle-left">
+                    <i class="fas fa-user-circle avatar-icon"></i>
+                    <span title="{{ Auth::user()->name }}">{{ Auth::user()->name }}</span>
+                </div>
+                <i class="fas fa-chevron-down caret"></i>
+            </div>
+            <div class="sidebar-user-dropdown" id="sidebarUserDropdown">
+                <a class="sidebar-nav-link" href="{{ route('password.change') }}"><i class="fas fa-key"></i> Change Password</a>
+            </div>
+            @endauth
+
+            <nav class="sidebar-nav">
+                @auth
+                    <a class="sidebar-nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}"><i class="fas fa-home"></i> Home</a>
+
+                    @role('lecturer')
+                    <a class="sidebar-nav-link {{ request()->is('timeline') ? 'active' : '' }}" href="{{ url('/timeline') }}"><i class="fas fa-timeline"></i> Timeline</a>
+                    <a class="sidebar-nav-link {{ request()->is('milestones') ? 'active' : '' }}" href="{{ url('/milestones') }}"><i class="fas fa-flag"></i> Milestones</a>
+                    <a class="sidebar-nav-link {{ request()->is('lecturer/messages') ? 'active' : '' }}" href="{{ url('/lecturer/messages') }}"><i class="fas fa-envelope"></i> Messenger</a>
+                    <a class="sidebar-nav-link {{ request()->is('scheduling') ? 'active' : '' }}" href="{{ url('/scheduling') }}"><i class="fas fa-calendar"></i> Schedule</a>
+                    @endrole
+
+                    @role('student')
+                    <a class="sidebar-nav-link {{ request()->is('timeline') ? 'active' : '' }}" href="{{ url('/timeline') }}"><i class="fas fa-timeline"></i> Timeline</a>
+                    <a class="sidebar-nav-link {{ request()->is('student/messages') ? 'active' : '' }}" href="{{ url('/student/messages') }}"><i class="fas fa-envelope"></i> Messenger</a>
+                    <a class="sidebar-nav-link {{ request()->is('scheduling') ? 'active' : '' }}" href="{{ url('/scheduling') }}"><i class="fas fa-calendar"></i> Schedule</a>
+                    <a class="sidebar-nav-link {{ request()->is('feedback') ? 'active' : '' }}" href="{{ url('/feedback') }}"><i class="fas fa-comment"></i> Feedback</a>
+                    @endrole
+
+                    @role('admin')
+                    <a class="sidebar-nav-link {{ request()->is('supervisors') ? 'active' : '' }}" href="{{ url('/supervisors') }}"><i class="fas fa-users"></i> Supervisors</a>
+                    <a class="sidebar-nav-link {{ request()->is('register') ? 'active' : '' }}" href="{{ url('/register') }}"><i class="fas fa-user-plus"></i> Register</a>
+                    @endrole
+                @endauth
+            </nav>
+
+            @auth
+            <div class="sidebar-logout">
+                <form id="logout-form" action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </form>
+            </div>
+            @endauth
+        </aside>
+
+        <!-- Main Content + Footer -->
+        <div class="main-wrapper">
 
     <!-- Main Content -->
     <main class="container-main">
-        <div class="container">
+        <div class="container-fluid px-4">
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <strong>Oops!</strong> There were some errors with your input:
@@ -575,13 +722,55 @@
 
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p class="mb-0">&copy; 2025 USMGradView 360. All rights reserved. | Developed with <i class="fas fa-heart"></i> for USM Students</p>
+        <div class="container-fluid px-4">
+            <p class="mb-0">&copy; 2025 USMGoGrad. All rights reserved. | Developed with <i class="fas fa-heart"></i> for USM Students</p>
         </div>
     </footer>
 
+        </div><!-- /.main-wrapper -->
+    </div><!-- /.layout-wrapper -->
+
+    @include('partials.chatbot-widget')
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Sidebar user dropdown toggle
+        (function () {
+            var toggle = document.getElementById('sidebarUserToggle');
+            var dropdown = document.getElementById('sidebarUserDropdown');
+            if (!toggle || !dropdown) return;
+            toggle.addEventListener('click', function () {
+                toggle.classList.toggle('open');
+                dropdown.classList.toggle('open');
+            });
+        })();
+
+        // Mobile sidebar toggle
+        (function () {
+            var sidebar = document.getElementById('appSidebar');
+            if (!sidebar) return;
+            var overlay = document.createElement('div');
+            overlay.className = 'sidebar-overlay';
+            document.body.appendChild(overlay);
+
+            var toggleBtn = document.createElement('button');
+            toggleBtn.className = 'sidebar-toggle-btn btn btn-light';
+            toggleBtn.style.cssText = 'display:none;position:fixed;top:12px;left:12px;z-index:1060;width:38px;height:38px;padding:0;border-radius:8px;border:1.5px solid var(--lav-200);';
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            document.body.appendChild(toggleBtn);
+
+            toggleBtn.addEventListener('click', function () {
+                sidebar.classList.toggle('sidebar-open');
+                overlay.classList.toggle('active');
+            });
+            overlay.addEventListener('click', function () {
+                sidebar.classList.remove('sidebar-open');
+                overlay.classList.remove('active');
+            });
+        })();
+    </script>
 
     @yield('scripts')
 

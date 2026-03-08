@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Register - USMGradView 360')
+@section('title', 'Register - USMGoGrad')
 
 @section('content')
 
@@ -145,7 +145,7 @@
                 <i class="fas fa-user-plus"></i>
             </div>
             <h2>{{ __('Register User') }}</h2>
-            <p>Create a new account for USMGradView</p>
+            <p>Create a new account for USMGoGrad</p>
         </div>
 
         <div class="register-body">
@@ -190,6 +190,23 @@
                            name="email" value="{{ old('email') }}" required autocomplete="email" 
                            placeholder="Enter email address">
                     @error('email')
+                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="cluster">
+                        <i class="fas fa-layer-group"></i> {{ __('Cluster (Students only)') }}
+                    </label>
+                    <select id="cluster" name="cluster" class="form-control @error('cluster') is-invalid @enderror">
+                        <option value="">-- Select Cluster --</option>
+                        @foreach(($clusters ?? []) as $cluster)
+                            <option value="{{ $cluster }}" {{ old('cluster') === $cluster ? 'selected' : '' }}>
+                                {{ $cluster }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('cluster')
                         <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
                     @enderror
                 </div>

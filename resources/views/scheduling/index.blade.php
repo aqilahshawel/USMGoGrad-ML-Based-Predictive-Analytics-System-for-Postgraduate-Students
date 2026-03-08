@@ -108,62 +108,53 @@
     </div>
 
     <div class="calendar-status-card">
-        @if($supervisorMissing)
-            <div class="alert alert-warning mb-0">No supervisor is assigned yet. Schedule is unavailable.</div>
-        @elseif($scheduleOwner)
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div>
-                    <h5 class="mb-1">
-                        @if($canCreateEvents)
-                            Your Calendar Sync
-                        @else
-                            Supervisor Calendar Sync
-                        @endif
-                    </h5>
-                    <p class="mb-1">
-                        @if($canCreateEvents)
-                            Viewing schedule for <strong>{{ $scheduleOwner->name }}</strong>
-                        @else
-                            Viewing <strong>{{ $scheduleOwner->name }}</strong>'s schedule
-                        @endif
-                    </p>
-                    <p class="mb-0">
-                        Provider: <strong>Google</strong>
-                        |
-                        Calendar Email:
-                        <strong>{{ $calendarIntegration?->calendar_email ?? 'Not connected' }}</strong>
-                    </p>
-                </div>
-                @php
-                    $status = $calendarIntegration?->status ?? 'disconnected';
-                    $statusClass = match($status) {
-                        'connected' => 'status-connected',
-                        'revoked' => 'status-revoked',
-                        default => 'status-disconnected',
-                    };
-                @endphp
-                <span class="status-pill {{ $statusClass }}">{{ ucfirst($status) }}</span>
-            </div>
+            @if($supervisorMissing)
+                <div class="alert alert-warning mb-0">No supervisor is assigned yet. Schedule is unavailable.</div>
+            @elseif($scheduleOwner)
+                @if($canCreateEvents)
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h5 class="mb-1">Your Calendar Sync</h5>
+                            <p class="mb-1">Viewing schedule for <strong>{{ $scheduleOwner->name }}</strong></p>
+                            <p class="mb-0">
+                                Provider: <strong>Google</strong>
+                                |
+                                Calendar Email:
+                                <strong>{{ $calendarIntegration?->calendar_email ?? 'Not connected' }}</strong>
+                            </p>
+                        </div>
+                        @php
+                            $status = $calendarIntegration?->status ?? 'disconnected';
+                            $statusClass = match($status) {
+                                'connected' => 'status-connected',
+                                'revoked' => 'status-revoked',
+                                default => 'status-disconnected',
+                            };
+                        @endphp
+                        <span class="status-pill {{ $statusClass }}">{{ ucfirst($status) }}</span>
+                    </div>
 
-            @if($calendarIntegration?->last_synced_at)
-                <small class="text-muted d-block mt-1">
-                    Last sync: {{ $calendarIntegration->last_synced_at->format('Y-m-d H:i') }}
-                </small>
-            @endif
-
-            @if($canCreateEvents)
-                <div class="status-actions">
-                    <a href="{{ route('calendar.google.connect') }}" class="btn btn-primary btn-sm">Connect / Reconnect Google</a>
-                    @if($calendarIntegration && $calendarIntegration->status === 'connected')
-                        <form method="POST" action="{{ route('calendar.google.disconnect') }}">
-                            @csrf
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">Disconnect</button>
-                        </form>
+                    @if($calendarIntegration?->last_synced_at)
+                        <small class="text-muted d-block mt-1">
+                            Last sync: {{ $calendarIntegration->last_synced_at->format('Y-m-d H:i') }}
+                        </small>
                     @endif
-                </div>
+
+                    <div class="status-actions">
+                        <a href="{{ route('calendar.google.connect') }}" class="btn btn-primary btn-sm">Connect / Reconnect Google</a>
+                        @if($calendarIntegration && $calendarIntegration->status === 'connected')
+                            <form method="POST" action="{{ route('calendar.google.disconnect') }}">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">Disconnect</button>
+                            </form>
+                        @endif
+                    </div>
+                @else
+                    <h5 class="mb-1">Supervisor Schedule</h5>
+                    <p class="mb-0">You are viewing <strong>{{ $scheduleOwner->name }}</strong>'s schedule.</p>
+                @endif
             @endif
-        @endif
-    </div>
+        </div>
 
     <div id="calendar"></div>
 
@@ -178,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let calendarEl = document.getElementById('calendar');
 
     let calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridWeek',
+        initialView: 'dayGridMonth',
         selectable: canCreateEvents,
         editable: false,
         events: '/get-events',
