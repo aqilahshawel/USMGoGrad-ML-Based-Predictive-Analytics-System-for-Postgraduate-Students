@@ -4,15 +4,29 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Validation\Rule;
 
 class SupervisorController extends Controller
 {
+    private const CLUSTERS = [
+        'Service Computing',
+        'Data to Knowledge',
+        'Enabling Technologies & Infrastructures',
+    ];
+
     public function index()
     {
         $supervisors = User::role('lecturer')->with('students')->get();
         $students = User::role('student')->whereNull('supervisor_id')->get(); // Fetch students without a supervisor
+
+        $allStudents = User::role('student')->orderBy('name')->get();
     
-        return view('supervisors.index', compact('supervisors', 'students'));
+        return view('supervisors.index', [
+            'supervisors' => $supervisors,
+            'students' => $students,
+            'allStudents' => $allStudents,
+            'clusters' => self::CLUSTERS,
+        ]);
     }
     
 
@@ -28,5 +42,20 @@ class SupervisorController extends Controller
         $student->save();
 
         return redirect()->back()->with('success', 'Supervisor assigned successfully.');
+    }
+
+    public function updateCluster(Request $request)
+    {
+        $request->validate([
+            'student_id' => ['required', 'integer', 'exists:users,id'],
+            'cluster' => ['nullable', 'string', Rule::in(self::CLUSTERS)],
+        ]);
+
+        $student = User::role('student')->findOrFail($request->student_id);
+
+        $student->cluster = $request->cluster ?: null;
+        $student->save();
+
+        return redirect()->back()->with('success', 'Student cluster updated successfully.');
     }
 }

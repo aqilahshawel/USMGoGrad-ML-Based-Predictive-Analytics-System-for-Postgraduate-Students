@@ -60,6 +60,7 @@ Route::middleware(['auth', 'role:lecturer'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/supervisors', [SupervisorController::class, 'index'])->name('supervisors.index');
     Route::post('/assign-supervisor', [SupervisorController::class, 'assign'])->name('supervisors.assign');
+    Route::post('/students/cluster', [SupervisorController::class, 'updateCluster'])->name('students.cluster.update');
 });
 
 // Scheduling Routes (Lecturer + Student visibility)

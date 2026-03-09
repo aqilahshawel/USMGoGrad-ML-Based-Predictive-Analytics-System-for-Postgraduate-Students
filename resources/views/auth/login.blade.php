@@ -224,6 +224,14 @@
                     @enderror
                 </div>
 
+                <div class="field-group" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                    <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}
+                           style="width:1rem; height:1rem; accent-color:var(--lav-500); cursor:pointer; flex-shrink:0;">
+                    <label for="remember" style="margin:0; font-size:0.78rem; color:var(--n-700); cursor:pointer; user-select:none;">
+                        Remember me
+                    </label>
+                </div>
+
                 <div class="btn-row">
                     <button type="submit" class="btn-login">LOGIN</button>
                     @if (Route::has('password.request'))

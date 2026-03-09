@@ -246,6 +246,55 @@
     </form>
 </div>
 
+<!-- Cluster Update Form (Admin Only) -->
+<div class="assignment-form-section">
+    <h4 class="mb-3"><i class="fas fa-layer-group"></i> Update Student Cluster</h4>
+
+    <form action="{{ route('students.cluster.update') }}" method="POST">
+        @csrf
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cluster_student">
+                    <i class="fas fa-user-graduate"></i> Select Student
+                </label>
+                <select name="student_id" id="cluster_student" class="form-select" required>
+                    <option value="">-- Choose a Student --</option>
+                    @foreach(($allStudents ?? collect()) as $student)
+                        <option value="{{ $student->id }}" {{ (string)old('student_id') === (string)$student->id ? 'selected' : '' }}>
+                            {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
+                        </option>
+                    @endforeach
+                </select>
+                @error('student_id')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="cluster_select">
+                    <i class="fas fa-layer-group"></i> Cluster
+                </label>
+                <select name="cluster" id="cluster_select" class="form-select">
+                    <option value="">-- Clear Cluster --</option>
+                    @foreach(($clusters ?? []) as $cluster)
+                        <option value="{{ $cluster }}" {{ old('cluster') === $cluster ? 'selected' : '' }}>
+                            {{ $cluster }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('cluster')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
+
+        <button type="submit" class="btn-assign">
+            <i class="fas fa-save"></i> Save Cluster
+        </button>
+    </form>
+</div>
+
 <!-- Current Assignments -->
 <div class="assignments-section">
     <h3><i class="fas fa-list"></i> Current Assignments</h3>
