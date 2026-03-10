@@ -40,20 +40,16 @@ Route::middleware(['auth'])->group(function () {
 // Home Route (Only accessible after login)
 Route::get('/home', [HomeController::class, 'index'])->middleware('auth')->name('home');
 
-// Students: Can create and edit their own
+// Milestones: student-personal checkpoints (students manage; lecturers can view supervisees)
+Route::middleware(['auth', 'role:student|lecturer'])->group(function () {
+    Route::get('milestones', [MilestoneController::class, 'index'])->name('milestones.index');
+});
+
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('milestones/create', [MilestoneController::class, 'create'])->name('milestones.create');
     Route::post('milestones', [MilestoneController::class, 'store'])->name('milestones.store');
     Route::get('milestones/{milestone}/edit', [MilestoneController::class, 'edit'])->name('milestones.edit');
     Route::put('milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
-});
-
-// Lecturers: Can view and edit milestones under them
-Route::middleware(['auth', 'role:lecturer'])->group(function () {
-    Route::get('milestones', [MilestoneController::class, 'index'])->name('milestones.index');
-    Route::get('milestones/{milestone}/edit', [MilestoneController::class, 'edit'])->name('milestones.edit');
-    Route::put('milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
-    Route::put('milestones/{id}/finalize', [MilestoneController::class, 'finalize'])->name('milestones.finalize');
 });
 
 // SV Assign Page (Admin Only)
@@ -83,6 +79,12 @@ Route::middleware(['auth', 'role:lecturer'])->prefix('calendar/google')->name('c
 // Timeline Routes (Only for authenticated users)
 Route::middleware(['auth'])->group(function () {
     Route::resource('/timeline', TimelineController::class);
+});
+
+// Timeline approval (Lecturer only)
+Route::middleware(['auth', 'role:lecturer'])->group(function () {
+    Route::put('/timeline/{timeline}/approve', [TimelineController::class, 'approve'])->name('timeline.approve');
+    Route::put('/timeline/{timeline}/reject', [TimelineController::class, 'reject'])->name('timeline.reject');
 });
 
 // ChatBot Routes

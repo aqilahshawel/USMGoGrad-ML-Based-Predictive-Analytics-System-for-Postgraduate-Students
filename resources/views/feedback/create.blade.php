@@ -8,21 +8,34 @@
     .feedback-header {
         background: linear-gradient(135deg, var(--peach-300) 0%, var(--peach-400) 100%);
         color: var(--n-900);
-        padding: 2rem;
-        border-radius: 14px;
-        margin-bottom: 2rem;
+        padding: 1.25rem 2rem;
+        border-radius: 18px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(224, 125, 69, 0.15);
+    }
+
+    .feedback-header::after {
+        content: '';
+        position: absolute;
+        right: -40px; bottom: -40px;
+        width: 200px; height: 200px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 50%;
     }
 
     .feedback-header h1 {
         font-weight: 700;
-        margin: 0 0 0.5rem 0;
-        font-size: 2rem;
+        margin-bottom: 0.2rem;
+        font-size: 1.6rem;
         font-family: var(--font-display);
     }
 
     .feedback-header p {
         margin: 0;
         opacity: 0.85;
+        font-size: 0.9rem;
     }
 
     .feedback-form-container {
@@ -31,7 +44,13 @@
         padding: 2.5rem;
         box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
         max-width: 600px;
+        margin: 0 auto;
         border: 1px solid var(--lav-200);
+        transition: all 0.25s ease;
+    }
+
+    .feedback-form-container:hover {
+        box-shadow: 0 6px 20px rgba(46, 41, 36, 0.08);
     }
 
     .form-group {
@@ -116,11 +135,11 @@
         }
 
         .feedback-header {
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem;
         }
 
         .feedback-header h1 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
         }
     }
 </style>

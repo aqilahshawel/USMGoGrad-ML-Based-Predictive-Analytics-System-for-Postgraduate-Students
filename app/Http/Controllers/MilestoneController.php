@@ -16,7 +16,11 @@ class MilestoneController extends Controller
         if ($user->hasRole('student')) {
             $milestones = Milestone::where('student_id', $user->id)->get();
         } elseif ($user->hasRole('lecturer')) {
-            $milestones = Milestone::where('lecturer_id', $user->id)->get();
+            $studentIds = User::query()
+                ->where('supervisor_id', $user->id)
+                ->pluck('id');
+
+            $milestones = Milestone::whereIn('student_id', $studentIds)->get();
         } else {
             abort(403, 'Unauthorized');
         }
@@ -38,22 +42,18 @@ class MilestoneController extends Controller
         ]);
     
         $student = Auth::user();
-        $lecturerId = $student->supervisor_id; // Ensure this is not null
-    
-        // Check if the student has a supervisor assigned
-        if (!$lecturerId) {
-            return back()->with('error', 'You must be assigned to a lecturer first.');
-        }
-    
+
         Milestone::create([
             'student_id' => $student->id,
-            'lecturer_id' => $lecturerId,
+            // Personal milestones are student-owned; keep lecturer_id only for convenient lecturer filtering.
+            'lecturer_id' => $student->supervisor_id,
             'title' => $request->title,
             'description' => $request->description,
             'due_date' => $request->due_date,
+            'status' => 'pending',
         ]);
     
-        return redirect()->route('milestones.index')->with('success', 'Milestone proposed successfully.');
+        return redirect()->route('milestones.index')->with('success', 'Milestone created successfully.');
     }
     
 
@@ -63,7 +63,7 @@ class MilestoneController extends Controller
 
         if (
             ($user->hasRole('student') && $milestone->student_id !== $user->id) ||
-            ($user->hasRole('lecturer') && $milestone->lecturer_id !== $user->id)
+            ($user->hasRole('lecturer'))
         ) {
             abort(403);
         }
@@ -79,6 +79,11 @@ class MilestoneController extends Controller
             'due_date' => 'nullable|date',
             'status' => 'in:pending,approved,finalized'
         ]);
+
+        $user = Auth::user();
+        if (! $user->hasRole('student') || (int) $milestone->student_id !== (int) $user->id) {
+            abort(403);
+        }
 
         $milestone->update($request->only(['title', 'description', 'due_date', 'status']));
 
