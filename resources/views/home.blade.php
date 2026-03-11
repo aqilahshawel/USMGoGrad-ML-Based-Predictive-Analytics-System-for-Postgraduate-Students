@@ -68,6 +68,112 @@
         margin-top: 0.4rem;
     }
 
+    .admin-dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .admin-panel {
+        background: var(--surface);
+        border-radius: 14px;
+        padding: 1.25rem 1.4rem;
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        border: 1px solid var(--lav-200);
+    }
+
+    .admin-panel h5 {
+        margin: 0;
+        color: var(--n-900);
+        font-family: var(--font-display);
+    }
+
+    .admin-panel-copy {
+        margin: 0.55rem 0 0;
+        color: var(--muted);
+        max-width: 56rem;
+    }
+
+    .admin-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .admin-alert-group + .admin-alert-group {
+        margin-top: 1rem;
+    }
+
+    .admin-alert-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--n-900);
+    }
+
+    .admin-alert-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .admin-alert-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.85rem 0.95rem;
+        border-radius: 12px;
+        background: var(--n-50);
+        border: 1px solid var(--n-100);
+    }
+
+    .admin-alert-item strong {
+        display: block;
+        color: var(--n-900);
+    }
+
+    .admin-alert-item span {
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+
+    .admin-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .admin-pill.warning {
+        background: #fff5ef;
+        color: #d97706;
+    }
+
+    .admin-pill.info {
+        background: var(--lav-100);
+        color: var(--lav-500);
+    }
+
+    .admin-empty {
+        margin: 0;
+        padding: 1rem;
+        border-radius: 12px;
+        background: #f5fbf7;
+        color: #2e7d32;
+        border: 1px solid #d8efe0;
+    }
+
     .roadmap-tabs {
         margin-bottom: 0;
     }
@@ -145,23 +251,213 @@
         color: #8a6d0b;
     }
 
-    /* Account info card */
-    .account-info-card {
+    .prediction-summary {
         background: var(--surface);
-        border-left: 4px solid var(--lav-400);
-        border-radius: 10px;
-        padding: 0.85rem 1.25rem;
+        border: 1px solid var(--lav-200);
+        border-radius: 14px;
+        padding: 1.2rem 1.4rem;
         margin-bottom: 1rem;
-        box-shadow: 0 1px 4px rgba(46, 41, 36, 0.04);
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
     }
-    .account-info-card h6 {
+
+    .prediction-summary.low {
+        border-color: #cfe8d3;
+        background: linear-gradient(135deg, #f5fbf7 0%, #ffffff 100%);
+    }
+
+    .prediction-summary.medium {
+        border-color: #f8c9a8;
+        background: linear-gradient(135deg, #fff9f3 0%, #ffffff 100%);
+    }
+
+    .prediction-summary.high {
+        border-color: #f2c5c5;
+        background: linear-gradient(135deg, #fff6f6 0%, #ffffff 100%);
+    }
+
+    .prediction-summary.pending,
+    .prediction-summary.unavailable {
+        background: linear-gradient(135deg, #f8f6ff 0%, #ffffff 100%);
+    }
+
+    .prediction-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .prediction-kicker {
         font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         color: var(--muted);
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.35rem;
     }
-    .account-info-card p {
+
+    .prediction-title {
         margin: 0;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
+        font-family: var(--font-display);
+        color: var(--n-900);
+    }
+
+    .prediction-copy {
+        margin: 0.45rem 0 0;
+        color: var(--muted);
+        max-width: 700px;
+    }
+
+    .prediction-metric {
+        font-size: 2.3rem;
+        font-weight: 700;
+        line-height: 1;
+        font-family: var(--font-display);
+        color: var(--lav-500);
+        text-align: right;
+    }
+
+    .prediction-metric.low {
+        color: #2e7d32;
+    }
+
+    .prediction-metric.medium {
+        color: #d97706;
+    }
+
+    .prediction-metric.high {
+        color: #c2410c;
+    }
+
+    .prediction-metric.pending,
+    .prediction-metric.unavailable {
+        color: var(--lav-500);
+    }
+
+    .prediction-badges {
+        display: flex;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .prediction-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.42rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .prediction-badge.low {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .prediction-badge.medium {
+        background: #fff5ef;
+        color: #d97706;
+    }
+
+    .prediction-badge.high {
+        background: #fdecea;
+        color: #c2410c;
+    }
+
+    .prediction-badge.pending,
+    .prediction-badge.unavailable {
+        background: var(--lav-100);
+        color: var(--lav-500);
+    }
+
+    .assignments-section {
+        margin-top: 1.5rem;
+    }
+
+    .assignments-section h3 {
+        color: var(--lav-500);
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        font-size: 1.45rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-family: var(--font-display);
+    }
+
+    .supervisor-card {
+        background: var(--surface);
+        border-radius: 14px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        margin-bottom: 1rem;
+        border: 1px solid var(--lav-200);
+        border-top: 4px solid var(--lav-400);
+        transition: all 0.25s ease;
+    }
+
+    .supervisor-card:hover {
+        box-shadow: 0 4px 16px rgba(124, 111, 179, 0.12);
+        transform: translateY(-1px);
+    }
+
+    .supervisor-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--lav-500);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-family: var(--font-display);
+    }
+
+    .students-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .students-list li {
+        padding: 0.75rem;
+        background: var(--n-50);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        border-left: 3px solid var(--lav-400);
+    }
+
+    .students-list li i {
+        margin-right: 0.75rem;
+        color: var(--lav-400);
+    }
+
+    .no-students {
+        color: var(--muted);
+        font-style: italic;
+        padding: 1rem;
+        background: var(--n-50);
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        background: var(--n-50);
+        border-radius: 14px;
+        border: 1px solid var(--border);
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        color: var(--n-200);
+        margin-bottom: 1rem;
     }
 
     @media (max-width: 768px) {
@@ -173,8 +469,16 @@
             grid-template-columns: 1fr;
         }
 
+        .admin-dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
         .tab-content-section {
             padding: 1rem;
+        }
+
+        .prediction-metric {
+            text-align: left;
         }
     }
 
@@ -302,7 +606,13 @@
     <div class="row align-items-center">
         <div class="col-md-9">
             <h1><i class="fas fa-user-circle"></i> Welcome, {{ Auth::user()->name }}!</h1>
-            <p class="lead">Manage your academic journey with USMGoGrad</p>
+            <p class="lead">
+                @if(Auth::user()->hasRole('admin'))
+                    Oversee supervisor allocation and student readiness across USMGoGrad
+                @else
+                    Manage your academic journey with USMGoGrad
+                @endif
+            </p>
         </div>
         <div class="col-md-3 text-md-end">
             <div style="font-size: 2.5rem; opacity: 0.25;">
@@ -312,27 +622,162 @@
     </div>
 </div>
 
-<!-- User Info Section — compact -->
-<div class="account-info-card mb-3">
-    <div class="row g-0">
-        <div class="col-md-6">
-            <h6><i class="fas fa-id-card"></i> Account Information</h6>
-            <p><strong>Role:</strong> <span class="badge bg-primary">{{ Auth::user()->getRoleNames()->first() }}</span></p>
+@if(Auth::user()->hasRole('admin'))
+    <div class="user-stats">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-user-tie"></i></div>
+            <div class="number">{{ $adminStats['total_supervisors'] }}</div>
+            <div class="label">Active Supervisors</div>
         </div>
-        @if(Auth::user()->hasRole('student') && Auth::user()->supervisor)
-        <div class="col-md-6">
-            <h6><i class="fas fa-user-tie"></i> Supervisor</h6>
-            <p><strong>{{ Auth::user()->supervisor->name }}</strong></p>
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-user-graduate"></i></div>
+            <div class="number">{{ $adminStats['total_students'] }}</div>
+            <div class="label">Total Students</div>
         </div>
-        @elseif(Auth::user()->hasRole('lecturer'))
-        <div class="col-md-6">
-            <h6><i class="fas fa-chalkboard-user"></i> Role Status</h6>
-            <p><strong>You are a Supervisor</strong></p>
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-link"></i></div>
+            <div class="number">{{ $adminStats['assigned_students'] }}</div>
+            <div class="label">Students Assigned</div>
         </div>
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="number">{{ $adminStats['unassigned_students'] + $adminStats['incomplete_candidature'] }}</div>
+            <div class="label">Items Needing Attention</div>
+        </div>
+    </div>
+
+    <div class="assignments-section">
+        <h3><i class="fas fa-list"></i> Current Assignments</h3>
+
+        @if($supervisors->count() > 0)
+            @foreach($supervisors as $supervisor)
+                <div class="supervisor-card">
+                    <div class="supervisor-name">
+                        <i class="fas fa-user-tie"></i> {{ $supervisor->name }}
+                    </div>
+
+                    @if($supervisor->students->count() > 0)
+                        <ul class="students-list">
+                            @foreach($supervisor->students as $student)
+                                <li>
+                                    <i class="fas fa-user-graduate"></i>
+                                    {{ $student->name }}
+                                    @if($student->cluster)
+                                        ({{ $student->cluster }})
+                                    @endif
+                                    @if($student->start_date || $student->study_mode)
+                                        -
+                                        @if($student->start_date)
+                                            {{ $student->start_date->format('d M Y') }}
+                                        @else
+                                            Missing registration date
+                                        @endif
+                                        /
+                                        @if($student->study_mode)
+                                            {{ str_replace('_', ' ', ucwords($student->study_mode, '_')) }}
+                                        @else
+                                            Missing study type
+                                        @endif
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <div class="no-students">
+                            <i class="fas fa-inbox"></i> No students assigned yet
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        @else
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h5>No Supervisors Available</h5>
+                <p class="text-muted">There are no supervisors in the system yet.</p>
+            </div>
         @endif
     </div>
-</div>
+@elseif(Auth::user()->hasRole('student') || Auth::user()->hasRole('lecturer'))
+    @php
+        $predictionState = 'unavailable';
+        $predictionTitle = Auth::user()->hasRole('lecturer') ? 'Select a student to view the latest GoT prediction' : 'Prediction unavailable';
+        $predictionCopy = Auth::user()->hasRole('lecturer')
+            ? 'Choose one of your supervisees to show their current machine-learning prediction on the dashboard.'
+            : 'Complete the registration details and record checkpoint progress to unlock the prediction.';
+        $predictionMetric = '—';
+        $predictionBadges = [];
+        $predictionHref = Auth::user()->hasRole('lecturer') && $dashboardTargetUser
+            ? route('checkpoints.show', ['student_id' => $dashboardTargetUser->id])
+            : route('checkpoints.show');
 
+        if ($dashboardTargetUser) {
+            $displayName = Auth::user()->hasRole('lecturer') ? $dashboardTargetUser->name . "'s" : 'Your';
+
+            if ($dashboardMissingPrerequisites !== []) {
+                $predictionTitle = $displayName . ' GoT prediction is waiting for registration details';
+                $predictionCopy = 'Missing required fields: ' . implode(', ', $dashboardMissingPrerequisites) . '.';
+                $predictionBadges[] = ['class' => 'unavailable', 'text' => 'Registration details incomplete'];
+            } elseif ($predictionWarning) {
+                $predictionTitle = $displayName . ' GoT prediction could not be refreshed';
+                $predictionCopy = $predictionWarning;
+                $predictionBadges[] = ['class' => 'unavailable', 'text' => 'Refresh failed'];
+            } elseif ($dashboardCheckpoint && !is_null($dashboardCheckpoint->got_probability)) {
+                $predictionState = $dashboardCheckpoint->risk_level ?? 'unavailable';
+                $predictionTitle = $displayName . ' GoT prediction';
+                $predictionCopy = $dashboardCheckpoint->predicted_got
+                    ? 'The model currently expects this student to graduate on time if the current pace is maintained.'
+                    : 'The model currently detects a risk of delay based on the recorded checkpoint timing.';
+                $predictionMetric = number_format($dashboardCheckpoint->got_probability * 100, 1) . '%';
+                $predictionBadges[] = ['class' => $predictionState, 'text' => ucfirst($predictionState) . ' risk'];
+                $predictionBadges[] = [
+                    'class' => $predictionState,
+                    'text' => $dashboardCheckpoint->predicted_got ? 'Graduate on time' : 'Potential delay'
+                ];
+
+                if ($dashboardCheckpoint->last_predicted_at) {
+                    $predictionBadges[] = [
+                        'class' => 'pending',
+                        'text' => 'Updated ' . $dashboardCheckpoint->last_predicted_at->format('d M Y H:i')
+                    ];
+                }
+            } elseif ($dashboardCheckpoint && $dashboardCheckpoint->risk_level === 'pending') {
+                $predictionState = 'pending';
+                $predictionTitle = $displayName . ' GoT prediction is in cold start';
+                $predictionCopy = 'The student profile is complete, but the model waits for the first actual checkpoint date before producing a probability.';
+                $predictionMetric = 'Pending';
+                $predictionBadges[] = ['class' => 'pending', 'text' => 'Cold start'];
+            } else {
+                $predictionTitle = $displayName . ' GoT prediction has not been generated yet';
+                $predictionCopy = 'Open the checkpoints page to submit milestone dates and trigger the first prediction.';
+                $predictionBadges[] = ['class' => 'unavailable', 'text' => 'No prediction yet'];
+            }
+        }
+    @endphp
+
+    <div class="prediction-summary {{ $predictionState }}">
+        <div class="prediction-header">
+            <div>
+                <div class="prediction-kicker">Machine Learning Prediction</div>
+                <h3 class="prediction-title">{{ $predictionTitle }}</h3>
+                <p class="prediction-copy">{{ $predictionCopy }}</p>
+            </div>
+            <div class="prediction-metric {{ $predictionState }}">{{ $predictionMetric }}</div>
+        </div>
+
+        @if($predictionBadges !== [])
+            <div class="prediction-badges">
+                @foreach($predictionBadges as $badge)
+                    <span class="prediction-badge {{ $badge['class'] }}">{{ $badge['text'] }}</span>
+                @endforeach
+                <a href="{{ $predictionHref }}" class="prediction-badge pending text-decoration-none">
+                    <i class="fas fa-arrow-right"></i> Open checkpoints
+                </a>
+            </div>
+        @endif
+    </div>
+@endif
+
+@if(Auth::user()->hasRole('student') || Auth::user()->hasRole('lecturer'))
 <!-- Roadmap Tabs -->
 <ul class="nav nav-tabs roadmap-tabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -601,6 +1046,7 @@
         </div>
     </div>
 </div>
+@endif
 
 @else
 <div class="alert alert-info">

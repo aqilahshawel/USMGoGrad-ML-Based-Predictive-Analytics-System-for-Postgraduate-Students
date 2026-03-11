@@ -5,6 +5,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use App\Models\User;
 use App\Services\CandidatureTimelineService;
+use App\Services\StudentCheckpointPredictionService;
 
 Artisan::command('inspire', function () {
     /** @var ClosureCommand $this */
@@ -57,3 +58,61 @@ Artisan::command('candidature:sync-timeline {studentId? : Student user id} {--al
 
     return self::SUCCESS;
 })->purpose('Generate/update default candidature timeline checkpoints');
+
+Artisan::command('ml:predict-got {studentId? : Student user id} {--all : Predict for all students}', function () {
+    /** @var ClosureCommand $this */
+    $service = app(StudentCheckpointPredictionService::class);
+
+    $studentId = $this->argument('studentId');
+    $all = (bool) $this->option('all');
+
+    if (! $all && ! $studentId) {
+        $this->error('Provide a studentId or use --all');
+        return self::FAILURE;
+    }
+
+    $query = User::role('student');
+    if (! $all) {
+        $query->whereKey($studentId);
+    }
+
+    $students = $query->get();
+    if ($students->isEmpty()) {
+        $this->error('No matching student(s) found.');
+        return self::FAILURE;
+    }
+
+    $predicted = 0;
+    $skipped = 0;
+
+    foreach ($students as $student) {
+        try {
+            $result = $service->predictForStudent($student);
+            $predicted++;
+
+            if (is_null($result['got_probability'])) {
+                $this->line(sprintf(
+                    'Predicted student %d: pending (cold start, no checkpoint dates yet)',
+                    $student->id
+                ));
+                continue;
+            }
+
+            $this->line(sprintf(
+                'Predicted student %d: probability=%.4f, label=%s, risk=%s',
+                $student->id,
+                $result['got_probability'],
+                $result['predicted_got'] ? 'GoT' : 'Not GoT',
+                $result['risk_level']
+            ));
+        } catch (\Throwable $e) {
+            $skipped++;
+            $this->warn(sprintf('Skipped student %d: %s', $student->id, $e->getMessage()));
+        }
+    }
+
+    $this->info("Done. Predicted={$predicted}, skipped={$skipped}");
+
+    return self::SUCCESS;
+})->purpose('Run GoT ML predictions for student checkpoints');
+

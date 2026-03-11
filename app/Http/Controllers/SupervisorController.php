@@ -14,6 +14,11 @@ class SupervisorController extends Controller
         'Enabling Technologies & Infrastructures',
     ];
 
+    private const STUDY_MODES = [
+        'full_time' => 'Full Time',
+        'part_time' => 'Part Time',
+    ];
+
     public function index()
     {
         $supervisors = User::role('lecturer')->with('students')->get();
@@ -26,6 +31,7 @@ class SupervisorController extends Controller
             'students' => $students,
             'allStudents' => $allStudents,
             'clusters' => self::CLUSTERS,
+            'studyModes' => self::STUDY_MODES,
         ]);
     }
     
@@ -57,5 +63,22 @@ class SupervisorController extends Controller
         $student->save();
 
         return redirect()->back()->with('success', 'Student cluster updated successfully.');
+    }
+
+    public function updateCandidatureSettings(Request $request)
+    {
+        $request->validate([
+            'student_id' => ['required', 'integer', 'exists:users,id'],
+            'start_date' => ['required', 'date'],
+            'study_mode' => ['required', 'string', Rule::in(array_keys(self::STUDY_MODES))],
+        ]);
+
+        $student = User::role('student')->findOrFail($request->student_id);
+
+        $student->start_date = $request->start_date;
+        $student->study_mode = $request->study_mode;
+        $student->save();
+
+        return redirect()->back()->with('success', 'Student candidature settings updated successfully.');
     }
 }

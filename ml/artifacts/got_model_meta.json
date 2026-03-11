@@ -1,0 +1,28 @@
+{
+  "feature_columns": [
+    "Cluster",
+    "Type",
+    "proposal_sem",
+    "research_sem",
+    "nos_sem",
+    "final_draft_sem"
+  ],
+  "clusters": {
+    "Data to Knowledge": 0,
+    "Service Computing": 1,
+    "Enabling Technologies & Infrastructures": 2
+  },
+  "types": {
+    "Full Time": 0,
+    "Part Time": 1,
+    "full_time": 0,
+    "part_time": 1,
+    "full time": 0,
+    "part time": 1
+  },
+  "semester_definition": {
+    "semester_1": "September-February",
+    "semester_2": "March-August"
+  },
+  "model_version": "20260310100906"
+}

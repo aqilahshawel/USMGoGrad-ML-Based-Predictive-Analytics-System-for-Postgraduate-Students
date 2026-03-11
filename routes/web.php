@@ -13,6 +13,7 @@ use App\Http\Controllers\ChatBotController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\CalendarOAuthController;
+use App\Http\Controllers\StudentCheckpointController;
 
 
 // Redirect guests to login instead of home
@@ -43,6 +44,7 @@ Route::get('/home', [HomeController::class, 'index'])->middleware('auth')->name(
 // Milestones: student-personal checkpoints (students manage; lecturers can view supervisees)
 Route::middleware(['auth', 'role:student|lecturer'])->group(function () {
     Route::get('milestones', [MilestoneController::class, 'index'])->name('milestones.index');
+    Route::get('checkpoints', [StudentCheckpointController::class, 'show'])->name('checkpoints.show');
 });
 
 Route::middleware(['auth', 'role:student'])->group(function () {
@@ -50,6 +52,7 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::post('milestones', [MilestoneController::class, 'store'])->name('milestones.store');
     Route::get('milestones/{milestone}/edit', [MilestoneController::class, 'edit'])->name('milestones.edit');
     Route::put('milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
+    Route::put('checkpoints', [StudentCheckpointController::class, 'update'])->name('checkpoints.update');
 });
 
 // SV Assign Page (Admin Only)
@@ -57,6 +60,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/supervisors', [SupervisorController::class, 'index'])->name('supervisors.index');
     Route::post('/assign-supervisor', [SupervisorController::class, 'assign'])->name('supervisors.assign');
     Route::post('/students/cluster', [SupervisorController::class, 'updateCluster'])->name('students.cluster.update');
+    Route::post('/students/candidature-settings', [SupervisorController::class, 'updateCandidatureSettings'])->name('students.candidature.update');
 });
 
 // Scheduling Routes (Lecturer + Student visibility)

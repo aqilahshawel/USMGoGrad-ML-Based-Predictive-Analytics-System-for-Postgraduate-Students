@@ -50,6 +50,12 @@
         margin-bottom: 1.5rem;
     }
 
+    .form-row {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 0.9rem;
+    }
+
     .form-group label {
         font-weight: 600;
         color: var(--n-900);
@@ -117,6 +123,16 @@
         margin-bottom: 0.5rem;
     }
 
+    .section-note {
+        margin: -0.5rem 0 1rem;
+        padding: 0.9rem 1rem;
+        border-radius: 10px;
+        background: var(--lav-100);
+        border: 1px solid var(--lav-200);
+        color: var(--lav-500);
+        font-size: 0.9rem;
+    }
+
     .icon-logo {
         font-size: 2.5rem;
         margin-bottom: 0.5rem;
@@ -126,6 +142,10 @@
     @media (max-width: 576px) {
         .register-body {
             padding: 1.5rem;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
         }
 
         .register-header {
@@ -183,18 +203,38 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="email">
+                    <label for="email_username">
                         <i class="fas fa-envelope"></i> {{ __('Email Address') }}
                     </label>
-                    <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" 
-                           name="email" value="{{ old('email') }}" required autocomplete="email" 
-                           placeholder="Enter email address">
+                    <div class="form-row">
+                        <input id="email_username" type="text" class="form-control @error('email_username') is-invalid @enderror"
+                               name="email_username" value="{{ old('email_username') }}" required autocomplete="username"
+                               placeholder="Email username">
+                        <select id="email_domain" name="email_domain" class="form-control @error('email_domain') is-invalid @enderror" required>
+                            @foreach(($emailDomains ?? []) as $domain => $label)
+                                <option value="{{ $domain }}" {{ old('email_domain', '@student.usm.my') === $domain ? 'selected' : '' }}>
+                                    {{ $domain }} ({{ $label }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('email_username')
+                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                    @enderror
+                    @error('email_domain')
+                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                    @enderror
                     @error('email')
                         <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
                     @enderror
                 </div>
 
-                <div class="form-group">
+                <div id="student-fields">
+                    <div class="section-note">
+                        Student registration requires the cluster, study type, and registration date so the GoT model has the right baseline context.
+                    </div>
+
+                    <div class="form-group">
                     <label for="cluster">
                         <i class="fas fa-layer-group"></i> {{ __('Cluster (Students only)') }}
                     </label>
@@ -209,6 +249,35 @@
                     @error('cluster')
                         <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
                     @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="study_mode">
+                            <i class="fas fa-user-graduate"></i> {{ __('Study Type') }}
+                        </label>
+                        <select id="study_mode" name="study_mode" class="form-control @error('study_mode') is-invalid @enderror">
+                            <option value="">-- Select Study Type --</option>
+                            @foreach(($studyModes ?? []) as $value => $label)
+                                <option value="{{ $value }}" {{ old('study_mode') === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('study_mode')
+                            <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_date">
+                            <i class="fas fa-calendar-alt"></i> {{ __('Registration Date') }}
+                        </label>
+                        <input id="start_date" type="date" class="form-control @error('start_date') is-invalid @enderror"
+                               name="start_date" value="{{ old('start_date') }}">
+                        @error('start_date')
+                            <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-register">
@@ -218,5 +287,29 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const emailDomainField = document.getElementById('email_domain');
+        const studentFields = document.getElementById('student-fields');
+        const studentOnlyInputs = studentFields.querySelectorAll('select, input');
+
+        function syncRegistrationFields() {
+            const isStudent = emailDomainField.value === '@student.usm.my';
+            studentFields.style.display = isStudent ? 'block' : 'none';
+
+            studentOnlyInputs.forEach(function (field) {
+                if (isStudent) {
+                    field.removeAttribute('disabled');
+                } else {
+                    field.setAttribute('disabled', 'disabled');
+                }
+            });
+        }
+
+        emailDomainField.addEventListener('change', syncRegistrationFields);
+        syncRegistrationFields();
+    });
+</script>
 
 @endsection

@@ -52,4 +52,9 @@ class User extends Authenticatable
         return $this->hasOne(CalendarIntegration::class)->where('provider', 'google');
     }
 
+    public function checkpoint(): HasOne
+    {
+        return $this->hasOne(StudentCheckpoint::class);
+    }
+
 }

@@ -2,13 +2,13 @@
 
 return [
     // University semester system:
-    // Semester 1: October – February
-    // Semester 2: March – September
+    // Semester 1: September – February
+    // Semester 2: March – August
 
     'study_modes' => [
         'full_time' => [
             'min_semesters' => 4,
-            // Used for risk boundary: beyond expected but <= max => at_risk
+            // Retained for timeline generation and semester milestones.
             'expected_semesters' => 8,
             'max_semesters' => 10,
 
@@ -47,7 +47,7 @@ return [
 
         'part_time' => [
             'min_semesters' => 6,
-            // Default assumption: part-time timelines are longer; adjust if your faculty defines otherwise.
+            // Retained for timeline generation and semester milestones.
             'expected_semesters' => 12,
             'max_semesters' => 15,
 

@@ -13,7 +13,7 @@ use Illuminate\Support\Arr;
 class CandidatureTimelineService
 {
     /**
-     * Returns the academic semester period (Oct–Feb or Mar–Sep) that contains $date.
+        * Returns the academic semester period (Sep–Feb or Mar–Aug) that contains $date.
      *
      * @return array{key:string,start:CarbonImmutable,end:CarbonImmutable,label:string}
      */
@@ -23,9 +23,9 @@ class CandidatureTimelineService
         $year = (int) $d->year;
         $month = (int) $d->month;
 
-        // Semester 1: Oct–Feb (spans year boundary)
-        if ($month >= 10) {
-            $start = CarbonImmutable::create($year, 10, 1);
+        // Semester 1: Sep–Feb (spans year boundary)
+        if ($month >= 9) {
+            $start = CarbonImmutable::create($year, 9, 1);
             $end = CarbonImmutable::create($year + 1, 2, 1)->endOfMonth();
             $label = sprintf('S1 %d/%d', $year, $year + 1);
 
@@ -33,16 +33,16 @@ class CandidatureTimelineService
         }
 
         if ($month <= 2) {
-            $start = CarbonImmutable::create($year - 1, 10, 1);
+            $start = CarbonImmutable::create($year - 1, 9, 1);
             $end = CarbonImmutable::create($year, 2, 1)->endOfMonth();
             $label = sprintf('S1 %d/%d', $year - 1, $year);
 
             return ['key' => 'S1', 'start' => $start, 'end' => $end, 'label' => $label];
         }
 
-        // Semester 2: Mar–Sep (same year)
+        // Semester 2: Mar–Aug (same year)
         $start = CarbonImmutable::create($year, 3, 1);
-        $end = CarbonImmutable::create($year, 9, 30);
+        $end = CarbonImmutable::create($year, 8, 31);
         $label = sprintf('S2 %d', $year);
 
         return ['key' => 'S2', 'start' => $start, 'end' => $end, 'label' => $label];

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Supervisor Assignment - USMGoGrad')
+@section('title', 'Assignment - USMGoGrad')
 
 @section('content')
 
@@ -202,7 +202,7 @@
 </style>
 
 <div class="supervisors-header">
-    <h2><i class="fas fa-users-cog"></i> Supervisor Assignment</h2>
+    <h2><i class="fas fa-users-cog"></i> Assignment</h2>
 </div>
 
 <!-- Assignment Form -->
@@ -290,45 +290,80 @@
         </div>
 
         <button type="submit" class="btn-assign">
-            <i class="fas fa-save"></i> Save Cluster
+            <i class="fas fa-save"></i> Update Cluster
         </button>
     </form>
 </div>
 
-<!-- Current Assignments -->
-<div class="assignments-section">
-    <h3><i class="fas fa-list"></i> Current Assignments</h3>
+<div class="assignment-form-section">
+    <h4 class="mb-3"><i class="fas fa-calendar-check"></i> Update Student Candidature</h4>
 
-    @if($supervisors->count() > 0)
-        @foreach($supervisors as $supervisor)
-            <div class="supervisor-card">
-                <div class="supervisor-name">
-                    <i class="fas fa-user-tie"></i> {{ $supervisor->name }}
-                </div>
-                
-                @if($supervisor->students->count() > 0)
-                    <ul class="students-list">
-                        @foreach($supervisor->students as $student)
-                            <li>
-                                <i class="fas fa-user-graduate"></i>
-                                {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <div class="no-students">
-                        <i class="fas fa-inbox"></i> No students assigned yet
-                    </div>
-                @endif
+    <form action="{{ route('students.candidature.update') }}" method="POST">
+        @csrf
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="candidature_student">
+                    <i class="fas fa-user-graduate"></i> Select Student
+                </label>
+                <select name="student_id" id="candidature_student" class="form-select" required>
+                    <option value="">-- Choose a Student --</option>
+                    @foreach(($allStudents ?? collect()) as $student)
+                        <option value="{{ $student->id }}" {{ (string)old('student_id') === (string)$student->id ? 'selected' : '' }}>
+                            {{ $student->name }}
+                            @if($student->cluster)
+                                ({{ $student->cluster }})
+                            @endif
+                            @if($student->study_mode)
+                                - {{ str_replace('_', ' ', ucwords($student->study_mode, '_')) }}
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
+                @error('student_id')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
             </div>
-        @endforeach
-    @else
-        <div class="empty-state">
-            <i class="fas fa-inbox"></i>
-            <h5>No Supervisors Available</h5>
-            <p class="text-muted">There are no supervisors in the system yet.</p>
+
+            <div class="form-group">
+                <label for="candidature_start_date">
+                    <i class="fas fa-calendar-day"></i> Registration Date
+                </label>
+                <input
+                    type="date"
+                    name="start_date"
+                    id="candidature_start_date"
+                    class="form-control @error('start_date') is-invalid @enderror"
+                    value="{{ old('start_date') }}"
+                    required
+                >
+                @error('start_date')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="candidature_study_mode">
+                    <i class="fas fa-user-clock"></i> Study Type
+                </label>
+                <select name="study_mode" id="candidature_study_mode" class="form-select @error('study_mode') is-invalid @enderror" required>
+                    <option value="">-- Select Study Type --</option>
+                    @foreach(($studyModes ?? []) as $value => $label)
+                        <option value="{{ $value }}" {{ old('study_mode') === $value ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('study_mode')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
         </div>
-    @endif
+
+        <button type="submit" class="btn-assign">
+            <i class="fas fa-save"></i> Update Candidature Settings
+        </button>
+    </form>
 </div>
 
 @endsection
