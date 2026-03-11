@@ -65,20 +65,33 @@ class SupervisorController extends Controller
         return redirect()->back()->with('success', 'Student cluster updated successfully.');
     }
 
-    public function updateCandidatureSettings(Request $request)
+    public function updateRegistrationDate(Request $request)
     {
-        $request->validate([
-            'student_id' => ['required', 'integer', 'exists:users,id'],
+        $validated = $request->validate([
+            'registration_student_id' => ['required', 'integer', 'exists:users,id'],
             'start_date' => ['required', 'date'],
+        ]);
+
+        $student = User::role('student')->findOrFail($validated['registration_student_id']);
+
+        $student->start_date = $validated['start_date'];
+        $student->save();
+
+        return redirect()->back()->with('success', 'Student registration date updated successfully.');
+    }
+
+    public function updateStudyMode(Request $request)
+    {
+        $validated = $request->validate([
+            'study_mode_student_id' => ['required', 'integer', 'exists:users,id'],
             'study_mode' => ['required', 'string', Rule::in(array_keys(self::STUDY_MODES))],
         ]);
 
-        $student = User::role('student')->findOrFail($request->student_id);
+        $student = User::role('student')->findOrFail($validated['study_mode_student_id']);
 
-        $student->start_date = $request->start_date;
-        $student->study_mode = $request->study_mode;
+        $student->study_mode = $validated['study_mode'];
         $student->save();
 
-        return redirect()->back()->with('success', 'Student candidature settings updated successfully.');
+        return redirect()->back()->with('success', 'Student study type updated successfully.');
     }
 }

@@ -296,20 +296,20 @@
 </div>
 
 <div class="assignment-form-section">
-    <h4 class="mb-3"><i class="fas fa-calendar-check"></i> Update Student Candidature</h4>
+    <h4 class="mb-3"><i class="fas fa-calendar-day"></i> Update Registration Date</h4>
 
-    <form action="{{ route('students.candidature.update') }}" method="POST">
+    <form action="{{ route('students.registration-date.update') }}" method="POST">
         @csrf
 
         <div class="form-row">
             <div class="form-group">
-                <label for="candidature_student">
+                <label for="registration_student">
                     <i class="fas fa-user-graduate"></i> Select Student
                 </label>
-                <select name="student_id" id="candidature_student" class="form-select" required>
+                <select name="registration_student_id" id="registration_student" class="form-select" required>
                     <option value="">-- Choose a Student --</option>
                     @foreach(($allStudents ?? collect()) as $student)
-                        <option value="{{ $student->id }}" {{ (string)old('student_id') === (string)$student->id ? 'selected' : '' }}>
+                        <option value="{{ $student->id }}" {{ (string)old('registration_student_id') === (string)$student->id ? 'selected' : '' }}>
                             {{ $student->name }}
                             @if($student->cluster)
                                 ({{ $student->cluster }})
@@ -320,7 +320,7 @@
                         </option>
                     @endforeach
                 </select>
-                @error('student_id')
+                @error('registration_student_id')
                     <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
                 @enderror
             </div>
@@ -338,6 +338,43 @@
                     required
                 >
                 @error('start_date')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
+
+        <button type="submit" class="btn-assign">
+            <i class="fas fa-save"></i> Update Registration Date
+        </button>
+    </form>
+</div>
+
+<div class="assignment-form-section">
+    <h4 class="mb-3"><i class="fas fa-user-clock"></i> Update Study Type</h4>
+
+    <form action="{{ route('students.study-mode.update') }}" method="POST">
+        @csrf
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="study_mode_student">
+                    <i class="fas fa-user-graduate"></i> Select Student
+                </label>
+                <select name="study_mode_student_id" id="study_mode_student" class="form-select" required>
+                    <option value="">-- Choose a Student --</option>
+                    @foreach(($allStudents ?? collect()) as $student)
+                        <option value="{{ $student->id }}" {{ (string)old('study_mode_student_id') === (string)$student->id ? 'selected' : '' }}>
+                            {{ $student->name }}
+                            @if($student->cluster)
+                                ({{ $student->cluster }})
+                            @endif
+                            @if($student->start_date)
+                                - {{ $student->start_date->format('d M Y') }}
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
+                @error('study_mode_student_id')
                     <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
                 @enderror
             </div>
@@ -361,7 +398,7 @@
         </div>
 
         <button type="submit" class="btn-assign">
-            <i class="fas fa-save"></i> Update Candidature Settings
+            <i class="fas fa-save"></i> Update Study Type
         </button>
     </form>
 </div>
