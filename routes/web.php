@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\HomeController;
@@ -13,7 +14,6 @@ use App\Http\Controllers\ChatBotController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\CalendarOAuthController;
-use App\Http\Controllers\StudentCheckpointController;
 
 
 // Redirect guests to login instead of home
@@ -44,7 +44,15 @@ Route::get('/home', [HomeController::class, 'index'])->middleware('auth')->name(
 // Milestones: student-personal checkpoints (students manage; lecturers can view supervisees)
 Route::middleware(['auth', 'role:student|lecturer'])->group(function () {
     Route::get('milestones', [MilestoneController::class, 'index'])->name('milestones.index');
-    Route::get('checkpoints', [StudentCheckpointController::class, 'show'])->name('checkpoints.show');
+    Route::get('checkpoints', function (Request $request) {
+        $params = ['tab' => 'checkpoint'];
+
+        if ($request->filled('student_id')) {
+            $params['student_id'] = $request->query('student_id');
+        }
+
+        return redirect()->route('timeline.index', $params);
+    })->name('checkpoints.show');
 });
 
 Route::middleware(['auth', 'role:student'])->group(function () {
@@ -52,7 +60,8 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::post('milestones', [MilestoneController::class, 'store'])->name('milestones.store');
     Route::get('milestones/{milestone}/edit', [MilestoneController::class, 'edit'])->name('milestones.edit');
     Route::put('milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
-    Route::put('checkpoints', [StudentCheckpointController::class, 'update'])->name('checkpoints.update');
+    Route::put('checkpoints', [TimelineController::class, 'updateCheckpoint'])->name('checkpoints.update');
+    Route::put('timeline/checkpoints', [TimelineController::class, 'updateCheckpoint'])->name('timeline.checkpoints.update');
 });
 
 // SV Assign Page (Admin Only)

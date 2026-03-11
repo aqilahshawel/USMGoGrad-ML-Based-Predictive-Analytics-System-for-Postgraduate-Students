@@ -26,6 +26,9 @@ FEATURE_COLUMNS = [
     "research_sem",
     "nos_sem",
     "final_draft_sem",
+    "gap_proposal_to_research",
+    "gap_research_to_nos",
+    "gap_nos_to_final_draft",
 ]
 
 CLUSTER_MAPPING = {
@@ -83,6 +86,12 @@ def get_semester_index(registration_date: pd.Timestamp, target_date: pd.Timestam
     return int(target_token.index() - registration_token.index() + 1)
 
 
+def semester_gap(previous_semester, current_semester):
+    if pd.isna(previous_semester) or pd.isna(current_semester):
+        return np.nan
+    return float(current_semester - previous_semester)
+
+
 def encode_cluster(value: str) -> int:
     if value not in CLUSTER_MAPPING:
         raise ValueError(f"Unsupported cluster: {value}")
@@ -115,6 +124,15 @@ def add_semester_features(frame: pd.DataFrame) -> pd.DataFrame:
     result["viva_sem"] = result.apply(
         lambda row: get_semester_index(row["Registration Date"], row["Viva Date"]), axis=1
     )
+    result["gap_proposal_to_research"] = result.apply(
+        lambda row: semester_gap(row["proposal_sem"], row["research_sem"]), axis=1
+    )
+    result["gap_research_to_nos"] = result.apply(
+        lambda row: semester_gap(row["research_sem"], row["nos_sem"]), axis=1
+    )
+    result["gap_nos_to_final_draft"] = result.apply(
+        lambda row: semester_gap(row["nos_sem"], row["final_draft_sem"]), axis=1
+    )
     return result
 
 
@@ -145,6 +163,11 @@ def save_metadata(meta_path: Path) -> dict:
         "feature_columns": FEATURE_COLUMNS,
         "clusters": CLUSTER_MAPPING,
         "types": TYPE_MAPPING,
+        "feature_notes": {
+            "timing_model": "Features focus on checkpoint semester positions and pre-viva gaps between checkpoints.",
+            "ekc500": "Handled as a pass/check gate in the app and intentionally excluded from ML features because there is no historical EKC500 dataset.",
+            "leakage_guard": "Viva-derived features are intentionally excluded so the model remains an early-warning predictor.",
+        },
         "semester_definition": {
             "semester_1": "September-February",
             "semester_2": "March-August",

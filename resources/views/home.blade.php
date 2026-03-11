@@ -256,6 +256,7 @@
         border: 1px solid var(--lav-200);
         border-radius: 14px;
         padding: 1.2rem 1.4rem;
+        margin-top: 1rem;
         margin-bottom: 1rem;
         box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
     }
@@ -707,8 +708,8 @@
         $predictionMetric = '—';
         $predictionBadges = [];
         $predictionHref = Auth::user()->hasRole('lecturer') && $dashboardTargetUser
-            ? route('checkpoints.show', ['student_id' => $dashboardTargetUser->id])
-            : route('checkpoints.show');
+            ? route('timeline.index', ['student_id' => $dashboardTargetUser->id, 'tab' => 'checkpoint'])
+            : route('timeline.index', ['tab' => 'checkpoint']);
 
         if ($dashboardTargetUser) {
             $displayName = Auth::user()->hasRole('lecturer') ? $dashboardTargetUser->name . "'s" : 'Your';
@@ -748,36 +749,13 @@
                 $predictionBadges[] = ['class' => 'pending', 'text' => 'Cold start'];
             } else {
                 $predictionTitle = $displayName . ' GoT prediction has not been generated yet';
-                $predictionCopy = 'Open the checkpoints page to submit milestone dates and trigger the first prediction.';
+                $predictionCopy = 'Open the timeline checkpoint tab to submit milestone dates and trigger the first prediction.';
                 $predictionBadges[] = ['class' => 'unavailable', 'text' => 'No prediction yet'];
             }
         }
     @endphp
-
-    <div class="prediction-summary {{ $predictionState }}">
-        <div class="prediction-header">
-            <div>
-                <div class="prediction-kicker">Machine Learning Prediction</div>
-                <h3 class="prediction-title">{{ $predictionTitle }}</h3>
-                <p class="prediction-copy">{{ $predictionCopy }}</p>
-            </div>
-            <div class="prediction-metric {{ $predictionState }}">{{ $predictionMetric }}</div>
-        </div>
-
-        @if($predictionBadges !== [])
-            <div class="prediction-badges">
-                @foreach($predictionBadges as $badge)
-                    <span class="prediction-badge {{ $badge['class'] }}">{{ $badge['text'] }}</span>
-                @endforeach
-                <a href="{{ $predictionHref }}" class="prediction-badge pending text-decoration-none">
-                    <i class="fas fa-arrow-right"></i> Open checkpoints
-                </a>
-            </div>
-        @endif
-    </div>
 @endif
 
-@if(Auth::user()->hasRole('student') || Auth::user()->hasRole('lecturer'))
 <!-- Roadmap Tabs -->
 <ul class="nav nav-tabs roadmap-tabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -799,10 +777,12 @@
         <div class="tab-content-section">
             @php
                 $hStageStyles = [
-                    'prep'            => ['icon' => 'fa-book-open',      'color' => '#7c6fb3', 'bg' => '#f3f0ff'],
-                    'proposal'        => ['icon' => 'fa-file-signature', 'color' => '#e07d45', 'bg' => '#fff5ef'],
-                    'data_collection' => ['icon' => 'fa-chart-bar',      'color' => '#3d9970', 'bg' => '#e8f5e9'],
-                    'thesis'          => ['icon' => 'fa-graduation-cap', 'color' => '#c9a227', 'bg' => '#fffbf0'],
+                    'ekc500_admin_approval' => ['icon' => 'fa-file-circle-check', 'color' => '#7c6fb3', 'bg' => '#f3f0ff'],
+                    'proposal_review' => ['icon' => 'fa-file-signature', 'color' => '#e07d45', 'bg' => '#fff5ef'],
+                    'research_review' => ['icon' => 'fa-magnifying-glass-chart', 'color' => '#3d9970', 'bg' => '#e8f5e9'],
+                    'nos'             => ['icon' => 'fa-envelope-open-text', 'color' => '#d97706', 'bg' => '#fff5ef'],
+                    'final_draft_submission' => ['icon' => 'fa-file-arrow-up', 'color' => '#b7791f', 'bg' => '#fffbf0'],
+                    'viva'            => ['icon' => 'fa-user-graduate', 'color' => '#c2410c', 'bg' => '#fdecea'],
                     'extension'       => ['icon' => 'fa-hourglass-half', 'color' => '#cc4b4b', 'bg' => '#fdecea'],
                     'overdue'         => ['icon' => 'fa-exclamation-triangle','color' => '#cc4b4b', 'bg' => '#fdecea'],
                     'max_duration'    => ['icon' => 'fa-flag-checkered', 'color' => '#cc4b4b', 'bg' => '#fdecea'],
@@ -810,7 +790,7 @@
                 $hDefaultStyle = ['icon' => 'fa-circle-dot', 'color' => '#a99dd6', 'bg' => '#f3f0ff'];
 
                 $hStops = $timelines
-                    ->filter(fn($t) => $t->system_key && (str_starts_with($t->system_key, 'stage:') || $t->system_key === 'max_duration'))
+                    ->filter(fn($t) => $t->system_key && (str_starts_with($t->system_key, 'checkpoint:') || $t->system_key === 'max_duration'))
                     ->sortBy('event_date')
                     ->values();
 
@@ -820,6 +800,9 @@
 
                 $hTotal = $hStops->count();
                 $hDone  = $hStops->where('completed', true)->count();
+                $overdueHomeStops = $progressSnapshot
+                    ? $hStops->filter(fn($stop) => ! $stop->completed && $stop->semester_number && $progressSnapshot['current_semester'] > $stop->semester_number)
+                    : collect();
             @endphp
 
             @if(Auth::user()->hasRole('lecturer'))
@@ -850,6 +833,13 @@
             @endif
 
             @if($hStops->isNotEmpty())
+                @if($overdueHomeStops->isNotEmpty())
+                <div class="alert alert-warning mt-3 mb-3" role="alert">
+                    <i class="fas fa-bell"></i>
+                    Reminder: {{ $overdueHomeStops->pluck('title')->implode(', ') }} {{ $overdueHomeStops->count() === 1 ? 'is' : 'are' }} already past the target semester.
+                </div>
+                @endif
+
                 {{-- Progress mini-bar --}}
                 @if($progressSnapshot)
                 <div class="d-flex gap-2 mb-1 flex-wrap" style="font-size: 0.82rem;">
@@ -888,7 +878,7 @@
 
                         @foreach($hStops as $idx => $stop)
                             @php
-                                $sk = $stop->stage_key ?? ($stop->system_key ? str_replace(['stage:','max_duration'], ['','max_duration'], $stop->system_key) : null);
+                                $sk = $stop->stage_key ?? ($stop->system_key ? str_replace(['checkpoint:','max_duration'], ['','max_duration'], $stop->system_key) : null);
                                 $st = $hStageStyles[$sk] ?? $hDefaultStyle;
                                 $done = (bool) $stop->completed;
                                 $isCurr = !$done && ($stop->status ?? 'approved') === 'approved'
@@ -1046,6 +1036,29 @@
         </div>
     </div>
 </div>
+
+@if(Auth::user()->hasRole('student') || Auth::user()->hasRole('lecturer'))
+    <div class="prediction-summary {{ $predictionState }}">
+        <div class="prediction-header">
+            <div>
+                <div class="prediction-kicker">Machine Learning Prediction</div>
+                <h3 class="prediction-title">{{ $predictionTitle }}</h3>
+                <p class="prediction-copy">{{ $predictionCopy }}</p>
+            </div>
+            <div class="prediction-metric {{ $predictionState }}">{{ $predictionMetric }}</div>
+        </div>
+
+        @if($predictionBadges !== [])
+            <div class="prediction-badges">
+                @foreach($predictionBadges as $badge)
+                    <span class="prediction-badge {{ $badge['class'] }}">{{ $badge['text'] }}</span>
+                @endforeach
+                <a href="{{ $predictionHref }}" class="prediction-badge pending text-decoration-none">
+                    <i class="fas fa-arrow-right"></i> Open checkpoint tab
+                </a>
+            </div>
+        @endif
+    </div>
 @endif
 
 @else

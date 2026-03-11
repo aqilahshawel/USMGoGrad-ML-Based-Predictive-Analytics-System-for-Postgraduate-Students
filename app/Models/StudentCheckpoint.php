@@ -12,6 +12,7 @@ class StudentCheckpoint extends Model
 
     protected $fillable = [
         'user_id',
+        'ekc500_admin_approved',
         'proposal_review_date',
         'research_review_date',
         'nos_date',
@@ -26,6 +27,7 @@ class StudentCheckpoint extends Model
     ];
 
     protected $casts = [
+        'ekc500_admin_approved' => 'bool',
         'proposal_review_date' => 'date',
         'research_review_date' => 'date',
         'nos_date' => 'date',

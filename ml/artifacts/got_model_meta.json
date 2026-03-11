@@ -5,7 +5,10 @@
     "proposal_sem",
     "research_sem",
     "nos_sem",
-    "final_draft_sem"
+    "final_draft_sem",
+    "gap_proposal_to_research",
+    "gap_research_to_nos",
+    "gap_nos_to_final_draft"
   ],
   "clusters": {
     "Data to Knowledge": 0,
@@ -20,9 +23,14 @@
     "full time": 0,
     "part time": 1
   },
+  "feature_notes": {
+    "timing_model": "Features focus on checkpoint semester positions and pre-viva gaps between checkpoints.",
+    "ekc500": "Collected in the app, but not yet used as a predictive feature because the historical CSV does not contain that column.",
+    "leakage_guard": "Viva-derived features are intentionally excluded so the model remains an early-warning predictor."
+  },
   "semester_definition": {
     "semester_1": "September-February",
     "semester_2": "March-August"
   },
-  "model_version": "20260310100906"
+  "model_version": "20260311060021"
 }

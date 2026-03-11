@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\CandidatureRiskStatus;
 use App\Enums\StudyMode;
+use App\Models\StudentCheckpoint;
 use App\Models\Timeline;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -49,7 +50,7 @@ class CandidatureTimelineService
     }
 
     /**
-     * @return array{min_semesters:int,expected_semesters:int,max_semesters:int,stages:array<int,array<string,mixed>>}
+    * @return array{min_semesters:int,expected_semesters:int,max_semesters:int,stages:array<int,array<string,mixed>>,checkpoint_targets:array<int,array<string,mixed>>}
      */
     public function rulesForStudyMode(StudyMode|string $studyMode): array
     {
@@ -60,7 +61,7 @@ class CandidatureTimelineService
             throw new \RuntimeException('Missing config for study mode: ' . $mode->value);
         }
 
-        foreach (['min_semesters', 'expected_semesters', 'max_semesters', 'stages'] as $key) {
+        foreach (['min_semesters', 'expected_semesters', 'max_semesters', 'stages', 'checkpoint_targets'] as $key) {
             if (! array_key_exists($key, $rules)) {
                 throw new \RuntimeException("candidature_timeline missing key: {$key} for {$mode->value}");
             }
@@ -71,7 +72,16 @@ class CandidatureTimelineService
             'expected_semesters' => (int) $rules['expected_semesters'],
             'max_semesters' => (int) $rules['max_semesters'],
             'stages' => (array) $rules['stages'],
+            'checkpoint_targets' => (array) $rules['checkpoint_targets'],
         ];
+    }
+
+    /**
+     * @return array<int,array<string,mixed>>
+     */
+    public function checkpointTargets(StudyMode|string $studyMode): array
+    {
+        return $this->rulesForStudyMode($studyMode)['checkpoint_targets'];
     }
 
     public function riskStatusForSemester(int $semesterNumber, StudyMode|string $studyMode): CandidatureRiskStatus
@@ -242,30 +252,45 @@ class CandidatureTimelineService
      * Generates default professional checkpoints (one per stage + max duration marker).
      * Stored in the Timeline roadmap (NOT the student's personal milestones).
      *
-     * @return array<int,array{system_key:string,stage_key:string,title:string,description:string|null,event_date:CarbonImmutable,target_semester_number:int}>
+     * @return array<int,array{system_key:string,stage_key:string,title:string,description:string|null,event_date:CarbonImmutable,target_semester_number:int,field:string}>
      */
     public function defaultProfessionalCheckpoints(CarbonInterface $startDate, StudyMode|string $studyMode): array
     {
         $mode = $studyMode instanceof StudyMode ? $studyMode : StudyMode::fromMixed($studyMode);
-        $rules = $this->rulesForStudyMode($mode);
         $timeline = $this->buildSemesterTimeline($startDate, $mode);
+        $targets = $this->checkpointTargets($mode);
 
         $checkpoints = [];
+        $generatedDates = [];
 
-        foreach ($rules['stages'] as $stage) {
-            $to = (int) $stage['to'];
-            $dueSemester = Arr::first($timeline, fn ($s) => (int) $s['semester_number'] === $to);
-            if (! $dueSemester) {
-                continue;
+        foreach ($targets as $target) {
+            $relativeTo = $target['relative_to'] ?? null;
+            $eventDate = null;
+
+            if ($relativeTo && isset($generatedDates[$relativeTo])) {
+                $eventDate = $generatedDates[$relativeTo]->addWeeks((int) ($target['offset_weeks'] ?? 0));
             }
 
+            if (! $eventDate) {
+                $targetSemester = (int) ($target['target_semester'] ?? 0);
+                $dueSemester = Arr::first($timeline, fn ($s) => (int) $s['semester_number'] === $targetSemester);
+                if (! $dueSemester) {
+                    continue;
+                }
+
+                $eventDate = $dueSemester['end'];
+            }
+
+            $generatedDates[(string) $target['key']] = $eventDate;
+
             $checkpoints[] = [
-                'system_key' => 'stage:' . $stage['key'],
-                'stage_key' => (string) $stage['key'],
-                'title' => (string) ($stage['milestone_title'] ?? $stage['title']),
-                'description' => (string) ($stage['title'] ?? null),
-                'event_date' => $dueSemester['end'],
-                'target_semester_number' => $to,
+                'system_key' => 'checkpoint:' . $target['key'],
+                'stage_key' => (string) $target['key'],
+                'title' => (string) $target['title'],
+                'description' => (string) ($target['description'] ?? null),
+                'event_date' => $eventDate,
+                'target_semester_number' => $this->currentSemesterNumber($startDate, $mode, $eventDate),
+                'field' => (string) $target['field'],
             ];
         }
 
@@ -278,6 +303,7 @@ class CandidatureTimelineService
                 'description' => 'Crossing this date is considered overdue / critical risk.',
                 'event_date' => $maxSemester['end'],
                 'target_semester_number' => (int) $maxSemester['semester_number'],
+                'field' => '',
             ];
         }
 
@@ -339,6 +365,7 @@ class CandidatureTimelineService
             );
         }
 
+        $checkpointModel = $student->checkpoint;
         $checkpoints = $this->defaultProfessionalCheckpoints($startDate, $mode);
         foreach ($checkpoints as $checkpoint) {
             $systemKey = $checkpoint['system_key'];
@@ -357,7 +384,9 @@ class CandidatureTimelineService
                 [
                     'title' => $checkpoint['title'],
                     'event_date' => $checkpoint['event_date']->toDateString(),
-                    'completed' => $todayDate->gt($checkpoint['event_date']),
+                    'completed' => ($checkpoint['field'] ?? '') !== ''
+                        ? $this->isCheckpointCompleted($checkpointModel, $checkpoint['field'])
+                        : $todayDate->gt($checkpoint['event_date']),
                     'is_system_generated' => true,
                     'status' => 'approved',
                     'semester_number' => (int) $checkpoint['target_semester_number'],
@@ -367,5 +396,20 @@ class CandidatureTimelineService
         }
 
         return $this->progressSnapshot($startDate, $mode, $todayDate);
+    }
+
+    private function isCheckpointCompleted(?StudentCheckpoint $checkpoint, string $field): bool
+    {
+        if (! $checkpoint) {
+            return false;
+        }
+
+        $value = $checkpoint->{$field};
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return $value !== null;
     }
 }

@@ -5,35 +5,40 @@
 @section('content')
 
 <style>
-    .register-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: calc(100vh - 150px);
-        padding: 2rem 0;
-    }
-
-    .register-card {
-        background: var(--surface);
-        border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(124, 111, 179, 0.12);
-        overflow: hidden;
-        width: 100%;
-        max-width: 500px;
-        border: 1px solid var(--lav-200);
+    .register-page {
+        max-width: 960px;
+        margin: 0 auto;
     }
 
     .register-header {
         background: linear-gradient(135deg, var(--lav-400) 0%, var(--lav-500) 100%);
         color: white;
         padding: 2rem;
-        text-align: center;
+        border-radius: 14px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .register-header-copy {
+        max-width: 40rem;
+    }
+
+    .page-kicker {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.9;
+        margin-bottom: 0.4rem;
     }
 
     .register-header h2 {
         font-weight: 700;
-        margin-bottom: 0.5rem;
-        font-size: 1.75rem;
+        margin-bottom: 0.35rem;
+        font-size: 2rem;
         font-family: var(--font-display);
     }
 
@@ -42,8 +47,12 @@
         opacity: 0.92;
     }
 
-    .register-body {
-        padding: 2.5rem;
+    .register-panel {
+        background: var(--surface);
+        border-radius: 14px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        border: 1px solid var(--lav-200);
     }
 
     .form-group {
@@ -53,7 +62,12 @@
     .form-row {
         display: grid;
         grid-template-columns: 1.4fr 1fr;
-        gap: 0.9rem;
+        gap: 1rem;
+    }
+
+    .register-form {
+        display: grid;
+        gap: 0.2rem;
     }
 
     .form-group label {
@@ -85,8 +99,15 @@
         outline: none;
     }
 
+    .register-subsection {
+        margin-top: 0.25rem;
+        padding: 1.35rem 1.4rem;
+        border-radius: 12px;
+        background: var(--n-50);
+        border: 1px solid var(--lav-200);
+    }
+
     .btn-register {
-        width: 100%;
         padding: 0.85rem;
         font-weight: 600;
         font-size: 1rem;
@@ -95,7 +116,7 @@
         color: white;
         border: none;
         transition: all 0.25s ease;
-        margin-top: 1rem;
+        min-width: 220px;
     }
 
     .btn-register:hover {
@@ -105,26 +126,42 @@
         color: white;
     }
 
-    .success-message {
-        background: #e8f5e9;
-        color: #2e7d32;
+    .register-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+    }
+
+    .feedback-message {
         padding: 1rem;
         border-radius: 10px;
         margin-bottom: 1.5rem;
-        border-left: 4px solid #3d9970;
+        border-left: 4px solid transparent;
     }
 
-    .success-message i {
+    .feedback-message.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-left-color: #3d9970;
+    }
+
+    .feedback-message.danger {
+        background: #fff5f5;
+        color: #b42318;
+        border-left-color: #d92d20;
+    }
+
+    .feedback-message i {
         margin-right: 0.5rem;
     }
 
-    .success-message strong {
+    .feedback-message strong {
         display: block;
         margin-bottom: 0.5rem;
     }
 
     .section-note {
-        margin: -0.5rem 0 1rem;
+        margin: 0 0 1rem;
         padding: 0.9rem 1rem;
         border-radius: 10px;
         background: var(--lav-100);
@@ -134,13 +171,20 @@
     }
 
     .icon-logo {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
+        width: 74px;
+        height: 74px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
         color: var(--gold-300);
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.22);
     }
 
     @media (max-width: 576px) {
-        .register-body {
+        .register-panel {
             padding: 1.5rem;
         }
 
@@ -150,141 +194,154 @@
 
         .register-header {
             padding: 1.5rem;
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         .register-header h2 {
             font-size: 1.5rem;
         }
+
+        .register-actions {
+            justify-content: stretch;
+        }
+
+        .btn-register {
+            width: 100%;
+        }
     }
 </style>
 
-<div class="register-container">
-    <div class="register-card">
-        <div class="register-header">
-            <div class="icon-logo">
-                <i class="fas fa-user-plus"></i>
-            </div>
+<div class="register-page">
+    <div class="register-header">
+        <div class="register-header-copy">
+            <div class="page-kicker">Admin Access</div>
             <h2>{{ __('Register User') }}</h2>
-            <p>Create a new account for USMGoGrad</p>
+            <p>Create a new account for USMGoGrad using the same internal admin workflow as the other management pages.</p>
         </div>
+        <div class="icon-logo">
+            <i class="fas fa-user-plus"></i>
+        </div>
+    </div>
 
-        <div class="register-body">
-            @if(session('generated_password'))
-                <div class="success-message">
-                    <strong><i class="fas fa-check-circle"></i> User Registered Successfully!</strong>
-                    <p class="mb-0">Temporary password: <code style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">{{ session('generated_password') }}</code></p>
-                </div>
-            @endif
+    @if(session('generated_password'))
+        <div class="feedback-message success">
+            <strong><i class="fas fa-check-circle"></i> User Registered Successfully!</strong>
+            <p class="mb-0">Temporary password: <code style="background: rgba(255,255,255,0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">{{ session('generated_password') }}</code></p>
+        </div>
+    @endif
 
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <strong>Registration Failed!</strong>
-                    <ul class="mb-0 mt-2">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+    @if ($errors->any())
+        <div class="feedback-message danger">
+            <strong>Registration Failed!</strong>
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
+    <div class="register-panel">
+        <form method="POST" action="{{ route('register') }}" class="register-form">
+            @csrf
 
-                <div class="form-group">
-                    <label for="name">
-                        <i class="fas fa-user"></i> {{ __('Full Name') }}
-                    </label>
-                    <input id="name" type="text" class="form-control @error('name') is-invalid @enderror" 
-                           name="name" value="{{ old('name') }}" required autocomplete="name" 
-                           placeholder="Enter full name" autofocus>
-                    @error('name')
-                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                    @enderror
-                </div>
+            <div class="form-group">
+                <label for="name">
+                    <i class="fas fa-user"></i> {{ __('Full Name') }}
+                </label>
+                <input id="name" type="text" class="form-control @error('name') is-invalid @enderror" 
+                       name="name" value="{{ old('name') }}" required autocomplete="name" 
+                       placeholder="Enter full name" autofocus>
+                @error('name')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
 
-                <div class="form-group">
-                    <label for="email_username">
-                        <i class="fas fa-envelope"></i> {{ __('Email Address') }}
-                    </label>
-                    <div class="form-row">
-                        <input id="email_username" type="text" class="form-control @error('email_username') is-invalid @enderror"
-                               name="email_username" value="{{ old('email_username') }}" required autocomplete="username"
-                               placeholder="Email username">
-                        <select id="email_domain" name="email_domain" class="form-control @error('email_domain') is-invalid @enderror" required>
-                            @foreach(($emailDomains ?? []) as $domain => $label)
-                                <option value="{{ $domain }}" {{ old('email_domain', '@student.usm.my') === $domain ? 'selected' : '' }}>
-                                    {{ $domain }} ({{ $label }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @error('email_username')
-                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                    @enderror
-                    @error('email_domain')
-                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                    @enderror
-                    @error('email')
-                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div id="student-fields">
-                    <div class="section-note">
-                        Student registration requires the cluster, study type, and registration date so the GoT model has the right baseline context.
-                    </div>
-
-                    <div class="form-group">
-                    <label for="cluster">
-                        <i class="fas fa-layer-group"></i> {{ __('Cluster (Students only)') }}
-                    </label>
-                    <select id="cluster" name="cluster" class="form-control @error('cluster') is-invalid @enderror">
-                        <option value="">-- Select Cluster --</option>
-                        @foreach(($clusters ?? []) as $cluster)
-                            <option value="{{ $cluster }}" {{ old('cluster') === $cluster ? 'selected' : '' }}>
-                                {{ $cluster }}
+            <div class="form-group">
+                <label for="email_username">
+                    <i class="fas fa-envelope"></i> {{ __('Email Address') }}
+                </label>
+                <div class="form-row">
+                    <input id="email_username" type="text" class="form-control @error('email_username') is-invalid @enderror"
+                           name="email_username" value="{{ old('email_username') }}" required autocomplete="username"
+                           placeholder="Email username">
+                    <select id="email_domain" name="email_domain" class="form-control @error('email_domain') is-invalid @enderror" required>
+                        @foreach(($emailDomains ?? []) as $domain => $label)
+                            <option value="{{ $domain }}" {{ old('email_domain', '@student.usm.my') === $domain ? 'selected' : '' }}>
+                                {{ $domain }} ({{ $label }})
                             </option>
                         @endforeach
                     </select>
-                    @error('cluster')
-                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                    @enderror
-                    </div>
+                </div>
+                @error('email_username')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+                @error('email_domain')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+                @error('email')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
 
-                    <div class="form-group">
-                        <label for="study_mode">
-                            <i class="fas fa-user-graduate"></i> {{ __('Study Type') }}
-                        </label>
-                        <select id="study_mode" name="study_mode" class="form-control @error('study_mode') is-invalid @enderror">
-                            <option value="">-- Select Study Type --</option>
-                            @foreach(($studyModes ?? []) as $value => $label)
-                                <option value="{{ $value }}" {{ old('study_mode') === $value ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('study_mode')
-                            <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label for="start_date">
-                            <i class="fas fa-calendar-alt"></i> {{ __('Registration Date') }}
-                        </label>
-                        <input id="start_date" type="date" class="form-control @error('start_date') is-invalid @enderror"
-                               name="start_date" value="{{ old('start_date') }}">
-                        @error('start_date')
-                            <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                        @enderror
-                    </div>
+            <div id="student-fields" class="register-subsection">
+                <div class="section-note">
+                    Student registration requires the cluster, study type, and registration date so the GoT model has the right baseline context.
                 </div>
 
+                <div class="form-group">
+                <label for="cluster">
+                    <i class="fas fa-layer-group"></i> {{ __('Cluster (Students only)') }}
+                </label>
+                <select id="cluster" name="cluster" class="form-control @error('cluster') is-invalid @enderror">
+                    <option value="">-- Select Cluster --</option>
+                    @foreach(($clusters ?? []) as $cluster)
+                        <option value="{{ $cluster }}" {{ old('cluster') === $cluster ? 'selected' : '' }}>
+                            {{ $cluster }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('cluster')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="study_mode">
+                        <i class="fas fa-user-graduate"></i> {{ __('Study Type') }}
+                    </label>
+                    <select id="study_mode" name="study_mode" class="form-control @error('study_mode') is-invalid @enderror">
+                        <option value="">-- Select Study Type --</option>
+                        @foreach(($studyModes ?? []) as $value => $label)
+                            <option value="{{ $value }}" {{ old('study_mode') === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('study_mode')
+                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="start_date">
+                        <i class="fas fa-calendar-alt"></i> {{ __('Registration Date') }}
+                    </label>
+                    <input id="start_date" type="date" class="form-control @error('start_date') is-invalid @enderror"
+                           name="start_date" value="{{ old('start_date') }}">
+                    @error('start_date')
+                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="register-actions">
                 <button type="submit" class="btn btn-register">
                     <i class="fas fa-user-plus"></i> {{ __('Register') }}
                 </button>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>
 

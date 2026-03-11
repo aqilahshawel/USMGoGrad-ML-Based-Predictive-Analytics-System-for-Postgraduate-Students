@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\StudentCheckpoint;
 use App\Models\Timeline;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Services\CandidatureTimelineService;
+use App\Services\StudentCheckpointPredictionService;
+use Illuminate\Validation\ValidationException;
 
 class TimelineController extends Controller
 {
@@ -15,13 +18,16 @@ class TimelineController extends Controller
     {
         $user = auth()->user();
         $timelineService = app(CandidatureTimelineService::class);
+        $predictionService = app(StudentCheckpointPredictionService::class);
     
         $students = collect(); // Default empty collection
         $timelines = collect(); // Default empty collection
         $selectedStudentId = null; // Ensure it's always defined
+        $targetUser = null;
     
         if ($user) {
             if ($user->hasRole('student')) {
+                $targetUser = $user;
                 // Ensure default professional checkpoints exist (best-effort)
                 try {
                     if ($user->start_date && $user->study_mode) {
@@ -53,6 +59,7 @@ class TimelineController extends Controller
                     try {
                         $student = User::find($selectedStudentId);
                         if ($student && (int) $student->supervisor_id === (int) $user->id && $student->start_date && $student->study_mode) {
+                            $targetUser = $student;
                             $timelineService->syncForStudent($student);
                         }
                     } catch (\Throwable $e) {
@@ -72,18 +79,17 @@ class TimelineController extends Controller
     
         // Build progress snapshot for the target student
         $progressSnapshot = null;
-        $targetUser = null;
 
         if ($user->hasRole('student') && $user->start_date && $user->study_mode) {
             $targetUser = $user;
-        } elseif ($user->hasRole('lecturer') && $selectedStudentId) {
+        } elseif ($user->hasRole('lecturer') && $selectedStudentId && ! $targetUser) {
             $s = User::find($selectedStudentId);
-            if ($s && $s->start_date && $s->study_mode) {
+            if ($s) {
                 $targetUser = $s;
             }
         }
 
-        if ($targetUser) {
+        if ($targetUser && $targetUser->start_date && $targetUser->study_mode) {
             try {
                 $progressSnapshot = $timelineService->progressSnapshot($targetUser->start_date, $targetUser->study_mode);
             } catch (\Throwable $e) {
@@ -91,7 +97,18 @@ class TimelineController extends Controller
             }
         }
 
-        return view('timeline.index', compact('timelines', 'students', 'selectedStudentId', 'progressSnapshot'));
+        $checkpoint = $targetUser ? StudentCheckpoint::firstOrCreate(['user_id' => $targetUser->id]) : null;
+        $missingPrerequisites = $targetUser ? $predictionService->missingPrerequisites($targetUser) : [];
+
+        return view('timeline.index', compact(
+            'timelines',
+            'students',
+            'selectedStudentId',
+            'progressSnapshot',
+            'targetUser',
+            'checkpoint',
+            'missingPrerequisites'
+        ));
     }
     
     
@@ -182,6 +199,51 @@ class TimelineController extends Controller
         }
 
         return redirect()->route('timeline.index')->with('success', 'Timeline event updated.');
+    }
+
+    public function updateCheckpoint(Request $request, StudentCheckpointPredictionService $predictionService, CandidatureTimelineService $timelineService)
+    {
+        $student = Auth::user();
+        if (! $student || ! $student->hasRole('student')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'ekc500_admin_approved' => ['nullable', 'boolean'],
+            'proposal_review_date' => ['nullable', 'date'],
+            'research_review_date' => ['nullable', 'date'],
+            'nos_date' => ['nullable', 'date'],
+            'final_draft_submission_date' => ['nullable', 'date'],
+            'viva_date' => ['nullable', 'date'],
+        ]);
+
+        $validated['ekc500_admin_approved'] = (bool) $request->boolean('ekc500_admin_approved');
+
+        $checkpoint = StudentCheckpoint::firstOrCreate(['user_id' => $student->id]);
+        $this->validateCheckpointSequence(array_merge($checkpoint->toArray(), $validated));
+
+        $checkpoint->fill($validated)->save();
+
+        $warning = null;
+
+        try {
+            if ($student->start_date && $student->study_mode) {
+                $timelineService->syncForStudent($student->fresh('checkpoint'));
+            }
+        } catch (\Throwable $e) {
+            $warning = $e->getMessage();
+        }
+
+        try {
+            $predictionService->predictForStudent($student->fresh('checkpoint'));
+        } catch (\Throwable $e) {
+            $warning = $warning ? $warning . ' ' . $e->getMessage() : $e->getMessage();
+        }
+
+        return redirect()
+            ->route('timeline.index', ['tab' => 'checkpoint'])
+            ->with('success', 'Checkpoint status updated successfully.')
+            ->with('prediction_warning', $warning);
     }
 
     public function destroy(Timeline $timeline)
@@ -281,5 +343,47 @@ class TimelineController extends Controller
         $timeline->save();
 
         return redirect()->route('timeline.index')->with('success', 'Timeline request rejected.');
+    }
+
+    private function validateCheckpointSequence(array $data): void
+    {
+        $sequence = [
+            'ekc500_admin_approved' => null,
+            'proposal_review_date' => 'ekc500_admin_approved',
+            'research_review_date' => 'proposal_review_date',
+            'nos_date' => 'research_review_date',
+            'final_draft_submission_date' => 'nos_date',
+            'viva_date' => 'final_draft_submission_date',
+        ];
+
+        foreach ($sequence as $field => $requiredField) {
+            $value = $data[$field] ?? null;
+            if (! $value || ! $requiredField) {
+                continue;
+            }
+
+            $requiredValue = $data[$requiredField] ?? null;
+            if (! $requiredValue) {
+                throw ValidationException::withMessages([
+                    $field => 'Complete the previous checkpoint before updating this one.',
+                ]);
+            }
+
+            if ($requiredField === 'ekc500_admin_approved' && $requiredValue !== true) {
+                throw ValidationException::withMessages([
+                    $field => 'EKC500 admin approval must be checked before updating this checkpoint.',
+                ]);
+            }
+
+            if ($requiredField === 'ekc500_admin_approved') {
+                continue;
+            }
+
+            if ((string) $value < (string) $requiredValue) {
+                throw ValidationException::withMessages([
+                    $field => 'This checkpoint date cannot be earlier than the previous checkpoint date.',
+                ]);
+            }
+        }
     }
 }
