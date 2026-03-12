@@ -287,9 +287,10 @@
         }
 
         .card-header {
-            background: linear-gradient(135deg, var(--lav-400) 0%, var(--lav-500) 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
+            color: var(--n-900);
             border: none;
+            border-bottom: 1px solid var(--lav-200);
             font-weight: 600;
             padding: 1.25rem;
             font-family: var(--font-display);

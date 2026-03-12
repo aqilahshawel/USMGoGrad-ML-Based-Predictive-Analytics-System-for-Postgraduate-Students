@@ -36,36 +36,31 @@ return [
             'checkpoint_targets' => [
                 [
                     'key' => 'ekc500_admin_approval',
-                    'title' => 'EKC500 Admin Approval Confirmed',
-                    'description' => 'Student confirms EKC500 has been approved by admin before moving to proposal review.',
+                    'title' => 'EKC500 Approval',
                     'field' => 'ekc500_admin_approved',
                     'target_semester' => 1,
                 ],
                 [
                     'key' => 'proposal_review',
                     'title' => 'Proposal Review Date',
-                    'description' => 'Advised to be completed by the end of Semester 3 or within the first year of study.',
                     'field' => 'proposal_review_date',
                     'target_semester' => 3,
                 ],
                 [
                     'key' => 'research_review',
                     'title' => 'Research Review Date',
-                    'description' => 'Research review should be completed before Notice of Submission.',
                     'field' => 'research_review_date',
                     'target_semester' => 5,
                 ],
                 [
                     'key' => 'nos',
                     'title' => 'Notice of Submission Date',
-                    'description' => 'NOS begins the final submission sequence.',
                     'field' => 'nos_date',
                     'target_semester' => 7,
                 ],
                 [
                     'key' => 'final_draft_submission',
                     'title' => 'Final Draft Submission Date',
-                    'description' => 'Usually follows around 2 weeks after NOS.',
                     'field' => 'final_draft_submission_date',
                     'relative_to' => 'nos',
                     'offset_weeks' => 2,
@@ -73,7 +68,6 @@ return [
                 [
                     'key' => 'viva',
                     'title' => 'Viva Date',
-                    'description' => 'Usually follows about 12 weeks after NOS.',
                     'field' => 'viva_date',
                     'relative_to' => 'nos',
                     'offset_weeks' => 12,
@@ -110,36 +104,31 @@ return [
             'checkpoint_targets' => [
                 [
                     'key' => 'ekc500_admin_approval',
-                    'title' => 'EKC500 Admin Approval Confirmed',
-                    'description' => 'Student confirms EKC500 has been approved by admin before moving to proposal review.',
+                    'title' => 'EKC500 Approval',
                     'field' => 'ekc500_admin_approved',
                     'target_semester' => 1,
                 ],
                 [
                     'key' => 'proposal_review',
                     'title' => 'Proposal Review Date',
-                    'description' => 'Advised to be completed by the end of Semester 3 or within the first year of study.',
                     'field' => 'proposal_review_date',
                     'target_semester' => 3,
                 ],
                 [
                     'key' => 'research_review',
                     'title' => 'Research Review Date',
-                    'description' => 'Research review should be completed before Notice of Submission.',
                     'field' => 'research_review_date',
                     'target_semester' => 7,
                 ],
                 [
                     'key' => 'nos',
                     'title' => 'Notice of Submission Date',
-                    'description' => 'NOS begins the final submission sequence.',
                     'field' => 'nos_date',
                     'target_semester' => 11,
                 ],
                 [
                     'key' => 'final_draft_submission',
                     'title' => 'Final Draft Submission Date',
-                    'description' => 'Usually follows around 2 weeks after NOS.',
                     'field' => 'final_draft_submission_date',
                     'relative_to' => 'nos',
                     'offset_weeks' => 2,
@@ -147,7 +136,6 @@ return [
                 [
                     'key' => 'viva',
                     'title' => 'Viva Date',
-                    'description' => 'Usually follows about 12 weeks after NOS.',
                     'field' => 'viva_date',
                     'relative_to' => 'nos',
                     'offset_weeks' => 12,

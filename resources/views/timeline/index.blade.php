@@ -28,12 +28,12 @@
     ];
 
     $checkpointInputs = [
-        ['field' => 'ekc500_admin_approved', 'title' => 'EKC500 Admin Approval Checked', 'note' => 'Tick this once EKC500 admin approval has passed.'],
-        ['field' => 'proposal_review_date', 'title' => 'Proposal Review Date', 'note' => 'Advised to be completed by the end of Semester 3 or within the first year of study.'],
-        ['field' => 'research_review_date', 'title' => 'Research Review Date', 'note' => 'Must be completed before Notice of Submission.'],
-        ['field' => 'nos_date', 'title' => 'Notice of Submission Date', 'note' => 'Notice of Submission starts the final submission sequence.'],
-        ['field' => 'final_draft_submission_date', 'title' => 'Final Draft Submission Date', 'note' => 'Usually follows about 2 weeks after NOS.'],
-        ['field' => 'viva_date', 'title' => 'Viva Date', 'note' => 'Usually follows after final draft review and examiner processing.'],
+        ['field' => 'ekc500_admin_approved', 'title' => 'EKC500 Admin Approval Checked'],
+        ['field' => 'proposal_review_date', 'title' => 'Proposal Review Date'],
+        ['field' => 'research_review_date', 'title' => 'Research Review Date'],
+        ['field' => 'nos_date', 'title' => 'Notice of Submission Date'],
+        ['field' => 'final_draft_submission_date', 'title' => 'Final Draft Submission Date'],
+        ['field' => 'viva_date', 'title' => 'Viva Date'],
     ];
 
     $systemStops = $timelines
@@ -60,47 +60,69 @@
 @endphp
 
 <style>
-    .checkpoint-shell {
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 2rem 1rem 3rem;
+    .timeline-page {
+        padding-bottom: 2rem;
     }
 
-    .checkpoint-card {
-        background: var(--surface);
-        border: 1px solid var(--lav-200);
-        border-radius: 18px;
-        box-shadow: 0 10px 28px rgba(124, 111, 179, 0.08);
-        overflow: hidden;
-    }
-
-    .checkpoint-header {
-        padding: 1.35rem 1.5rem 1rem;
-        border-bottom: 1px solid var(--lav-200);
+    .timeline-hero {
         background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
+        color: var(--n-900);
+        padding: 1.6rem 2rem;
+        border-radius: 14px;
+        margin-bottom: 1rem;
+        border: 1px solid var(--lav-200);
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
     }
 
-    .checkpoint-header h2,
-    .checkpoint-header h3,
-    .checkpoint-header h4 {
+    .timeline-hero h2,
+    .timeline-hero h3,
+    .timeline-hero h4 {
         margin: 0;
         color: var(--n-900);
         font-family: var(--font-display);
     }
 
-    .checkpoint-header p {
+    .timeline-hero p {
         margin: 0.35rem 0 0;
         color: var(--n-700);
     }
 
-    .checkpoint-body {
-        padding: 1.5rem;
+    .timeline-toolbar {
+        margin-bottom: 1rem;
+    }
+
+    .timeline-panel {
+        background: var(--surface);
+        border: 1px solid var(--lav-200);
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+    }
+
+    .timeline-panel-header {
+        padding: 1.15rem 1.35rem 0.75rem;
+    }
+
+    .timeline-panel-header h3,
+    .timeline-panel-header h4,
+    .timeline-panel-header h5 {
+        margin: 0;
+        color: var(--n-900);
+        font-family: var(--font-display);
+    }
+
+    .timeline-panel-header p {
+        margin: 0.35rem 0 0;
+        color: var(--n-700);
+    }
+
+    .timeline-panel-body {
+        padding: 0 1.35rem 1.35rem;
     }
 
     .timeline-tabs {
         display: flex;
         gap: 0.65rem;
-        margin: 1.5rem 0 1rem;
+        margin: 0 0 1rem;
         border-bottom: none;
     }
 
@@ -345,6 +367,11 @@
         gap: 1.5rem;
     }
 
+    .timeline-tab-section {
+        display: grid;
+        gap: 1.25rem;
+    }
+
     .checkpoint-form-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -497,6 +524,10 @@
     }
 
     @media (max-width: 768px) {
+        .timeline-hero {
+            padding: 1.35rem 1.15rem;
+        }
+
         .road-path::before {
             left: 20px;
         }
@@ -527,42 +558,40 @@
     }
 </style>
 
-<div class="checkpoint-shell">
-    <div class="checkpoint-card">
-        <div class="checkpoint-header">
-            <h2><i class="fas fa-route"></i> Timeline And Checkpoint Tracking</h2>
-            <p>The roadmap follows the real candidature flow: EKC500 approval, proposal review, research review, Notice of Submission, final draft submission, and viva.</p>
-        </div>
-        <div class="checkpoint-body">
-            @if(session('success'))
-                <div class="alert alert-success mb-3">{{ session('success') }}</div>
-            @endif
+<div class="timeline-page">
+    <section class="timeline-hero">
+        <h2><i class="fas fa-route"></i> Timeline Tracking</h2>
+    </section>
 
-            @if(session('prediction_warning'))
-                <div class="alert alert-warning mb-3">{{ session('prediction_warning') }}</div>
-            @endif
+    @if(session('success'))
+        <div class="alert alert-success mb-3">{{ session('success') }}</div>
+    @endif
 
-            @if(auth()->user()->hasRole('lecturer') && $students->isNotEmpty())
-                <div class="checkpoint-card mb-4">
-                    <div class="checkpoint-body">
-                        <form method="GET" action="{{ route('timeline.index') }}">
-                            <label for="student_id" class="form-label fw-semibold">Select Student</label>
-                            <select id="student_id" name="student_id" class="checkpoint-select" onchange="this.form.submit()">
-                                @foreach($students as $student)
-                                    <option value="{{ $student->id }}" {{ (int) $selectedStudentId === (int) $student->id ? 'selected' : '' }}>
-                                        {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
-                                    </option>
-                                @endforeach
-                            </select>
-                            @if($activeTab === 'checkpoint')
-                                <input type="hidden" name="tab" value="checkpoint">
-                            @endif
-                        </form>
-                    </div>
-                </div>
-            @endif
+    @if(session('prediction_warning'))
+        <div class="alert alert-warning mb-3">{{ session('prediction_warning') }}</div>
+    @endif
 
-            <ul class="nav timeline-tabs" role="tablist">
+    @if(auth()->user()->hasRole('lecturer') && $students->isNotEmpty())
+        <section class="timeline-panel timeline-toolbar">
+            <div class="timeline-panel-body pt-3">
+                <form method="GET" action="{{ route('timeline.index') }}">
+                    <label for="student_id" class="form-label fw-semibold">Select Student</label>
+                    <select id="student_id" name="student_id" class="checkpoint-select" onchange="this.form.submit()">
+                        @foreach($students as $student)
+                            <option value="{{ $student->id }}" {{ (int) $selectedStudentId === (int) $student->id ? 'selected' : '' }}>
+                                {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
+                            </option>
+                        @endforeach
+                    </select>
+                    @if($activeTab === 'checkpoint')
+                        <input type="hidden" name="tab" value="checkpoint">
+                    @endif
+                </form>
+            </div>
+        </section>
+    @endif
+
+    <ul class="nav timeline-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link {{ $activeTab === 'roadmap' ? 'active' : '' }}" id="roadmap-tab" data-bs-toggle="tab" data-bs-target="#roadmap-panel" type="button" role="tab" aria-selected="{{ $activeTab === 'roadmap' ? 'true' : 'false' }}">
                         <i class="fas fa-map"></i> Timeline Roadmap
@@ -570,13 +599,14 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link {{ $activeTab === 'checkpoint' ? 'active' : '' }}" id="checkpoint-tab" data-bs-toggle="tab" data-bs-target="#checkpoint-panel" type="button" role="tab" aria-selected="{{ $activeTab === 'checkpoint' ? 'true' : 'false' }}">
-                        <i class="fas fa-brain"></i> Checkpoint Updates
+                        <i class="fas fa-brain"></i> Timeline Update
                     </button>
                 </li>
             </ul>
 
             <div class="tab-content">
                 <div class="tab-pane fade {{ $activeTab === 'roadmap' ? 'show active' : '' }}" id="roadmap-panel" role="tabpanel" aria-labelledby="roadmap-tab">
+                    <div class="timeline-tab-section">
                     @if($progressSnapshot)
                         <div class="progress-summary">
                             <div class="progress-card risk-{{ $progressSnapshot['risk_status'] }}">
@@ -606,12 +636,11 @@
                     @endif
 
                     @if(auth()->user()->hasRole('student'))
-                        <div class="checkpoint-card mb-4">
-                            <div class="checkpoint-header">
-                                <h4>Additional Timeline Event</h4>
-                                <p>Use this only for extra timeline events that sit outside the core candidature checkpoints.</p>
+                        <section class="timeline-panel">
+                            <div class="timeline-panel-header">
+                                <h4>Add New Event</h4>
                             </div>
-                            <div class="checkpoint-body timeline-form">
+                            <div class="timeline-panel-body timeline-form">
                                 <form action="{{ route('timeline.store') }}" method="POST">
                                     @csrf
                                     <div class="timeline-form-grid">
@@ -631,7 +660,7 @@
                                     </div>
                                 </form>
                             </div>
-                        </div>
+                        </section>
                     @endif
 
                     @if($systemStops->isNotEmpty())
@@ -688,22 +717,6 @@
                                             @endif
                                         </div>
 
-                                        <div class="road-card-description">
-                                            @if($key === 'ekc500_admin_approval')
-                                                Confirm the EKC500 admin approval before moving to proposal review.
-                                            @elseif($key === 'proposal_review')
-                                                Proposal review should be completed by the end of Semester 3 or within one year from the start of study.
-                                            @elseif($key === 'research_review')
-                                                Research review must be completed before the student can proceed to Notice of Submission.
-                                            @elseif($key === 'nos')
-                                                Notice of Submission starts the final submission sequence.
-                                            @elseif($key === 'final_draft_submission')
-                                                Final draft usually follows around 2 weeks after the Notice of Submission.
-                                            @elseif($key === 'viva')
-                                                Viva typically comes after the final draft and examiner processing window.
-                                            @endif
-                                        </div>
-
                                         @if($actualField === 'ekc500_admin_approved' && $actualValue)
                                             <div class="checkpoint-pill">Passed</div>
                                         @elseif($actualValue)
@@ -734,12 +747,12 @@
 
                     @if($customRows->isNotEmpty())
                         <div class="additional-events">
-                            <div class="checkpoint-card">
-                                <div class="checkpoint-header">
+                            <section class="timeline-panel">
+                                <div class="timeline-panel-header">
                                     <h4>Additional Timeline Events</h4>
                                     <p>Extra events outside the core candidature checkpoint sequence.</p>
                                 </div>
-                                <div class="checkpoint-body">
+                                <div class="timeline-panel-body">
                                     @foreach($customRows as $row)
                                         <div class="additional-event-item">
                                             <div class="additional-event-header">
@@ -776,20 +789,20 @@
                                         </div>
                                     @endforeach
                                 </div>
-                            </div>
+                            </section>
                         </div>
                     @endif
+                    </div>
                 </div>
 
                 <div class="tab-pane fade {{ $activeTab === 'checkpoint' ? 'show active' : '' }}" id="checkpoint-panel" role="tabpanel" aria-labelledby="checkpoint-tab">
                     @if($targetUser)
                         <div class="checkpoint-grid">
-                            <section class="checkpoint-card">
-                                <div class="checkpoint-header">
+                            <section class="timeline-panel">
+                                <div class="timeline-panel-header">
                                     <h3>Checkpoint Updates</h3>
-                                    <p>{{ $targetUser->name }} updates the actual checkpoint completion dates here.</p>
                                 </div>
-                                <div class="checkpoint-body">
+                                <div class="timeline-panel-body">
                                     <div class="checkpoint-meta">
                                         <span class="checkpoint-pill">Cluster: {{ $targetUser->cluster ?? 'Missing' }}</span>
                                         <span class="checkpoint-pill">Study Type: {{ $targetUser->study_mode ? str_replace('_', ' ', ucwords($targetUser->study_mode, '_')) : 'Missing' }}</span>
@@ -834,7 +847,6 @@
                                                                 class="@error($input['field']) is-invalid @enderror"
                                                             >
                                                         @endif
-                                                        <small>{{ $input['note'] }}</small>
                                                         @error($input['field'])
                                                             <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
                                                         @enderror
@@ -843,7 +855,7 @@
                                             </div>
 
                                             <div class="mt-3">
-                                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Checkpoint Status</button>
+                                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update</button>
                                             </div>
                                         </form>
                                     @else
@@ -852,7 +864,6 @@
                                                 <div class="checkpoint-field">
                                                     <label>{{ $input['title'] }}</label>
                                                     <input type="text" value="{{ $input['field'] === 'ekc500_admin_approved' ? (($checkpoint->{$input['field']} ?? false) ? 'Passed' : 'Not passed yet') : (optional($checkpoint->{$input['field']})->format('d M Y') ?? 'Not submitted') }}" disabled>
-                                                    <small>{{ $input['note'] }}</small>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -861,12 +872,11 @@
                             </section>
 
                             <aside class="prediction-panel">
-                                <section class="checkpoint-card">
-                                    <div class="checkpoint-header">
+                                <section class="timeline-panel">
+                                    <div class="timeline-panel-header">
                                         <h3>Prediction Output</h3>
-                                        <p>Probability-based early warning from the trained GoT classifier.</p>
                                     </div>
-                                    <div class="checkpoint-body">
+                                    <div class="timeline-panel-body">
                                         @if(!is_null($checkpoint->got_probability))
                                             <div class="prediction-hero">
                                                 <div class="text-uppercase small fw-semibold text-muted">GoT Probability</div>
@@ -904,18 +914,6 @@
                                         @endif
                                     </div>
                                 </section>
-
-                                <section class="checkpoint-card">
-                                    <div class="checkpoint-header">
-                                        <h3>Why Timing Matters</h3>
-                                        <p>The machine-learning model learns from the timing gap between checkpoints.</p>
-                                    </div>
-                                    <div class="checkpoint-body">
-                                        <div class="checkpoint-note info">
-                                            Early completion of checkpoints such as proposal review can become a positive signal, while delayed completion raises risk and creates earlier reminders for both student and lecturer.
-                                        </div>
-                                    </div>
-                                </section>
                             </aside>
                         </div>
                     @else
@@ -929,8 +927,6 @@
                     @endif
                 </div>
             </div>
-        </div>
-    </div>
 </div>
 
 @if(auth()->user()->hasRole('student'))

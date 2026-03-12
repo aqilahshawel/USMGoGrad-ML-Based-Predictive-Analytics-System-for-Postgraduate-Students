@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Services\CandidatureTimelineService;
+use App\Services\OverdueCheckpointNotificationService;
 use App\Services\StudentCheckpointPredictionService;
 use Illuminate\Validation\ValidationException;
 
@@ -18,6 +19,7 @@ class TimelineController extends Controller
     {
         $user = auth()->user();
         $timelineService = app(CandidatureTimelineService::class);
+        $overdueNotificationService = app(OverdueCheckpointNotificationService::class);
         $predictionService = app(StudentCheckpointPredictionService::class);
     
         $students = collect(); // Default empty collection
@@ -94,6 +96,12 @@ class TimelineController extends Controller
                 $progressSnapshot = $timelineService->progressSnapshot($targetUser->start_date, $targetUser->study_mode);
             } catch (\Throwable $e) {
                 // ignore
+            }
+
+            try {
+                $overdueNotificationService->dispatchForStudent($targetUser->fresh('supervisor'));
+            } catch (\Throwable $e) {
+                // Ignore notification failures to keep timeline page available
             }
         }
 
@@ -201,7 +209,12 @@ class TimelineController extends Controller
         return redirect()->route('timeline.index')->with('success', 'Timeline event updated.');
     }
 
-    public function updateCheckpoint(Request $request, StudentCheckpointPredictionService $predictionService, CandidatureTimelineService $timelineService)
+    public function updateCheckpoint(
+        Request $request,
+        StudentCheckpointPredictionService $predictionService,
+        CandidatureTimelineService $timelineService,
+        OverdueCheckpointNotificationService $overdueNotificationService
+    )
     {
         $student = Auth::user();
         if (! $student || ! $student->hasRole('student')) {
@@ -236,6 +249,12 @@ class TimelineController extends Controller
 
         try {
             $predictionService->predictForStudent($student->fresh('checkpoint'));
+        } catch (\Throwable $e) {
+            $warning = $warning ? $warning . ' ' . $e->getMessage() : $e->getMessage();
+        }
+
+        try {
+            $overdueNotificationService->dispatchForStudent($student->fresh('supervisor'));
         } catch (\Throwable $e) {
             $warning = $warning ? $warning . ' ' . $e->getMessage() : $e->getMessage();
         }

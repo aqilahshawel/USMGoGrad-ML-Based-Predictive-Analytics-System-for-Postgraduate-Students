@@ -11,8 +11,8 @@
     }
 
     .register-header {
-        background: linear-gradient(135deg, var(--lav-400) 0%, var(--lav-500) 100%);
-        color: white;
+        background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
+        color: var(--n-900);
         padding: 2rem;
         border-radius: 14px;
         margin-bottom: 2rem;
@@ -20,6 +20,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 1.5rem;
+        border: 1px solid var(--lav-200);
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
     }
 
     .register-header-copy {
@@ -31,7 +33,7 @@
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        opacity: 0.9;
+        color: var(--lav-500);
         margin-bottom: 0.4rem;
     }
 
@@ -40,11 +42,12 @@
         margin-bottom: 0.35rem;
         font-size: 2rem;
         font-family: var(--font-display);
+        color: var(--n-900);
     }
 
     .register-header p {
         margin: 0;
-        opacity: 0.92;
+        color: var(--n-700);
     }
 
     .register-panel {
@@ -178,9 +181,9 @@
         align-items: center;
         justify-content: center;
         font-size: 2rem;
-        color: var(--gold-300);
-        background: rgba(255, 255, 255, 0.14);
-        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: var(--lav-500);
+        background: var(--lav-100);
+        border: 1px solid var(--lav-200);
     }
 
     @media (max-width: 576px) {

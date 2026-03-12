@@ -9,7 +9,9 @@ use App\Models\StudentCheckpoint;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Services\CandidatureTimelineService;
+use App\Services\OverdueCheckpointNotificationService;
 use App\Services\StudentCheckpointPredictionService;
+use App\Notifications\CheckpointOverdueReminderNotification;
 
 class HomeController extends Controller
 {
@@ -17,6 +19,7 @@ class HomeController extends Controller
     {
         $user = auth()->user();
         $timelineService = app(CandidatureTimelineService::class);
+        $overdueNotificationService = app(OverdueCheckpointNotificationService::class);
         $predictionService = app(StudentCheckpointPredictionService::class);
     
         $students = collect();
@@ -37,6 +40,8 @@ class HomeController extends Controller
         $dashboardCheckpoint = null;
         $dashboardMissingPrerequisites = [];
         $predictionWarning = null;
+        $recentOverdueNotifications = collect();
+        $unreadOverdueCount = 0;
     
         if ($user) {
             if ($user->hasRole('student')) {
@@ -103,6 +108,26 @@ class HomeController extends Controller
                 $predictionService,
                 $dashboardMissingPrerequisites
             );
+
+            if ($dashboardTargetUser->start_date && $dashboardTargetUser->study_mode) {
+                try {
+                    $overdueNotificationService->dispatchForStudent($dashboardTargetUser->fresh('supervisor'));
+                } catch (\Throwable $e) {
+                    // Ignore notification failures in dashboard rendering
+                }
+            }
+        }
+
+        if ($user) {
+            $recentOverdueNotifications = $user->notifications()
+                ->where('type', CheckpointOverdueReminderNotification::class)
+                ->latest()
+                ->limit(5)
+                ->get();
+
+            $unreadOverdueCount = $user->unreadNotifications()
+                ->where('type', CheckpointOverdueReminderNotification::class)
+                ->count();
         }
     
         return view('home', compact(
@@ -117,7 +142,9 @@ class HomeController extends Controller
             'dashboardTargetUser',
             'dashboardCheckpoint',
             'dashboardMissingPrerequisites',
-            'predictionWarning'
+            'predictionWarning',
+            'recentOverdueNotifications',
+            'unreadOverdueCount'
         ));
     }
 

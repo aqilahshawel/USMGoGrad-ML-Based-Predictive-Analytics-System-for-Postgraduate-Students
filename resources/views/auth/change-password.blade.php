@@ -3,11 +3,13 @@
 @section('styles')
 <style>
     .password-header {
-        background: linear-gradient(135deg, var(--lav-400) 0%, var(--lav-500) 100%);
-        color: white;
+        background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
+        color: var(--n-900);
         padding: 2rem;
         border-radius: 14px;
         margin-bottom: 2rem;
+        border: 1px solid var(--lav-200);
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
     }
     .password-header h2 {
         font-family: var(--font-display);
