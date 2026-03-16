@@ -3,8 +3,10 @@
 use Illuminate\Foundation\Console\ClosureCommand;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use App\Models\User;
 use App\Services\CandidatureTimelineService;
+use App\Services\OverdueCheckpointNotificationService;
 use App\Services\StudentCheckpointPredictionService;
 
 Artisan::command('inspire', function () {
@@ -115,4 +117,58 @@ Artisan::command('ml:predict-got {studentId? : Student user id} {--all : Predict
 
     return self::SUCCESS;
 })->purpose('Run GoT ML predictions for student checkpoints');
+
+Artisan::command('assistant:dispatch-reminders {studentId? : Student user id} {--all : Send reminders for all students}', function () {
+    /** @var ClosureCommand $this */
+    $service = app(OverdueCheckpointNotificationService::class);
+
+    $studentId = $this->argument('studentId');
+    $all = (bool) $this->option('all');
+
+    if (! $all && ! $studentId) {
+        $this->error('Provide a studentId or use --all');
+        return self::FAILURE;
+    }
+
+    $query = User::role('student');
+    if (! $all) {
+        $query->whereKey($studentId);
+    }
+
+    $students = $query->get();
+    if ($students->isEmpty()) {
+        $this->error('No matching student(s) found.');
+        return self::FAILURE;
+    }
+
+    $processed = 0;
+    $sent = 0;
+    $failed = 0;
+
+    foreach ($students as $student) {
+        try {
+            $processed++;
+            $dispatched = $service->dispatchForStudent($student->fresh('supervisor'));
+            $sent += $dispatched;
+
+            $this->line(sprintf(
+                'Student %d (%s): dispatched %d reminder(s).',
+                $student->id,
+                $student->name,
+                $dispatched
+            ));
+        } catch (\Throwable $e) {
+            $failed++;
+            $this->warn(sprintf('Skipped student %d: %s', $student->id, $e->getMessage()));
+        }
+    }
+
+    $this->info(sprintf('Done. Processed=%d, sent=%d, failed=%d', $processed, $sent, $failed));
+
+    return self::SUCCESS;
+})->purpose('Dispatch overdue checkpoint reminders for students and supervisors');
+
+Schedule::command('assistant:dispatch-reminders --all')
+    ->dailyAt('09:00')
+    ->withoutOverlapping();
 

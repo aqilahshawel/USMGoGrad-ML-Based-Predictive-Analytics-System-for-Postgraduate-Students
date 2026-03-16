@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\StudentAssistantService;
 use Illuminate\Http\Request;
-use App\Models\Schedule;
+use Illuminate\Support\Str;
 use Google\Cloud\Dialogflow\V2\Client\SessionsClient;
 use Google\Cloud\Dialogflow\V2\DetectIntentRequest;
 use Google\Cloud\Dialogflow\V2\QueryInput;
@@ -11,14 +12,8 @@ use Google\Cloud\Dialogflow\V2\TextInput;
 
 class ChatbotController extends Controller
 {
-    /**
-     * Display the chatbot view.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function index()
+    public function __construct(private readonly StudentAssistantService $assistantService)
     {
-        return view('chatbot');
     }
 
     /**
@@ -29,7 +24,28 @@ class ChatbotController extends Controller
      */
     public function sendMessage(Request $request)
     {
-        $message = $request->input('message');
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'max:3000'],
+        ]);
+
+        $message = trim((string) $validated['message']);
+
+        if ($request->user()) {
+            try {
+                $assistantReply = $this->assistantService->tryHandle($request->user(), $message);
+
+                if ($assistantReply !== null) {
+                    $payload = ['reply' => $assistantReply];
+                    if (Str::startsWith(trim($assistantReply), '<')) {
+                        $payload['html'] = true;
+                    }
+                    return response()->json($payload);
+                }
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+        }
+
         $projectId = env('DIALOGFLOW_PROJECT_ID');
         $sessionId = session()->getId();
         $sessionClient = new SessionsClient([

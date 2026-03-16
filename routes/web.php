@@ -103,7 +103,6 @@ Route::middleware(['auth', 'role:lecturer'])->group(function () {
 
 // ChatBot Routes
 Route::middleware(['auth', 'role:student'])->group(function () {
-    Route::get('/chatbot', [ChatBotController::class, 'index'])->name('chatbot.index');
     Route::post('/chatbot/message', [ChatBotController::class, 'sendMessage'])->name('chatbot.message');
 });
 
