@@ -5,10 +5,6 @@
 @section('content')
 
 <style>
-    .register-page {
-        max-width: 960px;
-        margin: 0 auto;
-    }
 
     .register-header {
         background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
@@ -16,46 +12,29 @@
         padding: 2rem;
         border-radius: 14px;
         margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1.5rem;
         border: 1px solid var(--lav-200);
         box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
-    }
-
-    .register-header-copy {
-        max-width: 40rem;
-    }
-
-    .page-kicker {
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--lav-500);
-        margin-bottom: 0.4rem;
     }
 
     .register-header h2 {
         font-weight: 700;
-        margin-bottom: 0.35rem;
+        margin: 0;
         font-size: 2rem;
         font-family: var(--font-display);
-        color: var(--n-900);
     }
 
-    .register-header p {
-        margin: 0;
-        color: var(--n-700);
-    }
-
-    .register-panel {
+    .register-form-section {
         background: var(--surface);
         border-radius: 14px;
         padding: 2rem;
         box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        margin-bottom: 2rem;
         border: 1px solid var(--lav-200);
+    }
+
+    .register-form-section h4 {
+        font-family: var(--font-display);
+        color: var(--lav-500);
     }
 
     .form-group {
@@ -64,8 +43,9 @@
 
     .form-row {
         display: grid;
-        grid-template-columns: 1.4fr 1fr;
-        gap: 1rem;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
     }
 
     .register-form {
@@ -88,38 +68,39 @@
         font-size: 1rem;
     }
 
-    .form-control {
+    .form-control,
+    .form-select {
         border-radius: 8px;
         border: 1.5px solid var(--n-200);
-        padding: 0.8rem 1rem;
+        padding: 0.85rem 1rem;
         font-size: 0.95rem;
         transition: all 0.25s ease;
     }
 
-    .form-control:focus {
+    .form-control:focus,
+    .form-select:focus {
         border-color: var(--lav-400);
         box-shadow: 0 0 0 3px rgba(124, 111, 179, 0.12);
         outline: none;
     }
 
     .register-subsection {
-        margin-top: 0.25rem;
-        padding: 1.35rem 1.4rem;
+        background: var(--surface);
         border-radius: 12px;
-        background: var(--n-50);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
         border: 1px solid var(--lav-200);
     }
 
     .btn-register {
-        padding: 0.85rem;
-        font-weight: 600;
-        font-size: 1rem;
-        border-radius: 8px;
         background: var(--lav-500);
         color: white;
+        padding: 0.85rem 1.5rem;
+        font-weight: 600;
+        border-radius: 8px;
         border: none;
         transition: all 0.25s ease;
-        min-width: 220px;
+        cursor: pointer;
     }
 
     .btn-register:hover {
@@ -132,7 +113,7 @@
     .register-actions {
         display: flex;
         justify-content: flex-end;
-        margin-top: 0.5rem;
+        margin-top: 1.5rem;
     }
 
     .feedback-message {
@@ -173,36 +154,17 @@
         font-size: 0.9rem;
     }
 
-    .icon-logo {
-        width: 74px;
-        height: 74px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        color: var(--lav-500);
-        background: var(--lav-100);
-        border: 1px solid var(--lav-200);
-    }
-
-    @media (max-width: 576px) {
-        .register-panel {
-            padding: 1.5rem;
-        }
-
+    @media (max-width: 768px) {
         .form-row {
             grid-template-columns: 1fr;
         }
 
-        .register-header {
-            padding: 1.5rem;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
         .register-header h2 {
             font-size: 1.5rem;
+        }
+
+        .register-form-section {
+            padding: 1.5rem;
         }
 
         .register-actions {
@@ -217,14 +179,7 @@
 
 <div class="register-page">
     <div class="register-header">
-        <div class="register-header-copy">
-            <div class="page-kicker">Admin Access</div>
-            <h2>{{ __('Register User') }}</h2>
-            <p>Create a new account for USMGoGrad using the same internal admin workflow as the other management pages.</p>
-        </div>
-        <div class="icon-logo">
-            <i class="fas fa-user-plus"></i>
-        </div>
+        <h2><i class="fas fa-user-plus"></i> {{ __('Register User') }}</h2>
     </div>
 
     @if(session('generated_password'))
@@ -245,10 +200,13 @@
         </div>
     @endif
 
-    <div class="register-panel">
-        <form method="POST" action="{{ route('register') }}" class="register-form">
-            @csrf
+    <form method="POST" action="{{ route('register') }}" class="register-form">
+        @csrf
 
+        <!-- Basic Information Section -->
+        <div class="register-form-section">
+            <h4 class="mb-3"><i class="fas fa-user"></i> Basic Information</h4>
+            
             <div class="form-group">
                 <label for="name">
                     <i class="fas fa-user"></i> {{ __('Full Name') }}
@@ -269,7 +227,7 @@
                     <input id="email_username" type="text" class="form-control @error('email_username') is-invalid @enderror"
                            name="email_username" value="{{ old('email_username') }}" required autocomplete="username"
                            placeholder="Email username">
-                    <select id="email_domain" name="email_domain" class="form-control @error('email_domain') is-invalid @enderror" required>
+                    <select id="email_domain" name="email_domain" class="form-select @error('email_domain') is-invalid @enderror" required>
                         @foreach(($emailDomains ?? []) as $domain => $label)
                             <option value="{{ $domain }}" {{ old('email_domain', '@student.usm.my') === $domain ? 'selected' : '' }}>
                                 {{ $domain }} ({{ $label }})
@@ -287,17 +245,21 @@
                     <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
                 @enderror
             </div>
+        </div>
 
-            <div id="student-fields" class="register-subsection">
-                <div class="section-note">
-                    Student registration requires the cluster, study type, and registration date so the GoT model has the right baseline context.
-                </div>
+        <!-- Student Information Section -->
+        <div id="student-fields" class="register-form-section">
+            <h4 class="mb-3"><i class="fas fa-layer-group"></i> Student Information</h4>
+            
+            <div class="section-note">
+                <i class="fas fa-info-circle"></i> Student registration requires the cluster, study type, and registration date so the GoT model has the right baseline context.
+            </div>
 
-                <div class="form-group">
+            <div class="form-group">
                 <label for="cluster">
-                    <i class="fas fa-layer-group"></i> {{ __('Cluster (Students only)') }}
+                    <i class="fas fa-layer-group"></i> {{ __('Cluster') }}
                 </label>
-                <select id="cluster" name="cluster" class="form-control @error('cluster') is-invalid @enderror">
+                <select id="cluster" name="cluster" class="form-select @error('cluster') is-invalid @enderror">
                     <option value="">-- Select Cluster --</option>
                     @foreach(($clusters ?? []) as $cluster)
                         <option value="{{ $cluster }}" {{ old('cluster') === $cluster ? 'selected' : '' }}>
@@ -308,55 +270,54 @@
                 @error('cluster')
                     <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
                 @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="study_mode">
-                        <i class="fas fa-user-graduate"></i> {{ __('Study Type') }}
-                    </label>
-                    <select id="study_mode" name="study_mode" class="form-control @error('study_mode') is-invalid @enderror">
-                        <option value="">-- Select Study Type --</option>
-                        @foreach(($studyModes ?? []) as $value => $label)
-                            <option value="{{ $value }}" {{ old('study_mode') === $value ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('study_mode')
-                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="start_date">
-                        <i class="fas fa-calendar-alt"></i> {{ __('Registration Date') }}
-                    </label>
-                    <input id="start_date" type="date" class="form-control @error('start_date') is-invalid @enderror"
-                           name="start_date" value="{{ old('start_date') }}">
-                    @error('start_date')
-                        <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                    @enderror
-                </div>
             </div>
 
-            <div class="register-actions">
-                <button type="submit" class="btn btn-register">
-                    <i class="fas fa-user-plus"></i> {{ __('Register') }}
-                </button>
+            <div class="form-group">
+                <label for="study_mode">
+                    <i class="fas fa-user-graduate"></i> {{ __('Study Type') }}
+                </label>
+                <select id="study_mode" name="study_mode" class="form-select @error('study_mode') is-invalid @enderror">
+                    <option value="">-- Select Study Type --</option>
+                    @foreach(($studyModes ?? []) as $value => $label)
+                        <option value="{{ $value }}" {{ old('study_mode') === $value ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('study_mode')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
             </div>
-        </form>
-    </div>
+
+            <div class="form-group">
+                <label for="start_date">
+                    <i class="fas fa-calendar-alt"></i> {{ __('Registration Date') }}
+                </label>
+                <input id="start_date" type="date" class="form-control @error('start_date') is-invalid @enderror"
+                       name="start_date" value="{{ old('start_date') }}">
+                @error('start_date')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
+
+        <div class="register-actions">
+            <button type="submit" class="btn-register">
+                <i class="fas fa-user-plus"></i> {{ __('Register') }}
+            </button>
+        </div>
+    </form>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const emailDomainField = document.getElementById('email_domain');
-        const studentFields = document.getElementById('student-fields');
-        const studentOnlyInputs = studentFields.querySelectorAll('select, input');
+        const studentFieldsSection = document.getElementById('student-fields');
+        const studentOnlyInputs = studentFieldsSection.querySelectorAll('select, input');
 
         function syncRegistrationFields() {
             const isStudent = emailDomainField.value === '@student.usm.my';
-            studentFields.style.display = isStudent ? 'block' : 'none';
+            studentFieldsSection.style.display = isStudent ? 'block' : 'none';
 
             studentOnlyInputs.forEach(function (field) {
                 if (isStudent) {

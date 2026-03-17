@@ -677,7 +677,7 @@
             <h1><i class="fas fa-user-circle"></i> Welcome, {{ Auth::user()->name }}!</h1>
             <p class="lead">
                 @if(Auth::user()->hasRole('admin'))
-                    Oversee supervisor allocation and student readiness across USMGoGrad
+                    Manage academic journey with USMGoGrad
                 @else
                     Manage your academic journey with USMGoGrad
                 @endif
@@ -853,6 +853,7 @@
     @endphp
 @endif
 
+@if(Auth::user()->hasRole('student') || (Auth::user()->hasRole('lecturer')))
 <!-- Roadmap Tabs -->
 <ul class="nav nav-tabs roadmap-tabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -1133,6 +1134,7 @@
         </div>
     </div>
 </div>
+@endif
 
 @if(Auth::user()->hasRole('student') || Auth::user()->hasRole('lecturer'))
     <div class="prediction-summary {{ $predictionState }}">
