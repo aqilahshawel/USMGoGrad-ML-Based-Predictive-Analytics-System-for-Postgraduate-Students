@@ -81,6 +81,7 @@ class TimelineController extends Controller
     
         // Build progress snapshot for the target student
         $progressSnapshot = null;
+        $checkpoint = null;
 
         if ($user->hasRole('student') && $user->start_date && $user->study_mode) {
             $targetUser = $user;
@@ -92,8 +93,15 @@ class TimelineController extends Controller
         }
 
         if ($targetUser && $targetUser->start_date && $targetUser->study_mode) {
+            $checkpoint = StudentCheckpoint::firstOrCreate(['user_id' => $targetUser->id]);
+
             try {
-                $progressSnapshot = $timelineService->progressSnapshot($targetUser->start_date, $targetUser->study_mode);
+                $progressSnapshot = $timelineService->progressSnapshot(
+                    $targetUser->start_date,
+                    $targetUser->study_mode,
+                    null,
+                    $checkpoint
+                );
             } catch (\Throwable $e) {
                 // ignore
             }
@@ -105,7 +113,6 @@ class TimelineController extends Controller
             }
         }
 
-        $checkpoint = $targetUser ? StudentCheckpoint::firstOrCreate(['user_id' => $targetUser->id]) : null;
         $missingPrerequisites = $targetUser ? $predictionService->missingPrerequisites($targetUser) : [];
 
         return view('timeline.index', compact(

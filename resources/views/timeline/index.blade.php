@@ -170,6 +170,12 @@
         margin-top: 0.35rem;
     }
 
+    .progress-card .pc-meta {
+        margin-top: 0.45rem;
+        font-size: 0.76rem;
+        color: var(--n-700);
+    }
+
     .risk-on_track .pc-value {
         color: #2e7d32;
     }
@@ -180,6 +186,14 @@
 
     .risk-overdue .pc-value {
         color: #c2410c;
+    }
+
+    .risk-pending .pc-value {
+        color: var(--lav-500);
+    }
+
+    .risk-high_risk .pc-value {
+        color: #b42318;
     }
 
     .road-path {
@@ -618,8 +632,13 @@
                                 <div class="pc-label">Core Checkpoints Completed</div>
                             </div>
                             <div class="progress-card risk-{{ $progressSnapshot['risk_status'] }}">
-                                <div class="pc-value">{{ str_replace('_', ' ', ucwords($progressSnapshot['risk_status'], '_')) }}</div>
-                                <div class="pc-label">Current Risk</div>
+                                <div class="pc-value">{{ $progressSnapshot['display_risk_label'] ?? str_replace('_', ' ', ucwords($progressSnapshot['risk_status'], '_')) }}</div>
+                                <div class="pc-label">Current Status</div>
+                                @if(!empty($progressSnapshot['show_ml_pending_badge']))
+                                    <div class="pc-meta">ML prediction pending</div>
+                                @elseif(!empty($progressSnapshot['has_checkpoint_delay']))
+                                    <div class="pc-meta">Checkpoint delay detected</div>
+                                @endif
                             </div>
                             <div class="progress-card">
                                 <div class="pc-value" style="font-size: 1rem; color: var(--gold-500); padding-top: 0.25rem;">{{ $progressSnapshot['stage_title'] ?? '—' }}</div>

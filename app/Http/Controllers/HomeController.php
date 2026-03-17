@@ -54,7 +54,12 @@ class HomeController extends Controller
                     try {
                         $timelineService->syncForStudent($user);
                         $timelines = $user->timelines()->orderBy('event_date')->get();
-                        $progressSnapshot = $timelineService->progressSnapshot($user->start_date, $user->study_mode);
+                        $progressSnapshot = $timelineService->progressSnapshot(
+                            $user->start_date,
+                            $user->study_mode,
+                            null,
+                            $user->checkpoint
+                        );
                     } catch (\Throwable $e) {}
                 }
             } elseif ($user->hasRole('lecturer')) {
@@ -73,7 +78,12 @@ class HomeController extends Controller
                             try {
                                 $timelineService->syncForStudent($student);
                                 $timelines = $student->timelines()->orderBy('event_date')->get();
-                                $progressSnapshot = $timelineService->progressSnapshot($student->start_date, $student->study_mode);
+                                $progressSnapshot = $timelineService->progressSnapshot(
+                                    $student->start_date,
+                                    $student->study_mode,
+                                    null,
+                                    $student->checkpoint
+                                );
                             } catch (\Throwable $e) {}
                         }
                     }

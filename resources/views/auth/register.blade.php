@@ -5,7 +5,6 @@
 @section('content')
 
 <style>
-
     .register-header {
         background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
         color: var(--n-900);

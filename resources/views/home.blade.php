@@ -947,9 +947,17 @@
                     <span class="badge rounded-pill" style="background:#e8f5e9; color:#2e7d32; font-size:0.82rem; padding:0.4rem 0.8rem;">
                         {{ $hDone }}/{{ $hTotal }} Done
                     </span>
-                    @if($progressSnapshot['risk_status'] === 'on_track')
+                    @if($progressSnapshot['risk_status'] === 'pending')
+                        <span class="badge rounded-pill" style="background:var(--lav-100); color:var(--lav-500); font-size:0.82rem; padding:0.4rem 0.8rem;">
+                            <i class="fas fa-hourglass-half"></i> Pending
+                        </span>
+                    @elseif($progressSnapshot['risk_status'] === 'on_track')
                         <span class="badge rounded-pill" style="background:#e8f5e9; color:#2e7d32; font-size:0.82rem; padding:0.4rem 0.8rem;">
                             <i class="fas fa-check-circle"></i> On Track
+                        </span>
+                    @elseif($progressSnapshot['risk_status'] === 'high_risk')
+                        <span class="badge rounded-pill" style="background:#fdecea; color:#b42318; font-size:0.82rem; padding:0.4rem 0.8rem;">
+                            <i class="fas fa-triangle-exclamation"></i> High Risk
                         </span>
                     @elseif($progressSnapshot['risk_status'] === 'at_risk')
                         <span class="badge rounded-pill" style="background:#fff5ef; color:#e07d45; font-size:0.82rem; padding:0.4rem 0.8rem;">
@@ -958,6 +966,16 @@
                     @else
                         <span class="badge rounded-pill" style="background:#fdecea; color:#cc4b4b; font-size:0.82rem; padding:0.4rem 0.8rem;">
                             <i class="fas fa-times-circle"></i> Overdue
+                        </span>
+                    @endif
+                    @if(!empty($progressSnapshot['show_ml_pending_badge']))
+                        <span class="badge rounded-pill" style="background:var(--lav-100); color:var(--lav-500); font-size:0.82rem; padding:0.4rem 0.8rem;">
+                            <i class="fas fa-brain"></i> ML Pending
+                        </span>
+                    @endif
+                    @if(!empty($progressSnapshot['has_checkpoint_delay']))
+                        <span class="badge rounded-pill" style="background:#fff5ef; color:#d97706; font-size:0.82rem; padding:0.4rem 0.8rem;">
+                            <i class="fas fa-clock"></i> Checkpoint Delay
                         </span>
                     @endif
                 </div>

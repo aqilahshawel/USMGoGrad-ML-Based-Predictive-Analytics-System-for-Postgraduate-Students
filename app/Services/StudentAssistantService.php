@@ -435,7 +435,12 @@ class StudentAssistantService
         }
 
         try {
-            $snapshot = $this->timelineService->progressSnapshot($student->start_date, (string) $student->study_mode);
+            $snapshot = $this->timelineService->progressSnapshot(
+                $student->start_date,
+                (string) $student->study_mode,
+                null,
+                $student->checkpoint
+            );
 
             return [
                 'current_semester' => (int) ($snapshot['current_semester'] ?? 0),
