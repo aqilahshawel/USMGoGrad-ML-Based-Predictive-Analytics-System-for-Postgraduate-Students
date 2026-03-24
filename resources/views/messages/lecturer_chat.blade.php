@@ -4,6 +4,7 @@
 
 @section('content')
 
+
 <style>
     .messages-header {
         background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
@@ -110,12 +111,11 @@
 </style>
 
 <div class="messages-header">
-    <h3><i class="fas fa-envelope"></i> Messages with Your Students</h3>
-    <p class="mb-0">Manage your conversations and connect with your students</p>
+    <h3><i class="fas fa-envelope" style="margin-right: 20px;"></i> Chat with Students Under Your Supervision</h3>
 </div>
 
 @forelse ($students as $student)
-    <div class="student-card">
+    <div class="student-card my-3">
         <div class="student-info">
             <div class="student-name">
                 <i class="fas fa-user-circle"></i> {{ $student->name }}
@@ -127,9 +127,8 @@
             </div>
             <small class="text-muted">
                 @if($student->cluster)
-                    {{ $student->cluster }} | 
+                    {{ $student->cluster }}
                 @endif
-                Click below to open conversation
             </small>
         </div>
         <div class="student-actions">
@@ -138,6 +137,8 @@
             </a>
         </div>
     </div>
+
+    
 @empty
     <div class="empty-state">
         <i class="fas fa-inbox"></i>

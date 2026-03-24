@@ -31,11 +31,24 @@
         .chat-box .text-muted { font-size: 0.78rem; display: block; margin-top: 4px; color: var(--muted); }
         h3 { font-family: var(--font-display); color: var(--lav-500); margin-bottom: 1.5rem; }
         .form-group { margin-top: 0.75rem; }
+        .chat-actions {
+            margin-bottom: 1rem;
+        }
     </style>
 @endsection
 
 @section('content')
     <div class="container">
+        <div class="chat-actions">
+            <a
+                href="{{ route('lecturer.messages.index') }}"
+                class="btn btn-outline-secondary"
+                onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }"
+            >
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+
         <h3>Chat with Student: {{ $student->name }}</h3>
 
         <div class="chat-box">
