@@ -710,9 +710,21 @@
                 <p>{{ $data['message'] ?? 'An overdue checkpoint reminder is available.' }}</p>
                 <div class="notice-meta">
                     <span><i class="fas fa-clock"></i> {{ optional($notice->created_at)->diffForHumans() }}</span>
-                    <a href="{{ $timelineUrl }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-arrow-right"></i> Open Timeline
-                    </a>
+                    <div>
+                        <form method="POST" action="{{ route('notifications.openTimeline', $notice->id) }}" style="display:inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-arrow-right"></i> Open Timeline
+                            </button>
+                        </form>
+
+                        <form method="POST" action="{{ route('notifications.dismiss', $notice->id) }}" style="display:inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                Dismiss
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </li>
         @endforeach
@@ -763,18 +775,12 @@
                                     @if($student->cluster)
                                         ({{ $student->cluster }})
                                     @endif
-                                    @if($student->start_date || $student->study_mode)
+                                    @if($student->start_date)
                                         -
                                         @if($student->start_date)
                                             {{ $student->start_date->format('d M Y') }}
                                         @else
                                             Missing registration date
-                                        @endif
-                                        /
-                                        @if($student->study_mode)
-                                            {{ str_replace('_', ' ', ucwords($student->study_mode, '_')) }}
-                                        @else
-                                            Missing study type
                                         @endif
                                     @endif
                                 </li>
@@ -797,7 +803,7 @@
     </div>
 @elseif(Auth::user()->hasRole('student') || Auth::user()->hasRole('lecturer'))
     @php
-        $predictionState = 'unavailable';
+        $predictionState = $dashboardPredictionState ?? 'unavailable';
         $predictionTitle = Auth::user()->hasRole('lecturer') ? 'Select a student to view the latest GoT prediction' : 'Prediction unavailable';
         $predictionCopy = Auth::user()->hasRole('lecturer')
             ? 'Choose one of your supervisees to show their current machine-learning prediction on the dashboard.'
@@ -811,43 +817,46 @@
         if ($dashboardTargetUser) {
             $displayName = Auth::user()->hasRole('lecturer') ? $dashboardTargetUser->name . "'s" : 'Your';
 
-            if ($dashboardMissingPrerequisites !== []) {
+            if ($predictionState === 'unavailable_prerequisites' || $dashboardMissingPrerequisites !== []) {
+                $predictionState = 'unavailable';
                 $predictionTitle = $displayName . ' GoT prediction is waiting for registration details';
                 $predictionCopy = 'Missing required fields: ' . implode(', ', $dashboardMissingPrerequisites) . '.';
                 $predictionBadges[] = ['class' => 'unavailable', 'text' => 'Registration details incomplete'];
-            } elseif ($predictionWarning) {
+            } elseif ($predictionState === 'refresh_failed' || $predictionWarning) {
+                $predictionState = 'unavailable';
                 $predictionTitle = $displayName . ' GoT prediction could not be refreshed';
-                $predictionCopy = $predictionWarning;
+                $predictionCopy = $predictionWarning ?: 'The model failed to refresh this result. Please try again later.';
                 $predictionBadges[] = ['class' => 'unavailable', 'text' => 'Refresh failed'];
-            } elseif ($dashboardCheckpoint && !is_null($dashboardCheckpoint->got_probability)) {
+            } elseif ($predictionState === 'ready' && $dashboardCheckpoint && !is_null($dashboardCheckpoint->got_probability)) {
+                $predictionPercent = number_format($dashboardCheckpoint->got_probability * 100, 2);
+                $predictedPerThousand = (int) round($dashboardCheckpoint->got_probability * 1000);
                 $predictionState = $dashboardCheckpoint->risk_level ?? 'unavailable';
                 $predictionTitle = $displayName . ' GoT prediction';
                 $predictionCopy = $dashboardCheckpoint->predicted_got
                     ? 'The model currently expects this student to graduate on time if the current pace is maintained.'
                     : 'The model currently detects a risk of delay based on the recorded checkpoint timing.';
-                $predictionMetric = number_format($dashboardCheckpoint->got_probability * 100, 1) . '%';
+                if ($dashboardCheckpoint->recommended_proposal_review_date) {
+                    $predictionCopy .= ' ML checkpoint target dates are generated from historical cohort patterns and shown in the checkpoint panel.';
+                }
+                $predictionMetric = $predictionPercent . '% GoT probability';
                 $predictionBadges[] = ['class' => $predictionState, 'text' => ucfirst($predictionState) . ' risk'];
                 $predictionBadges[] = [
                     'class' => $predictionState,
                     'text' => $dashboardCheckpoint->predicted_got ? 'Graduate on time' : 'Potential delay'
                 ];
+                $predictionBadges[] = ['class' => 'pending', 'text' => 'ML target dates generated'];
 
                 if ($dashboardCheckpoint->last_predicted_at) {
                     $predictionBadges[] = [
                         'class' => 'pending',
-                        'text' => 'Updated ' . $dashboardCheckpoint->last_predicted_at->format('d M Y H:i')
+                        'text' => 'Updated ' . $dashboardCheckpoint->last_predicted_at->timezone(config('app.display_timezone'))->format('d M Y H:i')
                     ];
                 }
-            } elseif ($dashboardCheckpoint && $dashboardCheckpoint->risk_level === 'pending') {
-                $predictionState = 'pending';
-                $predictionTitle = $displayName . ' GoT prediction is in cold start';
-                $predictionCopy = 'The student profile is complete, but the model waits for the first actual checkpoint date before producing a probability.';
-                $predictionMetric = 'Pending';
-                $predictionBadges[] = ['class' => 'pending', 'text' => 'Cold start'];
             } else {
-                $predictionTitle = $displayName . ' GoT prediction has not been generated yet';
-                $predictionCopy = 'Open the timeline checkpoint tab to submit milestone dates and trigger the first prediction.';
-                $predictionBadges[] = ['class' => 'unavailable', 'text' => 'No prediction yet'];
+                $predictionState = 'pending';
+                $predictionTitle = $displayName . ' GoT prediction is initializing';
+                $predictionCopy = 'The model is preparing baseline checkpoint target dates and graduation probability for this student.';
+                $predictionBadges[] = ['class' => 'pending', 'text' => 'Initializing model output'];
             }
         }
     @endphp

@@ -251,7 +251,7 @@
             <h4 class="mb-3"><i class="fas fa-layer-group"></i> Student Information</h4>
             
             <div class="section-note">
-                <i class="fas fa-info-circle"></i> Student registration requires the cluster, study type, and registration date so the GoT model has the right baseline context.
+                <i class="fas fa-info-circle"></i> Student registration requires the cluster and registration date.
             </div>
 
             <div class="form-group">
@@ -271,22 +271,7 @@
                 @enderror
             </div>
 
-            <div class="form-group">
-                <label for="study_mode">
-                    <i class="fas fa-user-graduate"></i> {{ __('Study Type') }}
-                </label>
-                <select id="study_mode" name="study_mode" class="form-select @error('study_mode') is-invalid @enderror">
-                    <option value="">-- Select Study Type --</option>
-                    @foreach(($studyModes ?? []) as $value => $label)
-                        <option value="{{ $value }}" {{ old('study_mode') === $value ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('study_mode')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
+            <input type="hidden" id="study_mode" name="study_mode" value="full_time">
 
             <div class="form-group">
                 <label for="start_date">

@@ -316,9 +316,6 @@
                             @if($student->cluster)
                                 ({{ $student->cluster }})
                             @endif
-                            @if($student->study_mode)
-                                - {{ str_replace('_', ' ', ucwords($student->study_mode, '_')) }}
-                            @endif
                         </option>
                     @endforeach
                 </select>
@@ -347,60 +344,6 @@
 
         <button type="submit" class="btn-assign">
             <i class="fas fa-save"></i> Update Registration Date
-        </button>
-    </form>
-</div>
-
-<div class="assignment-form-section">
-    <h4 class="mb-3"><i class="fas fa-user-clock"></i> Update Study Type</h4>
-
-    <form action="{{ route('students.study-mode.update') }}" method="POST">
-        @csrf
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="study_mode_student">
-                    <i class="fas fa-user-graduate"></i> Select Student
-                </label>
-                <select name="study_mode_student_id" id="study_mode_student" class="form-select" required>
-                    <option value="">-- Choose a Student --</option>
-                    @foreach(($allStudents ?? collect()) as $student)
-                        <option value="{{ $student->id }}" {{ (string)old('study_mode_student_id') === (string)$student->id ? 'selected' : '' }}>
-                            {{ $student->name }}
-                            @if($student->cluster)
-                                ({{ $student->cluster }})
-                            @endif
-                            @if($student->start_date)
-                                - {{ $student->start_date->format('d M Y') }}
-                            @endif
-                        </option>
-                    @endforeach
-                </select>
-                @error('study_mode_student_id')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="candidature_study_mode">
-                    <i class="fas fa-user-clock"></i> Study Type
-                </label>
-                <select name="study_mode" id="candidature_study_mode" class="form-select @error('study_mode') is-invalid @enderror" required>
-                    <option value="">-- Select Study Type --</option>
-                    @foreach(($studyModes ?? []) as $value => $label)
-                        <option value="{{ $value }}" {{ old('study_mode') === $value ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('study_mode')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
-        </div>
-
-        <button type="submit" class="btn-assign">
-            <i class="fas fa-save"></i> Update Study Type
         </button>
     </form>
 </div>

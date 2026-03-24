@@ -6,6 +6,7 @@ use App\Models\Timeline;
 use App\Models\User;
 use App\Notifications\CheckpointOverdueReminderNotification;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Carbon;
 
 class OverdueCheckpointNotificationService
 {
@@ -15,11 +16,11 @@ class OverdueCheckpointNotificationService
 
     public function dispatchForStudent(User $student): int
     {
-        if (! $student->hasRole('student') || ! $student->start_date || ! $student->study_mode) {
+        if (! $student->hasRole('student') || ! $student->start_date) {
             return 0;
         }
 
-        $snapshot = $this->timelineService->progressSnapshot($student->start_date, $student->study_mode);
+        $snapshot = $this->timelineService->progressSnapshot($student->start_date, $student->study_mode ?: 'full_time');
         $currentSemester = (int) ($snapshot['current_semester'] ?? 0);
 
         if ($currentSemester <= 0) {
@@ -36,12 +37,19 @@ class OverdueCheckpointNotificationService
             ->filter(fn (Timeline $stop) => $currentSemester > (int) $stop->semester_number)
             ->values();
 
-        if ($overdueStops->isEmpty()) {
+        $recipients = $this->buildRecipients($student);
+        if ($recipients->isEmpty()) {
             return 0;
         }
 
-        $recipients = $this->buildRecipients($student);
-        if ($recipients->isEmpty()) {
+        $activeReminderKeys = $overdueStops
+            ->map(fn (Timeline $stop) => $this->buildReminderKey($student, $stop))
+            ->values()
+            ->all();
+
+        $this->markResolvedNotificationsAsRead($recipients, $student, $activeReminderKeys);
+
+        if ($overdueStops->isEmpty()) {
             return 0;
         }
 
@@ -70,6 +78,27 @@ class OverdueCheckpointNotificationService
         }
 
         return $sent;
+    }
+
+    /**
+     * @param Collection<int, User> $recipients
+     * @param array<int, string> $activeReminderKeys
+     */
+    private function markResolvedNotificationsAsRead(Collection $recipients, User $student, array $activeReminderKeys): void
+    {
+        $now = now();
+
+        foreach ($recipients as $recipient) {
+            $query = $recipient->unreadNotifications()
+                ->where('type', CheckpointOverdueReminderNotification::class)
+                ->where('data->student_id', (int) $student->id);
+
+            if ($activeReminderKeys !== []) {
+                $query->whereNotIn('data->reminder_key', $activeReminderKeys);
+            }
+
+            $query->update(['read_at' => $now]);
+        }
     }
 
     private function buildReminderKey(User $student, Timeline $stop): string

@@ -1,36 +1,1175 @@
 {
-  "feature_columns": [
+  "classifier_feature_columns": [
     "Cluster",
-    "Type",
-    "proposal_sem",
-    "research_sem",
+    "proposal_review_sem",
+    "research_review_sem",
     "nos_sem",
     "final_draft_sem",
     "gap_proposal_to_research",
     "gap_research_to_nos",
     "gap_nos_to_final_draft"
   ],
+  "recommendation_sequence": [
+    "proposal_review_date",
+    "research_review_date",
+    "nos_date",
+    "final_draft_submission_date",
+    "viva_date"
+  ],
+  "recommendation_gap_features": {
+    "proposal_review_sem": [
+      "Cluster",
+      "registration_year",
+      "registration_month"
+    ],
+    "research_review_sem": [
+      "Cluster",
+      "proposal_review_sem",
+      "registration_year"
+    ],
+    "nos_sem": [
+      "Cluster",
+      "proposal_review_sem",
+      "research_review_sem"
+    ],
+    "final_draft_sem": [
+      "Cluster",
+      "research_review_sem",
+      "nos_sem"
+    ],
+    "viva_sem": [
+      "Cluster",
+      "nos_sem",
+      "final_draft_sem"
+    ]
+  },
+  "recommendation_gap_targets": {
+    "proposal_review_sem": "gap_to_proposal_sem",
+    "research_review_sem": "gap_to_research_sem",
+    "nos_sem": "gap_to_nos_sem",
+    "final_draft_sem": "gap_to_final_draft_sem",
+    "viva_sem": "gap_to_viva_sem"
+  },
   "clusters": {
     "Data to Knowledge": 0,
     "Service Computing": 1,
     "Enabling Technologies & Infrastructures": 2
   },
-  "types": {
-    "Full Time": 0,
-    "Part Time": 1,
-    "full_time": 0,
-    "part_time": 1,
-    "full time": 0,
-    "part time": 1
-  },
-  "feature_notes": {
-    "timing_model": "Features focus on checkpoint semester positions and pre-viva gaps between checkpoints.",
-    "ekc500": "Collected in the app, but not yet used as a predictive feature because the historical CSV does not contain that column.",
-    "leakage_guard": "Viva-derived features are intentionally excluded so the model remains an early-warning predictor."
-  },
+  "study_mode": "full_time",
   "semester_definition": {
     "semester_1": "September-February",
     "semester_2": "March-August"
   },
-  "model_version": "20260311060021"
+  "candidature_constraints": {
+    "min_semesters": 4,
+    "max_semesters": 10
+  },
+  "model_version": "20260318053927",
+  "training_report": {
+    "total_rows": 900,
+    "row_counts": {
+      "proposal_review_sem_gap_model": 900,
+      "research_review_sem_gap_model": 900,
+      "nos_sem_gap_model": 900,
+      "final_draft_sem_gap_model": 900,
+      "viva_sem_gap_model": 900,
+      "got_classifier": 900
+    },
+    "mode": "full_time",
+    "constraints": {
+      "min_semesters": 4,
+      "max_semesters": 10
+    },
+    "evaluation": {
+      "split": {
+        "strategy": "walk_forward_expanding",
+        "windows_requested": 4,
+        "windows_used": 4,
+        "window_sizes": {
+          "validation": 135,
+          "test": 135
+        },
+        "train_end_range": {
+          "min": 450,
+          "max": 630
+        },
+        "min_train_ratio": 0.5,
+        "mode": "walk_forward",
+        "train_ratio": 0.7,
+        "val_ratio": 0.15,
+        "test_ratio": 0.15
+      },
+      "threshold": {
+        "strategy": "window_median_tuned_eligible",
+        "selected": 0.1,
+        "default": 0.5,
+        "reason": "Median selected from 2/4 eligible walk-forward windows.",
+        "eligibility": {
+          "min_positive": 5,
+          "min_negative": 5,
+          "total_windows": 4,
+          "eligible_windows": 2,
+          "ineligible_windows": 2
+        },
+        "windows": [
+          {
+            "window": 1,
+            "eligible": false,
+            "reasons": [
+              "strategy_not_tuned",
+              "negative_below_min_5"
+            ],
+            "selected_for_vote": 0.5,
+            "threshold": {
+              "strategy": "fallback_default",
+              "selected": 0.5,
+              "default": 0.5,
+              "reason": "Validation has only one class; threshold tuning skipped.",
+              "grid": []
+            },
+            "validation_distribution": {
+              "samples": 135,
+              "negative": 0,
+              "positive": 135,
+              "has_both_classes": false
+            }
+          },
+          {
+            "window": 2,
+            "eligible": true,
+            "reasons": [],
+            "selected_for_vote": 0.1,
+            "threshold": {
+              "strategy": "maximize_f1_then_recall",
+              "selected": 0.1,
+              "default": 0.5,
+              "reason": "Selected from validation threshold sweep.",
+              "grid": [
+                {
+                  "threshold": 0.1,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.15,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.2,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.25,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.3,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.35,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.4,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.45,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.5,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.55,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.6,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.65,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.7,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.75,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.8,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.85,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.9,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                }
+              ]
+            },
+            "validation_distribution": {
+              "samples": 135,
+              "negative": 15,
+              "positive": 120,
+              "has_both_classes": true
+            }
+          },
+          {
+            "window": 3,
+            "eligible": true,
+            "reasons": [],
+            "selected_for_vote": 0.1,
+            "threshold": {
+              "strategy": "maximize_f1_then_recall",
+              "selected": 0.1,
+              "default": 0.5,
+              "reason": "Selected from validation threshold sweep.",
+              "grid": [
+                {
+                  "threshold": 0.1,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.15,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.2,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.25,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.3,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.35,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.4,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.45,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.5,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.55,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.6,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.65,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.7,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.75,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.8,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.85,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.9,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                }
+              ]
+            },
+            "validation_distribution": {
+              "samples": 135,
+              "negative": 75,
+              "positive": 60,
+              "has_both_classes": true
+            }
+          },
+          {
+            "window": 4,
+            "eligible": false,
+            "reasons": [
+              "strategy_not_tuned",
+              "positive_below_min_5"
+            ],
+            "selected_for_vote": 0.5,
+            "threshold": {
+              "strategy": "fallback_default",
+              "selected": 0.5,
+              "default": 0.5,
+              "reason": "Validation has only one class; threshold tuning skipped.",
+              "grid": []
+            },
+            "validation_distribution": {
+              "samples": 135,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false
+            }
+          }
+        ]
+      },
+      "class_distribution": {
+        "train": {
+          "samples": 2160,
+          "negative": 1800,
+          "positive": 360,
+          "has_both_classes": true
+        },
+        "validation": {
+          "samples": 540,
+          "negative": 225,
+          "positive": 315,
+          "has_both_classes": true
+        },
+        "test": {
+          "samples": 540,
+          "negative": 495,
+          "positive": 45,
+          "has_both_classes": true
+        }
+      },
+      "classification": {
+        "validation": {
+          "samples": 540,
+          "threshold": "window_specific",
+          "negative": 225,
+          "positive": 315,
+          "has_both_classes": true,
+          "accuracy": 0.5333,
+          "precision": 1.0,
+          "recall": 0.2,
+          "f1": 0.3333,
+          "tp": 63,
+          "tn": 225,
+          "fp": 0,
+          "fn": 252,
+          "note": "2/4 validation windows were single-class; treat threshold-sensitive metrics with care."
+        },
+        "test": {
+          "samples": 540,
+          "threshold": "window_specific",
+          "negative": 495,
+          "positive": 45,
+          "has_both_classes": true,
+          "accuracy": 0.9167,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "tp": 0,
+          "tn": 495,
+          "fp": 0,
+          "fn": 45,
+          "note": "3/4 test windows were single-class; treat threshold-sensitive metrics with care."
+        }
+      },
+      "checkpoint_gap_mae": {
+        "validation": {
+          "proposal_review_sem": {
+            "samples": 540,
+            "mae": 1.0054
+          },
+          "research_review_sem": {
+            "samples": 540,
+            "mae": 2.6535
+          },
+          "nos_sem": {
+            "samples": 540,
+            "mae": 0.0333
+          },
+          "final_draft_sem": {
+            "samples": 540,
+            "mae": 0.1263
+          },
+          "viva_sem": {
+            "samples": 540,
+            "mae": 0.5361
+          }
+        },
+        "test": {
+          "proposal_review_sem": {
+            "samples": 540,
+            "mae": 1.6265
+          },
+          "research_review_sem": {
+            "samples": 540,
+            "mae": 3.3167
+          },
+          "nos_sem": {
+            "samples": 540,
+            "mae": 0.0333
+          },
+          "final_draft_sem": {
+            "samples": 540,
+            "mae": 0.1262
+          },
+          "viva_sem": {
+            "samples": 540,
+            "mae": 0.3814
+          }
+        }
+      },
+      "windows": [
+        {
+          "window": 1,
+          "rows": {
+            "train": 450,
+            "validation": 135,
+            "test": 135
+          },
+          "threshold": {
+            "strategy": "fallback_default",
+            "selected": 0.5,
+            "default": 0.5,
+            "reason": "Validation has only one class; threshold tuning skipped.",
+            "grid": []
+          },
+          "class_distribution": {
+            "train": {
+              "samples": 450,
+              "negative": 450,
+              "positive": 0,
+              "has_both_classes": false
+            },
+            "validation": {
+              "samples": 135,
+              "negative": 0,
+              "positive": 135,
+              "has_both_classes": false
+            },
+            "test": {
+              "samples": 135,
+              "negative": 90,
+              "positive": 45,
+              "has_both_classes": true
+            }
+          },
+          "classification": {
+            "validation": {
+              "samples": 135,
+              "threshold": 0.5,
+              "negative": 0,
+              "positive": 135,
+              "has_both_classes": false,
+              "accuracy": 0.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 0,
+              "fp": 0,
+              "fn": 135,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
+            },
+            "test": {
+              "samples": 135,
+              "threshold": 0.5,
+              "negative": 90,
+              "positive": 45,
+              "has_both_classes": true,
+              "accuracy": 0.6667,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 90,
+              "fp": 0,
+              "fn": 45,
+              "note": ""
+            }
+          },
+          "checkpoint_gap_mae": {
+            "validation": {
+              "proposal_review_sem": {
+                "samples": 135,
+                "mae": 0.5539
+              },
+              "research_review_sem": {
+                "samples": 135,
+                "mae": 1.82
+              },
+              "nos_sem": {
+                "samples": 135,
+                "mae": 0.0
+              },
+              "final_draft_sem": {
+                "samples": 135,
+                "mae": 0.4225
+              },
+              "viva_sem": {
+                "samples": 135,
+                "mae": 0.7042
+              }
+            },
+            "test": {
+              "proposal_review_sem": {
+                "samples": 135,
+                "mae": 2.0204
+              },
+              "research_review_sem": {
+                "samples": 135,
+                "mae": 2.012
+              },
+              "nos_sem": {
+                "samples": 135,
+                "mae": 0.0667
+              },
+              "final_draft_sem": {
+                "samples": 135,
+                "mae": 0.0414
+              },
+              "viva_sem": {
+                "samples": 135,
+                "mae": 0.505
+              }
+            }
+          }
+        },
+        {
+          "window": 2,
+          "rows": {
+            "train": 510,
+            "validation": 135,
+            "test": 135
+          },
+          "threshold": {
+            "strategy": "maximize_f1_then_recall",
+            "selected": 0.1,
+            "default": 0.5,
+            "reason": "Selected from validation threshold sweep.",
+            "grid": [
+              {
+                "threshold": 0.1,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.15,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.2,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.25,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.3,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.35,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.4,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.45,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.5,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.55,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.6,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.65,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.7,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.75,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.8,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.85,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.9,
+                "f1": 0.0488,
+                "recall": 0.025,
+                "precision": 1.0
+              }
+            ]
+          },
+          "class_distribution": {
+            "train": {
+              "samples": 510,
+              "negative": 450,
+              "positive": 60,
+              "has_both_classes": true
+            },
+            "validation": {
+              "samples": 135,
+              "negative": 15,
+              "positive": 120,
+              "has_both_classes": true
+            },
+            "test": {
+              "samples": 135,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false
+            }
+          },
+          "classification": {
+            "validation": {
+              "samples": 135,
+              "threshold": 0.1,
+              "negative": 15,
+              "positive": 120,
+              "has_both_classes": true,
+              "accuracy": 0.1333,
+              "precision": 1.0,
+              "recall": 0.025,
+              "f1": 0.0488,
+              "tp": 3,
+              "tn": 15,
+              "fp": 0,
+              "fn": 117,
+              "note": ""
+            },
+            "test": {
+              "samples": 135,
+              "threshold": 0.1,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false,
+              "accuracy": 1.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 135,
+              "fp": 0,
+              "fn": 0,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
+            }
+          },
+          "checkpoint_gap_mae": {
+            "validation": {
+              "proposal_review_sem": {
+                "samples": 135,
+                "mae": 0.2259
+              },
+              "research_review_sem": {
+                "samples": 135,
+                "mae": 3.0709
+              },
+              "nos_sem": {
+                "samples": 135,
+                "mae": 0.0
+              },
+              "final_draft_sem": {
+                "samples": 135,
+                "mae": 0.0
+              },
+              "viva_sem": {
+                "samples": 135,
+                "mae": 0.7284
+              }
+            },
+            "test": {
+              "proposal_review_sem": {
+                "samples": 135,
+                "mae": 1.9975
+              },
+              "research_review_sem": {
+                "samples": 135,
+                "mae": 4.5503
+              },
+              "nos_sem": {
+                "samples": 135,
+                "mae": 0.0667
+              },
+              "final_draft_sem": {
+                "samples": 135,
+                "mae": 0.0414
+              },
+              "viva_sem": {
+                "samples": 135,
+                "mae": 0.4289
+              }
+            }
+          }
+        },
+        {
+          "window": 3,
+          "rows": {
+            "train": 570,
+            "validation": 135,
+            "test": 135
+          },
+          "threshold": {
+            "strategy": "maximize_f1_then_recall",
+            "selected": 0.1,
+            "default": 0.5,
+            "reason": "Selected from validation threshold sweep.",
+            "grid": [
+              {
+                "threshold": 0.1,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.15,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.2,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.25,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.3,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.35,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.4,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.45,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.5,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.55,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.6,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.65,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.7,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.75,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.8,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.85,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              },
+              {
+                "threshold": 0.9,
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
+              }
+            ]
+          },
+          "class_distribution": {
+            "train": {
+              "samples": 570,
+              "negative": 450,
+              "positive": 120,
+              "has_both_classes": true
+            },
+            "validation": {
+              "samples": 135,
+              "negative": 75,
+              "positive": 60,
+              "has_both_classes": true
+            },
+            "test": {
+              "samples": 135,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false
+            }
+          },
+          "classification": {
+            "validation": {
+              "samples": 135,
+              "threshold": 0.1,
+              "negative": 75,
+              "positive": 60,
+              "has_both_classes": true,
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "tp": 60,
+              "tn": 75,
+              "fp": 0,
+              "fn": 0,
+              "note": ""
+            },
+            "test": {
+              "samples": 135,
+              "threshold": 0.1,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false,
+              "accuracy": 1.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 135,
+              "fp": 0,
+              "fn": 0,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
+            }
+          },
+          "checkpoint_gap_mae": {
+            "validation": {
+              "proposal_review_sem": {
+                "samples": 135,
+                "mae": 1.2441
+              },
+              "research_review_sem": {
+                "samples": 135,
+                "mae": 2.4859
+              },
+              "nos_sem": {
+                "samples": 135,
+                "mae": 0.0667
+              },
+              "final_draft_sem": {
+                "samples": 135,
+                "mae": 0.0414
+              },
+              "viva_sem": {
+                "samples": 135,
+                "mae": 0.2688
+              }
+            },
+            "test": {
+              "proposal_review_sem": {
+                "samples": 135,
+                "mae": 1.5542
+              },
+              "research_review_sem": {
+                "samples": 135,
+                "mae": 3.9568
+              },
+              "nos_sem": {
+                "samples": 135,
+                "mae": 0.0
+              },
+              "final_draft_sem": {
+                "samples": 135,
+                "mae": 0.1076
+              },
+              "viva_sem": {
+                "samples": 135,
+                "mae": 0.3432
+              }
+            }
+          }
+        },
+        {
+          "window": 4,
+          "rows": {
+            "train": 630,
+            "validation": 135,
+            "test": 135
+          },
+          "threshold": {
+            "strategy": "fallback_default",
+            "selected": 0.5,
+            "default": 0.5,
+            "reason": "Validation has only one class; threshold tuning skipped.",
+            "grid": []
+          },
+          "class_distribution": {
+            "train": {
+              "samples": 630,
+              "negative": 450,
+              "positive": 180,
+              "has_both_classes": true
+            },
+            "validation": {
+              "samples": 135,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false
+            },
+            "test": {
+              "samples": 135,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false
+            }
+          },
+          "classification": {
+            "validation": {
+              "samples": 135,
+              "threshold": 0.5,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false,
+              "accuracy": 1.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 135,
+              "fp": 0,
+              "fn": 0,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
+            },
+            "test": {
+              "samples": 135,
+              "threshold": 0.5,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false,
+              "accuracy": 1.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 135,
+              "fp": 0,
+              "fn": 0,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
+            }
+          },
+          "checkpoint_gap_mae": {
+            "validation": {
+              "proposal_review_sem": {
+                "samples": 135,
+                "mae": 1.9978
+              },
+              "research_review_sem": {
+                "samples": 135,
+                "mae": 3.2372
+              },
+              "nos_sem": {
+                "samples": 135,
+                "mae": 0.0667
+              },
+              "final_draft_sem": {
+                "samples": 135,
+                "mae": 0.0414
+              },
+              "viva_sem": {
+                "samples": 135,
+                "mae": 0.4429
+              }
+            },
+            "test": {
+              "proposal_review_sem": {
+                "samples": 135,
+                "mae": 0.9339
+              },
+              "research_review_sem": {
+                "samples": 135,
+                "mae": 2.7478
+              },
+              "nos_sem": {
+                "samples": 135,
+                "mae": 0.0
+              },
+              "final_draft_sem": {
+                "samples": 135,
+                "mae": 0.3144
+              },
+              "viva_sem": {
+                "samples": 135,
+                "mae": 0.2485
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
 }

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\StudentCheckpoint;
 use App\Models\User;
+use App\Services\CandidatureTimelineService;
+use App\Services\StudentCheckpointPredictionService;
 use Illuminate\Validation\Rule;
 
 class SupervisorController extends Controller
@@ -16,7 +19,6 @@ class SupervisorController extends Controller
 
     private const STUDY_MODES = [
         'full_time' => 'Full Time',
-        'part_time' => 'Part Time',
     ];
 
     public function index()
@@ -62,7 +64,15 @@ class SupervisorController extends Controller
         $student->cluster = $request->cluster ?: null;
         $student->save();
 
-        return redirect()->back()->with('success', 'Student cluster updated successfully.');
+        $warning = $this->refreshPredictionAfterProfileUpdate($student);
+
+        $redirect = redirect()->back()->with('success', 'Student cluster updated successfully.');
+
+        if ($warning) {
+            $redirect->with('prediction_warning', $warning);
+        }
+
+        return $redirect;
     }
 
     public function updateRegistrationDate(Request $request)
@@ -77,21 +87,68 @@ class SupervisorController extends Controller
         $student->start_date = $validated['start_date'];
         $student->save();
 
-        return redirect()->back()->with('success', 'Student registration date updated successfully.');
+        $warning = $this->refreshPredictionAfterProfileUpdate($student);
+
+        $redirect = redirect()->back()->with('success', 'Student registration date updated successfully.');
+
+        if ($warning) {
+            $redirect->with('prediction_warning', $warning);
+        }
+
+        return $redirect;
     }
 
     public function updateStudyMode(Request $request)
     {
         $validated = $request->validate([
             'study_mode_student_id' => ['required', 'integer', 'exists:users,id'],
-            'study_mode' => ['required', 'string', Rule::in(array_keys(self::STUDY_MODES))],
         ]);
 
         $student = User::role('student')->findOrFail($validated['study_mode_student_id']);
 
-        $student->study_mode = $validated['study_mode'];
+        $student->study_mode = 'full_time';
         $student->save();
 
-        return redirect()->back()->with('success', 'Student study type updated successfully.');
+        $warning = $this->refreshPredictionAfterProfileUpdate($student);
+
+        $redirect = redirect()->back()->with('success', 'Student candidature mode updated successfully.');
+
+        if ($warning) {
+            $redirect->with('prediction_warning', $warning);
+        }
+
+        return $redirect;
+    }
+
+    private function refreshPredictionAfterProfileUpdate(User $student): ?string
+    {
+        $predictionService = app(StudentCheckpointPredictionService::class);
+        $timelineService = app(CandidatureTimelineService::class);
+
+        $student = $student->fresh('checkpoint');
+        $missingPrerequisites = $predictionService->missingPrerequisites($student);
+        if ($missingPrerequisites !== []) {
+            return null;
+        }
+
+        $student->checkpoint ?: StudentCheckpoint::firstOrCreate(['user_id' => $student->id]);
+
+        $warning = null;
+
+        try {
+            $predictionService->predictForStudent($student->fresh('checkpoint'));
+        } catch (\Throwable $e) {
+            $warning = $e->getMessage();
+        }
+
+        try {
+            if ($student->start_date) {
+                $timelineService->syncForStudent($student->fresh('checkpoint'));
+            }
+        } catch (\Throwable $e) {
+            $warning = $warning ? $warning . ' ' . $e->getMessage() : $e->getMessage();
+        }
+
+        return $warning;
     }
 }

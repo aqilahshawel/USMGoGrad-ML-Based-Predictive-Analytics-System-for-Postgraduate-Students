@@ -65,7 +65,20 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Display Timezone
+    |--------------------------------------------------------------------------
+    |
+    | This timezone is used for formatting dates/times shown in the UI.
+    | Keep storage/DB timestamps in UTC (APP_TIMEZONE=UTC) if desired, while
+    | displaying times in the user's locale (e.g. Asia/Kuala_Lumpur).
+    |
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Asia/Kuala_Lumpur'),
 
     /*
     |--------------------------------------------------------------------------

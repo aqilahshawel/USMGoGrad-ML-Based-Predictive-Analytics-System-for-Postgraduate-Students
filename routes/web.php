@@ -14,6 +14,7 @@ use App\Http\Controllers\ChatBotController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\CalendarOAuthController;
+use App\Notifications\CheckpointOverdueReminderNotification;
 
 
 // Redirect guests to login instead of home
@@ -93,6 +94,34 @@ Route::middleware(['auth', 'role:lecturer'])->prefix('calendar/google')->name('c
 // Timeline Routes (Only for authenticated users)
 Route::middleware(['auth'])->group(function () {
     Route::resource('/timeline', TimelineController::class);
+
+    Route::post('/notifications/{id}/dismiss', function (string $id) {
+        $user = auth()->user();
+        abort_unless($user, 403);
+
+        $notification = $user->notifications()
+            ->where('type', CheckpointOverdueReminderNotification::class)
+            ->whereKey($id)
+            ->firstOrFail();
+
+        $notification->markAsRead();
+        return back();
+    })->name('notifications.dismiss');
+
+    Route::post('/notifications/{id}/open-timeline', function (string $id) {
+        $user = auth()->user();
+        abort_unless($user, 403);
+
+        $notification = $user->notifications()
+            ->where('type', CheckpointOverdueReminderNotification::class)
+            ->whereKey($id)
+            ->firstOrFail();
+
+        $notification->markAsRead();
+
+        $url = $notification->data['timeline_url'] ?? route('timeline.index', ['tab' => 'checkpoint']);
+        return redirect()->to($url);
+    })->name('notifications.openTimeline');
 });
 
 // Timeline approval (Lecturer only)

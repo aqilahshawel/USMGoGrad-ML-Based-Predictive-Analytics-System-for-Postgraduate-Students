@@ -287,7 +287,11 @@ class CandidatureTimelineService
      *
      * @return array<int,array{system_key:string,stage_key:string,title:string,description:string|null,event_date:CarbonImmutable,target_semester_number:int,field:string}>
      */
-    public function defaultProfessionalCheckpoints(CarbonInterface $startDate, StudyMode|string $studyMode): array
+    public function defaultProfessionalCheckpoints(
+        CarbonInterface $startDate,
+        StudyMode|string $studyMode,
+        ?StudentCheckpoint $checkpoint = null
+    ): array
     {
         $mode = $studyMode instanceof StudyMode ? $studyMode : StudyMode::fromMixed($studyMode);
         $timeline = $this->buildSemesterTimeline($startDate, $mode);
@@ -298,9 +302,10 @@ class CandidatureTimelineService
 
         foreach ($targets as $target) {
             $relativeTo = $target['relative_to'] ?? null;
-            $eventDate = null;
+            $field = (string) ($target['field'] ?? '');
+            $eventDate = $this->recommendedTargetDateForField($checkpoint, $field);
 
-            if ($relativeTo && isset($generatedDates[$relativeTo])) {
+            if (! $eventDate && $relativeTo && isset($generatedDates[$relativeTo])) {
                 $eventDate = $generatedDates[$relativeTo]->addWeeks((int) ($target['offset_weeks'] ?? 0));
             }
 
@@ -323,7 +328,7 @@ class CandidatureTimelineService
                 'description' => (string) ($target['description'] ?? null),
                 'event_date' => $eventDate,
                 'target_semester_number' => $this->currentSemesterNumber($startDate, $mode, $eventDate),
-                'field' => (string) $target['field'],
+                'field' => $field,
             ];
         }
 
@@ -349,11 +354,11 @@ class CandidatureTimelineService
      */
     public function syncForStudent(User $student, ?CarbonInterface $today = null): array
     {
-        if (! $student->start_date || ! $student->study_mode) {
-            throw new \InvalidArgumentException('Student must have start_date and study_mode set to generate timeline.');
+        if (! $student->start_date) {
+            throw new \InvalidArgumentException('Student must have start_date set to generate timeline.');
         }
 
-        $mode = StudyMode::fromMixed((string) $student->study_mode);
+        $mode = StudyMode::fromMixed($student->study_mode);
         $startDate = $student->start_date instanceof CarbonInterface
             ? $student->start_date
             : CarbonImmutable::parse((string) $student->start_date);
@@ -399,7 +404,7 @@ class CandidatureTimelineService
         }
 
         $checkpointModel = $student->checkpoint;
-        $checkpoints = $this->defaultProfessionalCheckpoints($startDate, $mode);
+        $checkpoints = $this->defaultProfessionalCheckpoints($startDate, $mode, $checkpointModel);
         foreach ($checkpoints as $checkpoint) {
             $systemKey = $checkpoint['system_key'];
 
@@ -468,7 +473,7 @@ class CandidatureTimelineService
         $riskReasons = [];
 
         if ($checkpoint) {
-            $targets = $this->defaultProfessionalCheckpoints($startDate, $studyMode);
+            $targets = $this->defaultProfessionalCheckpoints($startDate, $studyMode, $checkpoint);
 
             foreach ($targets as $target) {
                 $field = (string) ($target['field'] ?? '');
@@ -548,14 +553,6 @@ class CandidatureTimelineService
             $status = self::RISK_HIGH;
         }
 
-        if (
-            $status === self::RISK_ON_TRACK
-            && ! $riskMeta['has_checkpoint_evidence']
-            && $currentSemester > 0
-        ) {
-            return self::RISK_PENDING;
-        }
-
         if ($status === self::RISK_ON_TRACK && $riskMeta['ml_state'] === 'medium') {
             return self::RISK_AT_RISK;
         }
@@ -611,5 +608,34 @@ class CandidatureTimelineService
             'pending', 'low', 'medium', 'high' => $normalized,
             default => '',
         };
+    }
+
+    private function recommendedTargetDateForField(?StudentCheckpoint $checkpoint, string $field): ?CarbonImmutable
+    {
+        if (! $checkpoint || $field === '') {
+            return null;
+        }
+
+        $recommendedColumn = match ($field) {
+            'proposal_review_date' => 'recommended_proposal_review_date',
+            'research_review_date' => 'recommended_research_review_date',
+            'nos_date' => 'recommended_nos_date',
+            'final_draft_submission_date' => 'recommended_final_draft_submission_date',
+            'viva_date' => 'recommended_viva_date',
+            default => null,
+        };
+
+        if ($recommendedColumn === null) {
+            return null;
+        }
+
+        $value = $checkpoint->{$recommendedColumn};
+        if (! $value) {
+            return null;
+        }
+
+        return $value instanceof CarbonInterface
+            ? CarbonImmutable::instance($value)
+            : CarbonImmutable::parse((string) $value);
     }
 }

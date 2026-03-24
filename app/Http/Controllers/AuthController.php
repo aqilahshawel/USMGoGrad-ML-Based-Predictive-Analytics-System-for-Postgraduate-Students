@@ -27,7 +27,6 @@ class AuthController extends Controller
 
     private const STUDY_MODES = [
         'full_time' => 'Full Time',
-        'part_time' => 'Part Time',
     ];
 
     public function showRegisterForm()
@@ -67,7 +66,7 @@ class AuthController extends Controller
 
         if ($isStudent) {
             $rules['cluster'] = ['required', 'string', Rule::in(self::CLUSTERS)];
-            $rules['study_mode'] = ['required', 'string', Rule::in(array_keys(self::STUDY_MODES))];
+            $rules['study_mode'] = ['nullable', 'string', Rule::in(array_keys(self::STUDY_MODES))];
             $rules['start_date'] = ['required', 'date'];
         }
 
@@ -80,7 +79,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($randomPassword),
             'cluster' => $isStudent ? $request->cluster : null,
-            'study_mode' => $isStudent ? $request->study_mode : null,
+            'study_mode' => $isStudent ? 'full_time' : null,
             'start_date' => $isStudent ? $request->start_date : null,
         ]);
     

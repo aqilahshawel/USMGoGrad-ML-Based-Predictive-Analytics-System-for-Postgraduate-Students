@@ -38,6 +38,7 @@ class HomeController extends Controller
         $progressSnapshot = null;
         $dashboardTargetUser = null;
         $dashboardCheckpoint = null;
+        $dashboardPredictionState = 'unavailable';
         $dashboardMissingPrerequisites = [];
         $predictionWarning = null;
         $recentOverdueNotifications = collect();
@@ -50,13 +51,13 @@ class HomeController extends Controller
                 $milestones = Milestone::where('student_id', $user->id)->get();
 
                 // Best-effort sync + snapshot
-                if ($user->start_date && $user->study_mode) {
+                if ($user->start_date) {
                     try {
                         $timelineService->syncForStudent($user);
                         $timelines = $user->timelines()->orderBy('event_date')->get();
                         $progressSnapshot = $timelineService->progressSnapshot(
                             $user->start_date,
-                            $user->study_mode,
+                            $user->study_mode ?: 'full_time',
                             null,
                             $user->checkpoint
                         );
@@ -74,13 +75,13 @@ class HomeController extends Controller
                     if ($student) {
                         $dashboardTargetUser = $student;
                         $timelines = $student->timelines()->orderBy('event_date')->get();
-                        if ($student->start_date && $student->study_mode) {
+                        if ($student->start_date) {
                             try {
                                 $timelineService->syncForStudent($student);
                                 $timelines = $student->timelines()->orderBy('event_date')->get();
                                 $progressSnapshot = $timelineService->progressSnapshot(
                                     $student->start_date,
-                                    $student->study_mode,
+                                    $student->study_mode ?: 'full_time',
                                     null,
                                     $student->checkpoint
                                 );
@@ -98,7 +99,7 @@ class HomeController extends Controller
 
                 $unassignedStudents = $allStudents->whereNull('supervisor_id')->values();
                 $studentsMissingCandidature = $allStudents
-                    ->filter(fn(User $student) => blank($student->start_date) || blank($student->study_mode))
+                    ->filter(fn(User $student) => blank($student->start_date))
                     ->values();
 
                 $adminStats = [
@@ -113,14 +114,30 @@ class HomeController extends Controller
 
         if ($dashboardTargetUser) {
             $dashboardMissingPrerequisites = $predictionService->missingPrerequisites($dashboardTargetUser);
-            [$dashboardCheckpoint, $predictionWarning] = $this->resolveDashboardPrediction(
+            [$dashboardCheckpoint, $predictionWarning, $dashboardPredictionState] = $this->resolveDashboardPrediction(
                 $dashboardTargetUser,
                 $predictionService,
                 $dashboardMissingPrerequisites
             );
 
-            if ($dashboardTargetUser->start_date && $dashboardTargetUser->study_mode) {
+            if ($dashboardTargetUser->start_date) {
                 try {
+                    $dashboardTargetUser = $dashboardTargetUser->fresh('checkpoint');
+                    $timelineService->syncForStudent($dashboardTargetUser);
+
+                    if ($user->hasRole('student')) {
+                        $timelines = $dashboardTargetUser->timelines()->orderBy('event_date')->get();
+                    } elseif ($user->hasRole('lecturer') && request('student_id')) {
+                        $timelines = $dashboardTargetUser->timelines()->orderBy('event_date')->get();
+                    }
+
+                    $progressSnapshot = $timelineService->progressSnapshot(
+                        $dashboardTargetUser->start_date,
+                        $dashboardTargetUser->study_mode ?: 'full_time',
+                        null,
+                        $dashboardTargetUser->checkpoint
+                    );
+
                     $overdueNotificationService->dispatchForStudent($dashboardTargetUser->fresh('supervisor'));
                 } catch (\Throwable $e) {
                     // Ignore notification failures in dashboard rendering
@@ -129,7 +146,7 @@ class HomeController extends Controller
         }
 
         if ($user) {
-            $recentOverdueNotifications = $user->notifications()
+            $recentOverdueNotifications = $user->unreadNotifications()
                 ->where('type', CheckpointOverdueReminderNotification::class)
                 ->latest()
                 ->limit(5)
@@ -151,6 +168,7 @@ class HomeController extends Controller
             'progressSnapshot',
             'dashboardTargetUser',
             'dashboardCheckpoint',
+            'dashboardPredictionState',
             'dashboardMissingPrerequisites',
             'predictionWarning',
             'recentOverdueNotifications',
@@ -166,18 +184,22 @@ class HomeController extends Controller
         $checkpoint = $student->checkpoint ?: new StudentCheckpoint(['user_id' => $student->id]);
 
         if ($missingPrerequisites !== []) {
-            return [$checkpoint, null];
+            return [$checkpoint, null, 'unavailable_prerequisites'];
         }
 
-        if ($checkpoint->last_predicted_at === null) {
+        if ($predictionService->shouldRefreshOnProfileView($checkpoint)) {
             try {
                 $predictionService->predictForStudent($student->fresh('checkpoint'));
                 $checkpoint = $student->fresh('checkpoint')->checkpoint;
             } catch (\Throwable $e) {
-                return [$checkpoint, $e->getMessage()];
+                return [$checkpoint, $e->getMessage(), 'refresh_failed'];
             }
         }
 
-        return [$checkpoint, null];
+        if ($checkpoint && ! is_null($checkpoint->got_probability)) {
+            return [$checkpoint, null, 'ready'];
+        }
+
+        return [$checkpoint, 'ML prediction could not be refreshed right now. Please try again later.', 'refresh_failed'];
     }
 }

@@ -36,6 +36,40 @@
         ['field' => 'viva_date', 'title' => 'Viva Date'],
     ];
 
+    $liveForecastCheckpointDates = [
+        'proposal_review_date' => optional($checkpoint?->recommended_proposal_review_date)->format('d M Y'),
+        'research_review_date' => optional($checkpoint?->recommended_research_review_date)->format('d M Y'),
+        'nos_date' => optional($checkpoint?->recommended_nos_date)->format('d M Y'),
+        'final_draft_submission_date' => optional($checkpoint?->recommended_final_draft_submission_date)->format('d M Y'),
+        'viva_date' => optional($checkpoint?->recommended_viva_date)->format('d M Y'),
+    ];
+
+    $baselineCheckpointDates = [
+        'proposal_review_date' => optional($checkpoint?->baseline_recommended_proposal_review_date)->format('d M Y')
+            ?: optional($checkpoint?->recommended_proposal_review_date)->format('d M Y'),
+        'research_review_date' => optional($checkpoint?->baseline_recommended_research_review_date)->format('d M Y')
+            ?: optional($checkpoint?->recommended_research_review_date)->format('d M Y'),
+        'nos_date' => optional($checkpoint?->baseline_recommended_nos_date)->format('d M Y')
+            ?: optional($checkpoint?->recommended_nos_date)->format('d M Y'),
+        'final_draft_submission_date' => optional($checkpoint?->baseline_recommended_final_draft_submission_date)->format('d M Y')
+            ?: optional($checkpoint?->recommended_final_draft_submission_date)->format('d M Y'),
+        'viva_date' => optional($checkpoint?->baseline_recommended_viva_date)->format('d M Y')
+            ?: optional($checkpoint?->recommended_viva_date)->format('d M Y'),
+    ];
+
+    $actualCheckpointDates = [
+        'proposal_review_date' => optional($checkpoint?->proposal_review_date)->format('d M Y'),
+        'research_review_date' => optional($checkpoint?->research_review_date)->format('d M Y'),
+        'nos_date' => optional($checkpoint?->nos_date)->format('d M Y'),
+        'final_draft_submission_date' => optional($checkpoint?->final_draft_submission_date)->format('d M Y'),
+        'viva_date' => optional($checkpoint?->viva_date)->format('d M Y'),
+    ];
+
+    $predictionInput = (array) ($checkpoint?->prediction_input ?? []);
+    $recommendationDiagnostics = (array) ($predictionInput['recommendation_diagnostics'] ?? []);
+    $compressedByMaxSemester = (bool) ($recommendationDiagnostics['compressed_by_max_semester'] ?? false);
+    $sameSemesterGroups = collect((array) ($recommendationDiagnostics['same_semester_groups'] ?? []));
+
     $systemStops = $timelines
         ->filter(fn($timeline) => $timeline->system_key && str_starts_with($timeline->system_key, 'checkpoint:'))
         ->sortBy('event_date')
@@ -824,7 +858,6 @@
                                 <div class="timeline-panel-body">
                                     <div class="checkpoint-meta">
                                         <span class="checkpoint-pill">Cluster: {{ $targetUser->cluster ?? 'Missing' }}</span>
-                                        <span class="checkpoint-pill">Study Type: {{ $targetUser->study_mode ? str_replace('_', ' ', ucwords($targetUser->study_mode, '_')) : 'Missing' }}</span>
                                         <span class="checkpoint-pill">Registration: {{ optional($targetUser->start_date)->format('d M Y') ?? 'Missing' }}</span>
                                     </div>
 
@@ -842,6 +875,19 @@
                                                 @foreach($checkpointInputs as $index => $input)
                                                     <div class="checkpoint-field">
                                                         <label for="{{ $input['field'] }}">{{ $input['title'] }}</label>
+                                                        @if($input['field'] !== 'ekc500_admin_approved' && !empty($baselineCheckpointDates[$input['field']]))
+                                                            <div class="text-muted small mb-1">Baseline target: {{ $baselineCheckpointDates[$input['field']] }}</div>
+                                                        @endif
+                                                        @if(
+                                                            $input['field'] !== 'ekc500_admin_approved'
+                                                            && !empty($liveForecastCheckpointDates[$input['field']])
+                                                            && $liveForecastCheckpointDates[$input['field']] !== ($baselineCheckpointDates[$input['field']] ?? null)
+                                                        )
+                                                            <div class="text-muted small mb-1">Live forecast: {{ $liveForecastCheckpointDates[$input['field']] }}</div>
+                                                        @endif
+                                                        @if($input['field'] !== 'ekc500_admin_approved' && !empty($actualCheckpointDates[$input['field']]))
+                                                            <div class="text-muted small mb-1">Completed on: {{ $actualCheckpointDates[$input['field']] }}</div>
+                                                        @endif
                                                         @if($input['field'] === 'ekc500_admin_approved')
                                                             <input type="hidden" name="ekc500_admin_approved" value="0">
                                                             <div class="form-check mt-2">
@@ -883,6 +929,16 @@
                                                 <div class="checkpoint-field">
                                                     <label>{{ $input['title'] }}</label>
                                                     <input type="text" value="{{ $input['field'] === 'ekc500_admin_approved' ? (($checkpoint->{$input['field']} ?? false) ? 'Passed' : 'Not passed yet') : (optional($checkpoint->{$input['field']})->format('d M Y') ?? 'Not submitted') }}" disabled>
+                                                    @if($input['field'] !== 'ekc500_admin_approved' && !empty($baselineCheckpointDates[$input['field']]))
+                                                        <div class="text-muted small mt-1">Baseline target: {{ $baselineCheckpointDates[$input['field']] }}</div>
+                                                    @endif
+                                                    @if(
+                                                        $input['field'] !== 'ekc500_admin_approved'
+                                                        && !empty($liveForecastCheckpointDates[$input['field']])
+                                                        && $liveForecastCheckpointDates[$input['field']] !== ($baselineCheckpointDates[$input['field']] ?? null)
+                                                    )
+                                                        <div class="text-muted small mt-1">Live forecast: {{ $liveForecastCheckpointDates[$input['field']] }}</div>
+                                                    @endif
                                                 </div>
                                             @endforeach
                                         </div>
@@ -896,10 +952,17 @@
                                         <h3>Prediction Output</h3>
                                     </div>
                                     <div class="timeline-panel-body">
-                                        @if(!is_null($checkpoint->got_probability))
+                                        @php
+                                            $panelPredictionState = $predictionState ?? 'unavailable';
+                                        @endphp
+                                        @if($panelPredictionState === 'ready' && !is_null($checkpoint->got_probability))
+                                            @php
+                                                $probabilityPercent = number_format($checkpoint->got_probability * 100, 2);
+                                                $predictedPerThousand = (int) round($checkpoint->got_probability * 1000);
+                                            @endphp
                                             <div class="prediction-hero">
                                                 <div class="text-uppercase small fw-semibold text-muted">GoT Probability</div>
-                                                <div class="prediction-score risk-{{ $checkpoint->risk_level }}">{{ number_format($checkpoint->got_probability * 100, 1) }}%</div>
+                                                <div class="prediction-score risk-{{ $checkpoint->risk_level }}">{{ $probabilityPercent }}%</div>
                                                 <div class="fw-semibold text-uppercase risk-{{ $checkpoint->risk_level }}">
                                                     {{ ucfirst($checkpoint->risk_level ?? 'unknown') }} Risk
                                                 </div>
@@ -909,26 +972,76 @@
                                             </div>
 
                                             <div class="checkpoint-note info mt-3">
-                                                Last predicted: {{ optional($checkpoint->last_predicted_at)->format('d M Y H:i') ?? 'Not available' }}<br>
+                                                Last predicted: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
                                                 Model version: {{ $checkpoint->model_version ?? 'Unknown' }}
                                             </div>
-                                        @elseif($checkpoint->risk_level === 'pending')
+
+                                            <div class="checkpoint-note info mt-3">
+                                                <strong>Historical Baseline Plan (Frozen)</strong><br>
+                                                Proposal Review: {{ $baselineCheckpointDates['proposal_review_date'] ?? 'Not available' }}<br>
+                                                Research Review: {{ $baselineCheckpointDates['research_review_date'] ?? 'Not available' }}<br>
+                                                NOS: {{ $baselineCheckpointDates['nos_date'] ?? 'Not available' }}<br>
+                                                Final Draft Submission: {{ $baselineCheckpointDates['final_draft_submission_date'] ?? 'Not available' }}<br>
+                                                Viva: {{ $baselineCheckpointDates['viva_date'] ?? 'Not available' }}
+                                            </div>
+
+                                            <div class="checkpoint-note info mt-3">
+                                                <strong>Live Forecast (Updates With Progress)</strong><br>
+                                                Proposal Review: {{ $actualCheckpointDates['proposal_review_date'] ? 'Completed on ' . $actualCheckpointDates['proposal_review_date'] : ($liveForecastCheckpointDates['proposal_review_date'] ?? 'Not available') }}<br>
+                                                Research Review: {{ $actualCheckpointDates['research_review_date'] ? 'Completed on ' . $actualCheckpointDates['research_review_date'] : ($liveForecastCheckpointDates['research_review_date'] ?? 'Not available') }}<br>
+                                                NOS: {{ $actualCheckpointDates['nos_date'] ? 'Completed on ' . $actualCheckpointDates['nos_date'] : ($liveForecastCheckpointDates['nos_date'] ?? 'Not available') }}<br>
+                                                Final Draft Submission: {{ $actualCheckpointDates['final_draft_submission_date'] ? 'Completed on ' . $actualCheckpointDates['final_draft_submission_date'] : ($liveForecastCheckpointDates['final_draft_submission_date'] ?? 'Not available') }}<br>
+                                                Viva: {{ $actualCheckpointDates['viva_date'] ? 'Completed on ' . $actualCheckpointDates['viva_date'] : ($liveForecastCheckpointDates['viva_date'] ?? 'Not available') }}
+                                            </div>
+
+                                            @if($compressedByMaxSemester || $sameSemesterGroups->isNotEmpty())
+                                                <div class="checkpoint-note warning mt-3">
+                                                    <strong>Forecast Notes</strong><br>
+                                                    @if($compressedByMaxSemester)
+                                                        Forecast milestones were compressed to fit the candidature maximum semester window.<br>
+                                                    @endif
+                                                    @if($sameSemesterGroups->isNotEmpty())
+                                                        @foreach($sameSemesterGroups as $group)
+                                                            Semester {{ $group['semester'] ?? '?' }} contains multiple checkpoints: {{ implode(', ', (array) ($group['checkpoints'] ?? [])) }}.<br>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        @elseif($panelPredictionState === 'not_started')
                                             <div class="prediction-hero">
                                                 <div class="text-uppercase small fw-semibold text-muted">Prediction Status</div>
-                                                <div class="prediction-score risk-pending">Pending</div>
-                                                <div class="fw-semibold text-uppercase risk-pending">Cold Start</div>
+                                                <div class="prediction-score risk-pending">Initializing</div>
+                                                <div class="fw-semibold text-uppercase risk-pending">Preparing Baseline Estimates</div>
                                                 <p class="mb-0 mt-2 text-muted">
-                                                    The model is waiting for enough actual checkpoint timing before generating a probability.
+                                                    The model is preparing baseline checkpoint targets and graduation probability from historical cohort data.
                                                 </p>
                                             </div>
 
                                             <div class="checkpoint-note info mt-3">
-                                                Last checked: {{ optional($checkpoint->last_predicted_at)->format('d M Y H:i') ?? 'Not available' }}<br>
+                                                Last predicted: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
+                                                Model version: {{ $checkpoint->model_version ?? 'Not started' }}
+                                            </div>
+                                        @elseif($panelPredictionState === 'refresh_failed')
+                                            <div class="prediction-hero">
+                                                <div class="text-uppercase small fw-semibold text-muted">Prediction Status</div>
+                                                <div class="prediction-score risk-pending">Refresh Failed</div>
+                                                <div class="fw-semibold text-uppercase risk-pending">Temporarily Unavailable</div>
+                                                <p class="mb-0 mt-2 text-muted">
+                                                    {{ $predictionWarning ?? 'The model could not return a probability in this refresh. Please check input completeness and try again.' }}
+                                                </p>
+                                            </div>
+
+                                            <div class="checkpoint-note info mt-3">
+                                                Last checked: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
                                                 Model version: {{ $checkpoint->model_version ?? 'Unknown' }}
+                                            </div>
+                                        @elseif($panelPredictionState === 'unavailable_prerequisites')
+                                            <div class="checkpoint-note info">
+                                                Prediction is waiting for required student profile details: {{ implode(', ', $missingPrerequisites) }}.
                                             </div>
                                         @else
                                             <div class="checkpoint-note info">
-                                                No prediction has been generated yet. Save checkpoint statuses after the student registration details are complete.
+                                                Prediction is not available yet. Save checkpoint updates and refresh this page.
                                             </div>
                                         @endif
                                     </div>

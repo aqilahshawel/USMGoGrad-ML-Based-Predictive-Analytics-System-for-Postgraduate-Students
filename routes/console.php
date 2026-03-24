@@ -64,6 +64,7 @@ Artisan::command('candidature:sync-timeline {studentId? : Student user id} {--al
 Artisan::command('ml:predict-got {studentId? : Student user id} {--all : Predict for all students}', function () {
     /** @var ClosureCommand $this */
     $service = app(StudentCheckpointPredictionService::class);
+    $timelineService = app(CandidatureTimelineService::class);
 
     $studentId = $this->argument('studentId');
     $all = (bool) $this->option('all');
@@ -76,6 +77,10 @@ Artisan::command('ml:predict-got {studentId? : Student user id} {--all : Predict
     $query = User::role('student');
     if (! $all) {
         $query->whereKey($studentId);
+    } else {
+        $query
+            ->whereNotNull('cluster')
+            ->whereNotNull('start_date');
     }
 
     $students = $query->get();
@@ -89,23 +94,35 @@ Artisan::command('ml:predict-got {studentId? : Student user id} {--all : Predict
 
     foreach ($students as $student) {
         try {
-            $result = $service->predictForStudent($student);
-            $predicted++;
-
-            if (is_null($result['got_probability'])) {
+            $student = $student->fresh('checkpoint');
+            $missingPrerequisites = $service->missingPrerequisites($student);
+            if ($missingPrerequisites !== []) {
+                $skipped++;
                 $this->line(sprintf(
-                    'Predicted student %d: pending (cold start, no checkpoint dates yet)',
-                    $student->id
+                    'Skipped student %d: missing prerequisites (%s).',
+                    $student->id,
+                    implode(', ', $missingPrerequisites)
                 ));
                 continue;
             }
 
+            $result = $service->predictForStudent($student);
+
+            if ($student->start_date) {
+                $timelineService->syncForStudent($student->fresh('checkpoint'));
+            }
+
+            $predicted++;
+
+            $recommendedProposal = $result['recommended_checkpoint_dates']['proposal_review_date'] ?? 'n/a';
+
             $this->line(sprintf(
-                'Predicted student %d: probability=%.4f, label=%s, risk=%s',
+                'Predicted student %d: probability=%.4f, label=%s, risk=%s, proposal_target=%s',
                 $student->id,
                 $result['got_probability'],
                 $result['predicted_got'] ? 'GoT' : 'Not GoT',
-                $result['risk_level']
+                $result['risk_level'],
+                $recommendedProposal
             ));
         } catch (\Throwable $e) {
             $skipped++;
@@ -170,5 +187,9 @@ Artisan::command('assistant:dispatch-reminders {studentId? : Student user id} {-
 
 Schedule::command('assistant:dispatch-reminders --all')
     ->dailyAt('09:00')
+    ->withoutOverlapping();
+
+Schedule::command('ml:predict-got --all')
+    ->dailyAt('08:30')
     ->withoutOverlapping();
 

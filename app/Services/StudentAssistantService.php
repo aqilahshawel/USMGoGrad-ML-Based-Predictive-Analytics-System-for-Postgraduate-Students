@@ -244,7 +244,7 @@ class StudentAssistantService
         $next = $this->nextCheckpoint($student);
 
         if (! $next) {
-            return 'I cannot compute your next checkpoint yet. Please ensure start date and study mode are set, then update your checkpoint records.';
+            return 'I cannot compute your next checkpoint yet. Please ensure start date is set, then update your checkpoint records.';
         }
 
         return 'Your next checkpoint is ' . $next['title'] . ' on ' . $next['date_label'] . ' (' . $next['relative'] . ').';
@@ -252,14 +252,15 @@ class StudentAssistantService
 
     private function buildDurationResponse(User $student): string
     {
-        if (! $student->start_date || ! $student->study_mode) {
-            return 'I need your start date and study mode to estimate time before graduation.';
+        if (! $student->start_date) {
+            return 'I need your start date to estimate time before graduation.';
         }
 
         try {
-            $rules = $this->timelineService->rulesForStudyMode((string) $student->study_mode);
-            $timeline = $this->timelineService->buildSemesterTimeline($student->start_date, (string) $student->study_mode);
-            $currentSemester = max(1, $this->timelineService->currentSemesterNumber($student->start_date, (string) $student->study_mode));
+            $mode = (string) ($student->study_mode ?: 'full_time');
+            $rules = $this->timelineService->rulesForStudyMode($mode);
+            $timeline = $this->timelineService->buildSemesterTimeline($student->start_date, $mode);
+            $currentSemester = max(1, $this->timelineService->currentSemesterNumber($student->start_date, $mode));
 
             $expectedIndex = max(0, ((int) $rules['expected_semesters']) - 1);
             $maxIndex = max(0, ((int) $rules['max_semesters']) - 1);
@@ -287,7 +288,7 @@ class StudentAssistantService
         $next = $this->nextCheckpoint($student);
 
         if (! $snapshot) {
-            return 'I need your start date and study mode before I can identify your ideal checkpoint period.';
+            return 'I need your start date before I can identify your ideal checkpoint period.';
         }
 
         $lines = [];
@@ -372,14 +373,14 @@ class StudentAssistantService
      */
     private function nextCheckpoint(User $student): ?array
     {
-        if (! $student->start_date || ! $student->study_mode) {
+        if (! $student->start_date) {
             return null;
         }
 
         $checkpoint = $student->checkpoint ?: StudentCheckpoint::firstOrCreate(['user_id' => $student->id]);
 
         try {
-            $targets = $this->timelineService->defaultProfessionalCheckpoints($student->start_date, (string) $student->study_mode);
+            $targets = $this->timelineService->defaultProfessionalCheckpoints($student->start_date, $student->study_mode ?: 'full_time');
         } catch (\Throwable) {
             return null;
         }
@@ -430,14 +431,14 @@ class StudentAssistantService
      */
     private function progressSnapshot(User $student): ?array
     {
-        if (! $student->start_date || ! $student->study_mode) {
+        if (! $student->start_date) {
             return null;
         }
 
         try {
             $snapshot = $this->timelineService->progressSnapshot(
                 $student->start_date,
-                (string) $student->study_mode,
+                $student->study_mode ?: 'full_time',
                 null,
                 $student->checkpoint
             );

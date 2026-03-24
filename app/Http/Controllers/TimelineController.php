@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use App\Services\CandidatureTimelineService;
 use App\Services\OverdueCheckpointNotificationService;
 use App\Services\StudentCheckpointPredictionService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class TimelineController extends Controller
@@ -32,7 +33,7 @@ class TimelineController extends Controller
                 $targetUser = $user;
                 // Ensure default professional checkpoints exist (best-effort)
                 try {
-                    if ($user->start_date && $user->study_mode) {
+                    if ($user->start_date) {
                         $timelineService->syncForStudent($user);
                     }
                 } catch (\Throwable $e) {
@@ -60,7 +61,7 @@ class TimelineController extends Controller
                     // Best-effort auto sync when lecturer views a student
                     try {
                         $student = User::find($selectedStudentId);
-                        if ($student && (int) $student->supervisor_id === (int) $user->id && $student->start_date && $student->study_mode) {
+                        if ($student && (int) $student->supervisor_id === (int) $user->id && $student->start_date) {
                             $targetUser = $student;
                             $timelineService->syncForStudent($student);
                         }
@@ -82,8 +83,10 @@ class TimelineController extends Controller
         // Build progress snapshot for the target student
         $progressSnapshot = null;
         $checkpoint = null;
+        $predictionState = 'unavailable';
+        $predictionWarning = session('prediction_warning');
 
-        if ($user->hasRole('student') && $user->start_date && $user->study_mode) {
+        if ($user->hasRole('student') && $user->start_date) {
             $targetUser = $user;
         } elseif ($user->hasRole('lecturer') && $selectedStudentId && ! $targetUser) {
             $s = User::find($selectedStudentId);
@@ -92,13 +95,13 @@ class TimelineController extends Controller
             }
         }
 
-        if ($targetUser && $targetUser->start_date && $targetUser->study_mode) {
+        if ($targetUser && $targetUser->start_date) {
             $checkpoint = StudentCheckpoint::firstOrCreate(['user_id' => $targetUser->id]);
 
             try {
                 $progressSnapshot = $timelineService->progressSnapshot(
                     $targetUser->start_date,
-                    $targetUser->study_mode,
+                    $targetUser->study_mode ?: 'full_time',
                     null,
                     $checkpoint
                 );
@@ -115,6 +118,44 @@ class TimelineController extends Controller
 
         $missingPrerequisites = $targetUser ? $predictionService->missingPrerequisites($targetUser) : [];
 
+        if ($targetUser && $checkpoint) {
+            if ($missingPrerequisites !== []) {
+                $predictionState = 'unavailable_prerequisites';
+            } else {
+                if ($predictionService->shouldRefreshOnProfileView($checkpoint)) {
+                    try {
+                        $predictionService->predictForStudent($targetUser->fresh('checkpoint'));
+                        $targetUser = $targetUser->fresh('checkpoint');
+                        $checkpoint = $targetUser->checkpoint ?: $checkpoint;
+
+                        $timelineService->syncForStudent($targetUser);
+                        $timelines = Timeline::query()
+                            ->where('user_id', $targetUser->id)
+                            ->orderBy('event_date')
+                            ->get();
+
+                        $progressSnapshot = $timelineService->progressSnapshot(
+                            $targetUser->start_date,
+                            $targetUser->study_mode ?: 'full_time',
+                            null,
+                            $checkpoint
+                        );
+                    } catch (\Throwable $e) {
+                        $predictionWarning = $e->getMessage();
+                    }
+                }
+
+                if (! is_null($checkpoint->got_probability)) {
+                    $predictionState = 'ready';
+                } elseif ($predictionWarning) {
+                    $predictionState = 'refresh_failed';
+                } else {
+                    $predictionState = 'refresh_failed';
+                    $predictionWarning = 'ML prediction could not be refreshed right now. Please try again later.';
+                }
+            }
+        }
+
         return view('timeline.index', compact(
             'timelines',
             'students',
@@ -122,7 +163,9 @@ class TimelineController extends Controller
             'progressSnapshot',
             'targetUser',
             'checkpoint',
-            'missingPrerequisites'
+            'missingPrerequisites',
+            'predictionState',
+            'predictionWarning'
         ));
     }
     
@@ -247,22 +290,34 @@ class TimelineController extends Controller
         $warning = null;
 
         try {
-            if ($student->start_date && $student->study_mode) {
-                $timelineService->syncForStudent($student->fresh('checkpoint'));
-            }
+            $predictionService->predictForStudent($student->fresh('checkpoint'));
         } catch (\Throwable $e) {
+            Log::warning('Checkpoint update prediction refresh failed.', [
+                'student_id' => $student->id,
+                'error' => $e->getMessage(),
+            ]);
             $warning = $e->getMessage();
         }
 
         try {
-            $predictionService->predictForStudent($student->fresh('checkpoint'));
+            if ($student->start_date) {
+                $timelineService->syncForStudent($student->fresh('checkpoint'));
+            }
         } catch (\Throwable $e) {
+            Log::warning('Checkpoint update timeline sync failed.', [
+                'student_id' => $student->id,
+                'error' => $e->getMessage(),
+            ]);
             $warning = $warning ? $warning . ' ' . $e->getMessage() : $e->getMessage();
         }
 
         try {
             $overdueNotificationService->dispatchForStudent($student->fresh('supervisor'));
         } catch (\Throwable $e) {
+            Log::warning('Checkpoint update overdue dispatch failed.', [
+                'student_id' => $student->id,
+                'error' => $e->getMessage(),
+            ]);
             $warning = $warning ? $warning . ' ' . $e->getMessage() : $e->getMessage();
         }
 

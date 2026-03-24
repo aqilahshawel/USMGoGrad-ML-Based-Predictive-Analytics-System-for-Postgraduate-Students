@@ -44,7 +44,7 @@ class CandidatureTimelineServiceTest extends TestCase
         $this->assertSame(3, $service->currentSemesterNumber($start, StudyMode::FullTime, CarbonImmutable::parse('2026-09-01')));
     }
 
-    public function test_progress_snapshot_marks_pending_when_student_has_no_checkpoint_evidence(): void
+    public function test_progress_snapshot_keeps_on_track_when_student_has_no_checkpoint_evidence(): void
     {
         $service = new CandidatureTimelineService();
 
@@ -55,7 +55,7 @@ class CandidatureTimelineServiceTest extends TestCase
             null
         );
 
-        $this->assertSame('pending', $snapshot['risk_status']);
+        $this->assertSame('on_track', $snapshot['risk_status']);
         $this->assertTrue($snapshot['show_ml_pending_badge']);
         $this->assertFalse($snapshot['has_checkpoint_evidence']);
     }
