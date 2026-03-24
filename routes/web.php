@@ -147,6 +147,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/lecturer/messages/{studentId}/send', [MessageController::class, 'sendMessage'])->name('lecturer.messages.send');
 });
 
-// Email Routes
-Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
-Route::post('/feedback/submit', [FeedbackController::class, 'submit'])->name('feedback.submit');
+// Feedback Routes (Student only)
+Route::middleware(['auth', 'role:student'])->group(function () {
+    Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback/submit', [FeedbackController::class, 'submit'])->name('feedback.submit');
+});

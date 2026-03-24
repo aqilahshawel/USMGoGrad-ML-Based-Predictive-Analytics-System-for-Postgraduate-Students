@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class CheckpointOverdueReminderNotification extends Notification
@@ -26,13 +25,7 @@ class CheckpointOverdueReminderNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        if (! empty($notifiable->email)) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
+        return ['database'];
     }
 
     /**
@@ -60,33 +53,6 @@ class CheckpointOverdueReminderNotification extends Notification
                 'tab' => 'checkpoint',
             ]),
         ];
-    }
-
-    public function toMail(object $notifiable): MailMessage
-    {
-        $url = route('timeline.index', [
-            'student_id' => $this->resolveStudentIdForRoute($notifiable),
-            'tab' => 'checkpoint',
-        ]);
-
-        $line = sprintf(
-            '%s is overdue for %s (target semester %d, current semester %d).',
-            $this->studentName,
-            $this->checkpointTitle,
-            $this->targetSemester,
-            $this->currentSemester
-        );
-
-        if ($this->targetDate) {
-            $line .= ' Target date: ' . $this->targetDate . '.';
-        }
-
-        return (new MailMessage)
-            ->subject('USMGoGrad Reminder: Overdue Checkpoint')
-            ->greeting('USMGoGrad Checkpoint Reminder')
-            ->line($line)
-            ->action('Open Timeline', $url)
-            ->line('Please update or review the checkpoint status in the system.');
     }
 
     private function resolveStudentIdForRoute(object $notifiable): ?int

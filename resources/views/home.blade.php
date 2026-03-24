@@ -176,72 +176,6 @@
         border: 1px solid #d8efe0;
     }
 
-    .overdue-notice-panel {
-        background: var(--surface);
-        border: 1px solid var(--lav-200);
-        border-radius: 14px;
-        padding: 1rem 1.15rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
-    }
-
-    .overdue-notice-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        margin-bottom: 0.6rem;
-    }
-
-    .overdue-notice-header h5 {
-        margin: 0;
-        font-family: var(--font-display);
-        color: var(--n-900);
-    }
-
-    .overdue-notice-count {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.35rem 0.7rem;
-        border-radius: 999px;
-        background: #fff5ef;
-        color: #d97706;
-        font-size: 0.78rem;
-        font-weight: 700;
-    }
-
-    .overdue-notice-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        gap: 0.6rem;
-    }
-
-    .overdue-notice-item {
-        border: 1px solid var(--n-100);
-        border-radius: 10px;
-        padding: 0.75rem 0.9rem;
-        background: var(--n-50);
-    }
-
-    .overdue-notice-item p {
-        margin: 0;
-        color: var(--n-700);
-        font-size: 0.88rem;
-    }
-
-    .overdue-notice-item .notice-meta {
-        margin-top: 0.35rem;
-        color: var(--muted);
-        font-size: 0.78rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-    }
-
     .roadmap-tabs {
         margin-bottom: 0;
     }
@@ -690,47 +624,6 @@
         </div>
     </div>
 </div>
-
-@if($recentOverdueNotifications->isNotEmpty())
-<div class="overdue-notice-panel">
-    <div class="overdue-notice-header">
-        <h5><i class="fas fa-bell"></i> Overdue Checkpoint Notifications</h5>
-        @if($unreadOverdueCount > 0)
-            <span class="overdue-notice-count">{{ $unreadOverdueCount }} unread</span>
-        @endif
-    </div>
-
-    <ul class="overdue-notice-list">
-        @foreach($recentOverdueNotifications as $notice)
-            @php
-                $data = $notice->data ?? [];
-                $timelineUrl = $data['timeline_url'] ?? route('timeline.index', ['tab' => 'checkpoint']);
-            @endphp
-            <li class="overdue-notice-item">
-                <p>{{ $data['message'] ?? 'An overdue checkpoint reminder is available.' }}</p>
-                <div class="notice-meta">
-                    <span><i class="fas fa-clock"></i> {{ optional($notice->created_at)->diffForHumans() }}</span>
-                    <div>
-                        <form method="POST" action="{{ route('notifications.openTimeline', $notice->id) }}" style="display:inline">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-arrow-right"></i> Open Timeline
-                            </button>
-                        </form>
-
-                        <form method="POST" action="{{ route('notifications.dismiss', $notice->id) }}" style="display:inline">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">
-                                Dismiss
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </li>
-        @endforeach
-    </ul>
-</div>
-@endif
 
 @if(Auth::user()->hasRole('admin'))
     <div class="user-stats">

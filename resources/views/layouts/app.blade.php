@@ -509,6 +509,151 @@
             color: var(--n-700);
         }
 
+        .notification-dock {
+            position: fixed;
+            right: 1.25rem;
+            bottom: 1.1rem;
+            z-index: 1090;
+            margin: 0;
+            pointer-events: none;
+        }
+
+        .notification-popover {
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .notification-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border: 1px solid var(--lav-200);
+            background: var(--surface);
+            color: var(--n-900);
+            font-weight: 600;
+            padding: 0.5rem 0.85rem;
+            box-shadow: 0 8px 18px rgba(46, 41, 36, 0.16);
+            border-radius: 999px;
+        }
+
+        .notification-toggle:hover,
+        .notification-toggle:focus {
+            background: var(--lav-100);
+            color: var(--lav-500);
+            border-color: var(--lav-300);
+        }
+
+        .notification-toggle .caret {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .notification-count-pill {
+            background: var(--peach-500);
+            color: #fff;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            line-height: 1;
+            padding: 0.25rem 0.45rem;
+            min-width: 1.35rem;
+            text-align: center;
+        }
+
+        .notification-menu {
+            width: min(420px, 92vw);
+            padding: 0;
+            border-radius: 14px;
+            border: 1px solid var(--lav-200);
+            box-shadow: 0 14px 28px rgba(46, 41, 36, 0.12);
+            overflow: hidden;
+            position: absolute;
+            bottom: calc(100% + 0.45rem);
+            right: 0;
+            top: auto;
+            z-index: 1080;
+            display: none;
+        }
+
+        .notification-menu.is-open {
+            display: block;
+        }
+
+        .notification-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0.95rem;
+            background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
+            border-bottom: 1px solid var(--lav-200);
+            color: var(--n-900);
+            font-size: 0.85rem;
+        }
+
+        .notification-menu-body {
+            max-height: 340px;
+            overflow-y: auto;
+            background: var(--surface);
+        }
+
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0.9rem;
+            border-bottom: 1px solid var(--n-100);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item-copy {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-item-copy p {
+            margin: 0;
+            font-size: 0.86rem;
+            color: var(--n-900);
+            line-height: 1.35;
+        }
+
+        .notification-item-copy small {
+            display: block;
+            margin-top: 0.3rem;
+            color: var(--muted);
+            font-size: 0.74rem;
+        }
+
+        .notification-item-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .notification-item-actions .btn {
+            padding: 0.35rem 0.55rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .notification-empty {
+            text-align: center;
+            padding: 1.2rem 0.9rem;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .notification-empty i {
+            display: block;
+            margin-bottom: 0.35rem;
+            color: var(--n-200);
+            font-size: 1.1rem;
+        }
+
         /* ── Nav Tabs ──────────────────────────────── */
         .nav-tabs {
             border-bottom: 2px solid var(--lav-200);
@@ -580,6 +725,15 @@
         }
 
         @media (max-width: 576px) {
+            .notification-dock {
+                right: 0.75rem;
+                bottom: 0.75rem;
+            }
+
+            .notification-menu {
+                width: min(94vw, 360px);
+            }
+
             .sidebar {
                 position: fixed;
                 left: -230px;
@@ -656,7 +810,13 @@
                     <a class="sidebar-nav-link {{ request()->is('timeline') ? 'active' : '' }}" href="{{ url('/timeline') }}"><i class="fas fa-timeline"></i> Timeline</a>
                     <a class="sidebar-nav-link {{ request()->is('student/messages') ? 'active' : '' }}" href="{{ url('/student/messages') }}"><i class="fas fa-envelope"></i> Messenger</a>
                     <a class="sidebar-nav-link {{ request()->is('scheduling') ? 'active' : '' }}" href="{{ url('/scheduling') }}"><i class="fas fa-calendar"></i> Schedule</a>
-                    <a class="sidebar-nav-link {{ request()->is('feedback') ? 'active' : '' }}" href="{{ url('/feedback') }}"><i class="fas fa-comment"></i> Feedback</a>
+                    @php
+                        $feedbackAvailableOn = optional(Auth::user()->start_date)->copy()->addMonthsNoOverflow(2);
+                        $canAccessFeedback = $feedbackAvailableOn && now()->gte($feedbackAvailableOn->startOfDay());
+                    @endphp
+                    @if ($canAccessFeedback)
+                        <a class="sidebar-nav-link {{ request()->is('feedback') ? 'active' : '' }}" href="{{ url('/feedback') }}"><i class="fas fa-comment"></i> Feedback</a>
+                    @endif
                     @endrole
 
                     @role('admin')
@@ -682,6 +842,69 @@
     <!-- Main Content -->
     <main class="container-main">
         <div class="container-fluid px-4">
+            @auth
+                @php
+                    $globalNotificationItems = $globalNotificationItems ?? collect();
+                    $globalUnreadNotificationCount = $globalUnreadNotificationCount ?? 0;
+                @endphp
+                <div class="notification-dock">
+                    <div class="notification-popover">
+                        <button
+                            class="btn notification-toggle"
+                            type="button"
+                            id="globalNotificationToggle"
+                            aria-expanded="false"
+                        >
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                            <span class="notification-count-pill">{{ $globalUnreadNotificationCount > 99 ? '99+' : $globalUnreadNotificationCount }}</span>
+                            <i class="fas fa-chevron-down caret"></i>
+                        </button>
+
+                        <div class="notification-menu" id="globalNotificationPanel" aria-labelledby="globalNotificationToggle">
+                            <div class="notification-menu-header">
+                                <strong>Notifications</strong>
+                                <span>{{ $globalUnreadNotificationCount }}</span>
+                            </div>
+                            <div class="notification-menu-body">
+                                @forelse ($globalNotificationItems as $item)
+                                    <div class="notification-item">
+                                        <div class="notification-item-copy">
+                                            <p>{{ $item['message'] ?? 'You have a new notification.' }}</p>
+                                            <small><i class="fas fa-clock"></i> {{ optional($item['created_at'] ?? null)->diffForHumans() ?? 'Just now' }}</small>
+                                        </div>
+                                        <div class="notification-item-actions">
+                                            @if (($item['action_type'] ?? 'link') === 'post')
+                                                <form method="POST" action="{{ $item['action_url'] ?? '#' }}">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-outline-primary">{{ $item['action_label'] ?? 'Open' }}</button>
+                                                </form>
+                                            @elseif (!empty($item['action_url']))
+                                                <a href="{{ $item['action_url'] }}" class="btn btn-outline-primary">{{ $item['action_label'] ?? 'Open' }}</a>
+                                            @endif
+
+                                            @if (!empty($item['dismiss_url']))
+                                                <form method="POST" action="{{ $item['dismiss_url'] }}">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-light" aria-label="Dismiss notification">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="notification-empty">
+                                        <i class="fas fa-bell-slash"></i>
+                                        No new notification.
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endauth
+
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <strong>Oops!</strong> There were some errors with your input:
@@ -720,13 +943,6 @@
             @yield('content')
         </div>
     </main>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container-fluid px-4">
-            <p class="mb-0">&copy; 2025 USMGoGrad. All rights reserved. | Developed with <i class="fas fa-heart"></i> for USM Students</p>
-        </div>
-    </footer>
 
         </div><!-- /.main-wrapper -->
     </div><!-- /.layout-wrapper -->
@@ -769,6 +985,39 @@
             overlay.addEventListener('click', function () {
                 sidebar.classList.remove('sidebar-open');
                 overlay.classList.remove('active');
+            });
+        })();
+
+        // Global notification popover toggle
+        (function () {
+            var toggle = document.getElementById('globalNotificationToggle');
+            var panel = document.getElementById('globalNotificationPanel');
+            if (!toggle || !panel) return;
+
+            function closePanel() {
+                panel.classList.remove('is-open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+
+            toggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                var isOpen = panel.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            panel.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+
+            document.addEventListener('click', function () {
+                closePanel();
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closePanel();
+                }
             });
         })();
     </script>

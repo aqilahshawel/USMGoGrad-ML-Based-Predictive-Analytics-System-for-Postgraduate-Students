@@ -100,14 +100,7 @@
     @endif
 
     <div class="scheduling-header">
-        <h1><i class="fas fa-calendar-alt"></i> Scheduling</h1>
-        <p>
-            @if($canCreateEvents)
-                Manage your availability and sync events with Google Calendar.
-            @else
-                View your supervisor's schedule.
-            @endif
-        </p>
+        <h1><i class="fas fa-calendar-alt me-2"></i> Manage Schedule </h1>
     </div>
 
     <div class="calendar-status-card">

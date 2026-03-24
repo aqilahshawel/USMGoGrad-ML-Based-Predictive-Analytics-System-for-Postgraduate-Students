@@ -6,20 +6,19 @@
 
 <style>
     .feedback-header {
-        background: linear-gradient(135deg, var(--peach-300) 0%, var(--peach-400) 100%);
+        background: linear-gradient(135deg, var(--lav-200) 0%, var(--lav-300) 100%);
         color: var(--n-900);
         padding: 1.25rem 2rem;
         border-radius: 18px;
         margin-bottom: 1.5rem;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(224, 125, 69, 0.15);
+        box-shadow: 0 4px 20px rgba(124, 111, 179, 0.15);
     }
 
     .feedback-header::after {
         content: '';
         position: absolute;
-        right: -40px; bottom: -40px;
         width: 200px; height: 200px;
         background: rgba(255,255,255,0.06);
         border-radius: 50%;
@@ -43,7 +42,6 @@
         border-radius: 14px;
         padding: 2.5rem;
         box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
-        max-width: 600px;
         margin: 0 auto;
         border: 1px solid var(--lav-200);
         transition: all 0.25s ease;
@@ -68,7 +66,7 @@
 
     .form-group label i {
         margin-right: 0.5rem;
-        color: var(--peach-500);
+        color: var(--lav-500);
         font-size: 1rem;
     }
 
@@ -84,8 +82,8 @@
 
     .form-control:focus,
     .form-textarea:focus {
-        border-color: var(--peach-400);
-        box-shadow: 0 0 0 3px rgba(224, 125, 69, 0.10);
+        border-color: var(--lav-400);
+        box-shadow: 0 0 0 3px rgba(124, 111, 179, 0.10);
         outline: none;
     }
 
@@ -100,7 +98,7 @@
         font-weight: 600;
         font-size: 1rem;
         border-radius: 8px;
-        background: var(--peach-500);
+        background: var(--lav-500);
         color: white;
         border: none;
         transition: all 0.25s ease;
@@ -108,16 +106,16 @@
     }
 
     .btn-submit:hover {
-        background: var(--peach-400);
+        background: var(--lav-400);
         transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(224, 125, 69, 0.25);
+        box-shadow: 0 4px 16px rgba(124, 111, 179, 0.25);
         color: white;
     }
 
     .success-alert {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border-left: 4px solid #3d9970;
+        background: var(--lav-100);
+        color: var(--lav-500);
+        border-left: 4px solid var(--lav-400);
         border-radius: 10px;
         padding: 1rem;
         margin-bottom: 1.5rem;
