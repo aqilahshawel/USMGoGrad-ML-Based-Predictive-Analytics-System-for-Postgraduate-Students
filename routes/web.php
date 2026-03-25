@@ -76,13 +76,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 // Scheduling Routes (Lecturer + Student visibility)
 Route::middleware(['auth', 'role:lecturer|student'])->group(function () {
-    Route::get('/scheduling', [ScheduleController::class, 'index']);
+    Route::get('/scheduling', [ScheduleController::class, 'index'])->name('scheduling.index');
     Route::get('/get-availability', [ScheduleController::class, 'getAvailability']);
     Route::get('/get-events', [ScheduleController::class, 'getEvents']); // Fixed this
 });
 
+Route::middleware(['auth', 'role:student'])->group(function () {
+    Route::post('/meeting-requests', [ScheduleController::class, 'storeMeetingRequest'])->name('meeting-requests.store');
+});
+
 Route::middleware(['auth', 'role:lecturer'])->group(function () {
     Route::post('/save-event', [ScheduleController::class, 'saveEvent']);
+    Route::put('/meeting-requests/{meetingRequest}/approve', [ScheduleController::class, 'approveMeetingRequest'])->name('meeting-requests.approve');
+    Route::put('/meeting-requests/{meetingRequest}/reject', [ScheduleController::class, 'rejectMeetingRequest'])->name('meeting-requests.reject');
 });
 
 Route::middleware(['auth', 'role:lecturer'])->prefix('calendar/google')->name('calendar.google.')->group(function () {
@@ -100,7 +106,6 @@ Route::middleware(['auth'])->group(function () {
         abort_unless($user, 403);
 
         $notification = $user->notifications()
-            ->where('type', CheckpointOverdueReminderNotification::class)
             ->whereKey($id)
             ->firstOrFail();
 
@@ -122,6 +127,20 @@ Route::middleware(['auth'])->group(function () {
         $url = $notification->data['timeline_url'] ?? route('timeline.index', ['tab' => 'checkpoint']);
         return redirect()->to($url);
     })->name('notifications.openTimeline');
+
+    Route::post('/notifications/{id}/open', function (string $id) {
+        $user = auth()->user();
+        abort_unless($user, 403);
+
+        $notification = $user->notifications()
+            ->whereKey($id)
+            ->firstOrFail();
+
+        $notification->markAsRead();
+
+        $url = $notification->data['action_url'] ?? route('home');
+        return redirect()->to($url);
+    })->name('notifications.open');
 });
 
 // Timeline approval (Lecturer only)

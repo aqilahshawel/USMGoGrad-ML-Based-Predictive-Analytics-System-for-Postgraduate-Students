@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Message;
 use App\Models\User;
 use App\Notifications\CheckpointOverdueReminderNotification;
+use App\Notifications\MeetingRequestWorkflowNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
@@ -31,21 +32,36 @@ class AppServiceProvider extends ServiceProvider
 
             $user = Auth::user();
             if ($user) {
-                $overdueNotifications = $user->unreadNotifications()
-                    ->where('type', CheckpointOverdueReminderNotification::class)
+                $workflowNotifications = $user->unreadNotifications()
+                    ->whereIn('type', [
+                        CheckpointOverdueReminderNotification::class,
+                        MeetingRequestWorkflowNotification::class,
+                    ])
                     ->latest()
                     ->get();
 
-                $overdueItems = $overdueNotifications->map(function ($notice) {
+                $workflowItems = $workflowNotifications->map(function ($notice) {
                     $data = $notice->data ?? [];
 
+                    if ($notice->type === CheckpointOverdueReminderNotification::class) {
+                        return [
+                            'type' => 'overdue',
+                            'message' => $data['message'] ?? 'An overdue checkpoint reminder is available.',
+                            'created_at' => $notice->created_at,
+                            'action_type' => 'post',
+                            'action_url' => route('notifications.openTimeline', $notice->id),
+                            'action_label' => 'Open',
+                            'dismiss_url' => route('notifications.dismiss', $notice->id),
+                        ];
+                    }
+
                     return [
-                        'type' => 'overdue',
-                        'message' => $data['message'] ?? 'An overdue checkpoint reminder is available.',
+                        'type' => 'meeting',
+                        'message' => $data['message'] ?? 'A meeting request update is available.',
                         'created_at' => $notice->created_at,
                         'action_type' => 'post',
-                        'action_url' => route('notifications.openTimeline', $notice->id),
-                        'action_label' => 'Open',
+                        'action_url' => route('notifications.open', $notice->id),
+                        'action_label' => $data['action_label'] ?? 'Open schedule',
                         'dismiss_url' => route('notifications.dismiss', $notice->id),
                     ];
                 });
@@ -89,7 +105,7 @@ class AppServiceProvider extends ServiceProvider
                     ];
                 });
 
-                $globalNotificationItems = $overdueItems
+                $globalNotificationItems = $workflowItems
                     ->concat($chatItems)
                     ->sortByDesc(function (array $item) {
                         $createdAt = $item['created_at'] ?? null;
@@ -99,7 +115,7 @@ class AppServiceProvider extends ServiceProvider
                     ->take(8)
                     ->values();
 
-                $globalUnreadNotificationCount = (int) $overdueNotifications->count()
+                $globalUnreadNotificationCount = (int) $workflowNotifications->count()
                     + (int) $chatUnreadGroups->sum('unread_count');
             }
 

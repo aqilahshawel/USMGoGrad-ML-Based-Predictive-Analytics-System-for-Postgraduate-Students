@@ -512,7 +512,7 @@
         .notification-dock {
             position: fixed;
             right: 1.25rem;
-            bottom: 1.1rem;
+            top: 1rem;
             z-index: 1090;
             margin: 0;
             pointer-events: none;
@@ -567,9 +567,9 @@
             box-shadow: 0 14px 28px rgba(46, 41, 36, 0.12);
             overflow: hidden;
             position: absolute;
-            bottom: calc(100% + 0.45rem);
+            top: calc(100% + 0.45rem);
             right: 0;
-            top: auto;
+            bottom: auto;
             z-index: 1080;
             display: none;
         }
@@ -727,7 +727,7 @@
         @media (max-width: 576px) {
             .notification-dock {
                 right: 0.75rem;
-                bottom: 0.75rem;
+                top: 0.75rem;
             }
 
             .notification-menu {

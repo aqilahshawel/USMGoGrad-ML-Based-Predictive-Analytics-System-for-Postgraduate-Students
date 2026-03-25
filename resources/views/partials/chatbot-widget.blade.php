@@ -344,6 +344,7 @@
                         var chips = [
                             { label: 'My Reminders', icon: 'fa-bell', msg: 'reminder' },
                             { label: 'Supervisor Schedule', icon: 'fa-calendar', msg: 'is my supervisor free this week' },
+                            { label: 'Suggest Meeting Slot', icon: 'fa-clock', msg: 'suggest suitable meeting times with my supervisor' },
                             { label: 'IPS News', icon: 'fa-newspaper', msg: 'show latest IPS news' },
                             { label: 'Next Checkpoint', icon: 'fa-flag-checkered', msg: 'next checkpoint' },
                             { label: 'Graduation Timeline', icon: 'fa-graduation-cap', msg: 'time before graduation' },

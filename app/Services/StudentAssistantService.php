@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\MeetingRequest;
 use App\Models\Schedule;
 use App\Models\StudentCheckpoint;
 use App\Models\User;
@@ -16,6 +17,7 @@ class StudentAssistantService
     public function __construct(
         private readonly CandidatureTimelineService $timelineService,
         private readonly GoogleCalendarService $googleCalendarService,
+        private readonly MeetingRequestService $meetingRequestService,
         private readonly OverdueCheckpointNotificationService $overdueNotificationService,
         private readonly IpsNewsService $ipsNewsService,
     ) {
@@ -39,6 +41,10 @@ class StudentAssistantService
 
         if ($this->isSupervisorAvailabilityIntent($normalized)) {
             return $this->buildSupervisorAvailabilityResponse($user);
+        }
+
+        if ($this->isMeetingRecommendationIntent($normalized)) {
+            return $this->buildMeetingRecommendationResponse($user);
         }
 
         if ($this->isCheckpointIntent($normalized)) {
@@ -78,6 +84,18 @@ class StudentAssistantService
         return (Str::contains($message, ['supervisor', 'sv'])
             && Str::contains($message, ['free', 'available', 'availability', 'week', 'slot', 'schedule']))
             || Str::contains($message, ['is my supervisor free']);
+    }
+
+    private function isMeetingRecommendationIntent(string $message): bool
+    {
+        return Str::contains($message, [
+            'suggest meeting',
+            'recommend meeting',
+            'suitable time',
+            'best time to meet',
+            'meeting slot',
+            'when should i meet',
+        ]);
     }
 
     private function isCheckpointIntent(string $message): bool
@@ -139,6 +157,15 @@ class StudentAssistantService
         $snapshot = $this->progressSnapshot($student);
         if ($snapshot) {
             $parts[] = '- Current progress: Semester ' . $snapshot['current_semester'] . ', stage: ' . $snapshot['stage_title'] . ', risk: ' . $snapshot['risk_status'] . '.';
+        }
+
+        $nextMeeting = $this->nextApprovedMeeting($student);
+        if ($nextMeeting) {
+            $parts[] = '- Next approved supervisor meeting: ' . $nextMeeting->requested_start->format('d M Y H:i') . ' (' . $nextMeeting->topic . ').';
+        }
+
+        if (! $this->hasRecentSupervisorInteraction($student)) {
+            $parts[] = '- Monthly follow-up: no approved meeting was recorded in the last 30 days, so please apply for a new meeting slot.';
         }
 
         $topic = $this->pickRotatingSuggestion((string) $student->cluster);
@@ -235,6 +262,36 @@ class StudentAssistantService
         }
 
         $lines[] = 'For exact booking, please still confirm with your supervisor directly.';
+
+        return implode("\n", $lines);
+    }
+
+    private function buildMeetingRecommendationResponse(User $student): string
+    {
+        $supervisor = $student->supervisor;
+
+        if (! $supervisor || ! $supervisor->hasRole('lecturer')) {
+            return 'I cannot suggest meeting slots yet because your supervisor is not assigned in the system.';
+        }
+
+        $slots = $this->meetingRequestService->recommendSlotsForStudent($student, daysAhead: 14, maxSlots: 4);
+
+        if ($slots === []) {
+            return 'I could not find clear slots in the next 14 days. Please check the schedule page and try applying for another time.';
+        }
+
+        $lines = [];
+        $lines[] = 'Here are suitable meeting slots with your supervisor (' . $supervisor->name . '):';
+
+        foreach ($slots as $slot) {
+            $lines[] = '- ' . ($slot['label'] ?? 'Suggested slot');
+        }
+
+        if (! $this->hasRecentSupervisorInteraction($student)) {
+            $lines[] = 'Monthly reminder: you have no approved supervisor meeting in the last 30 days. Please submit one of these slots.';
+        }
+
+        $lines[] = 'Apply directly from the Schedule page by selecting a slot on the calendar.';
 
         return implode("\n", $lines);
     }
@@ -359,6 +416,7 @@ class StudentAssistantService
         return implode("\n", [
             'You can ask me things like:',
             '- Is my supervisor free this week?',
+            '- Suggest suitable meeting times with my supervisor.',
             '- When is my next checkpoint?',
             '- How much time before graduation?',
             '- What is my ideal period/current stage now?',
@@ -512,6 +570,25 @@ class StudentAssistantService
         $index = now()->dayOfYear % $suggestions->count();
 
         return $suggestions->get($index);
+    }
+
+    private function hasRecentSupervisorInteraction(User $student): bool
+    {
+        return MeetingRequest::query()
+            ->where('student_id', $student->id)
+            ->where('status', MeetingRequest::STATUS_APPROVED)
+            ->where('requested_start', '>=', now()->subDays(30))
+            ->exists();
+    }
+
+    private function nextApprovedMeeting(User $student): ?MeetingRequest
+    {
+        return MeetingRequest::query()
+            ->where('student_id', $student->id)
+            ->where('status', MeetingRequest::STATUS_APPROVED)
+            ->where('requested_start', '>=', now())
+            ->orderBy('requested_start')
+            ->first();
     }
 
     private function safeParseDate(string $value): ?CarbonImmutable

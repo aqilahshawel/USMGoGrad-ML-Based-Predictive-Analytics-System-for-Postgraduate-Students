@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Models\User;
 use App\Services\CandidatureTimelineService;
+use App\Services\MeetingRequestService;
 use App\Services\OverdueCheckpointNotificationService;
 use App\Services\StudentCheckpointPredictionService;
 
@@ -185,8 +186,28 @@ Artisan::command('assistant:dispatch-reminders {studentId? : Student user id} {-
     return self::SUCCESS;
 })->purpose('Dispatch overdue checkpoint reminders for students and supervisors');
 
+Artisan::command('assistant:dispatch-meeting-notifications', function () {
+    /** @var ClosureCommand $this */
+    $service = app(MeetingRequestService::class);
+
+    $upcomingSent = $service->dispatchUpcomingApprovedMeetingReminders();
+    $monthlySent = $service->dispatchMonthlyStudentEngagementReminders();
+
+    $this->info(sprintf(
+        'Done. Upcoming reminders sent=%d, monthly reminders sent=%d',
+        $upcomingSent,
+        $monthlySent
+    ));
+
+    return self::SUCCESS;
+})->purpose('Dispatch approved meeting reminders and monthly supervisor-meeting nudges');
+
 Schedule::command('assistant:dispatch-reminders --all')
     ->dailyAt('09:00')
+    ->withoutOverlapping();
+
+Schedule::command('assistant:dispatch-meeting-notifications')
+    ->dailyAt('08:45')
     ->withoutOverlapping();
 
 Schedule::command('ml:predict-got --all')

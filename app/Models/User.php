@@ -57,4 +57,14 @@ class User extends Authenticatable
         return $this->hasOne(StudentCheckpoint::class);
     }
 
+    public function meetingRequestsAsStudent(): HasMany
+    {
+        return $this->hasMany(MeetingRequest::class, 'student_id');
+    }
+
+    public function meetingRequestsAsSupervisor(): HasMany
+    {
+        return $this->hasMany(MeetingRequest::class, 'supervisor_id');
+    }
+
 }
