@@ -4,8 +4,6 @@
 
 @section('content')
 @php
-    $activeTab = request('tab', 'roadmap');
-
     $checkpointStyles = [
         'ekc500_admin_approval' => ['icon' => 'fa-file-circle-check', 'color' => '#7c6fb3', 'bg' => '#f3f0ff'],
         'proposal_review' => ['icon' => 'fa-file-signature', 'color' => '#e07d45', 'bg' => '#fff5ef'],
@@ -624,217 +622,12 @@
                             </option>
                         @endforeach
                     </select>
-                    @if($activeTab === 'checkpoint')
-                        <input type="hidden" name="tab" value="checkpoint">
-                    @endif
                 </form>
             </div>
         </section>
     @endif
 
-    <ul class="nav timeline-tabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $activeTab === 'roadmap' ? 'active' : '' }}" id="roadmap-tab" data-bs-toggle="tab" data-bs-target="#roadmap-panel" type="button" role="tab" aria-selected="{{ $activeTab === 'roadmap' ? 'true' : 'false' }}">
-                        <i class="fas fa-map"></i> Timeline Roadmap
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $activeTab === 'checkpoint' ? 'active' : '' }}" id="checkpoint-tab" data-bs-toggle="tab" data-bs-target="#checkpoint-panel" type="button" role="tab" aria-selected="{{ $activeTab === 'checkpoint' ? 'true' : 'false' }}">
-                        <i class="fas fa-brain"></i> Timeline Update
-                    </button>
-                </li>
-            </ul>
-
-            <div class="tab-content">
-                <div class="tab-pane fade {{ $activeTab === 'roadmap' ? 'show active' : '' }}" id="roadmap-panel" role="tabpanel" aria-labelledby="roadmap-tab">
-                    <div class="timeline-tab-section">
-                    @if($progressSnapshot)
-                        <div class="progress-summary">
-                            <div class="progress-card risk-{{ $progressSnapshot['risk_status'] }}">
-                                <div class="pc-value">{{ $progressSnapshot['current_semester'] ?: '—' }}</div>
-                                <div class="pc-label">Current Semester</div>
-                            </div>
-                            <div class="progress-card">
-                                <div class="pc-value" style="color: var(--lav-500);">{{ $completedStops }}/{{ $totalStops }}</div>
-                                <div class="pc-label">Core Checkpoints Completed</div>
-                            </div>
-                            <div class="progress-card risk-{{ $progressSnapshot['risk_status'] }}">
-                                <div class="pc-value">{{ $progressSnapshot['display_risk_label'] ?? str_replace('_', ' ', ucwords($progressSnapshot['risk_status'], '_')) }}</div>
-                                <div class="pc-label">Current Status</div>
-                                @if(!empty($progressSnapshot['show_ml_pending_badge']))
-                                    <div class="pc-meta">ML prediction pending</div>
-                                @elseif(!empty($progressSnapshot['has_checkpoint_delay']))
-                                    <div class="pc-meta">Checkpoint delay detected</div>
-                                @endif
-                            </div>
-                            <div class="progress-card">
-                                <div class="pc-value" style="font-size: 1rem; color: var(--gold-500); padding-top: 0.25rem;">{{ $progressSnapshot['stage_title'] ?? '—' }}</div>
-                                <div class="pc-label">Current Stage</div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if(auth()->user()->hasRole('student'))
-                        <section class="timeline-panel">
-                            <div class="timeline-panel-header">
-                                <h4>Add New Event</h4>
-                            </div>
-                            <div class="timeline-panel-body timeline-form">
-                                <form action="{{ route('timeline.store') }}" method="POST">
-                                    @csrf
-                                    <div class="timeline-form-grid">
-                                        <div>
-                                            <label for="title" class="form-label fw-semibold">Title</label>
-                                            <input type="text" id="title" name="title" value="{{ old('title') }}" class="@error('title') is-invalid @enderror" placeholder="e.g. Internal mock presentation" required>
-                                            @error('title') <span class="invalid-feedback d-block mt-2">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div>
-                                            <label for="event_date" class="form-label fw-semibold">Target Date</label>
-                                            <input type="date" id="event_date" name="event_date" value="{{ old('event_date') }}" class="@error('event_date') is-invalid @enderror" required>
-                                            @error('event_date') <span class="invalid-feedback d-block mt-2">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div>
-                                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-paper-plane"></i> Submit</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </section>
-                    @endif
-
-                    @if($systemStops->isNotEmpty())
-                        <div class="road-path">
-                            <div class="road-marker">
-                                <div class="road-marker-icon" style="background: var(--lav-500);"><i class="fas fa-play"></i></div>
-                                <div class="road-marker-label">Registration Completed</div>
-                            </div>
-
-                            @foreach($systemStops as $stop)
-                                @php
-                                    $key = str_replace('checkpoint:', '', $stop->system_key);
-                                    $style = $checkpointStyles[$key] ?? $defaultStyle;
-                                    $actualField = $checkpointFieldMap[$stop->system_key] ?? null;
-                                    $actualValue = $actualField && $checkpoint ? $checkpoint->{$actualField} : null;
-                                    $isCompleted = (bool) $stop->completed;
-                                    $isCurrent = ! $isCompleted && $currentStopId === $stop->id;
-                                    $isOverdue = ! $isCompleted && $progressSnapshot && $stop->semester_number && $progressSnapshot['current_semester'] > $stop->semester_number;
-                                    $cardClass = $isCompleted ? 'completed' : ($isOverdue ? 'warning' : ($isCurrent ? 'current' : ''));
-                                @endphp
-                                <div class="road-stop">
-                                    <div class="road-node {{ $isCompleted ? 'node-completed' : ($isCurrent ? 'node-current' : '') }}"
-                                         @if(! $isCompleted && ! $isCurrent) style="background: {{ $style['bg'] }}; color: {{ $style['color'] }}; border-color: {{ $style['bg'] }};" @endif>
-                                        @if($isCompleted)
-                                            <i class="fas fa-check"></i>
-                                        @elseif($isCurrent)
-                                            <i class="fas fa-location-dot" style="color: {{ $style['color'] }};"></i>
-                                        @else
-                                            <i class="fas {{ $style['icon'] }}"></i>
-                                        @endif
-                                    </div>
-
-                                    <div class="road-card {{ $cardClass }}">
-                                        <div class="road-card-header">
-                                            <div class="road-card-title">
-                                                <i class="fas {{ $style['icon'] }}" style="color: {{ $style['color'] }};"></i>
-                                                {{ $stop->title }}
-                                            </div>
-                                            @if($isCompleted)
-                                                <span class="status-pill pill-completed"><i class="fas fa-check-circle"></i> Completed</span>
-                                            @elseif($isOverdue)
-                                                <span class="status-pill pill-warning"><i class="fas fa-bell"></i> Reminder Needed</span>
-                                            @elseif($isCurrent)
-                                                <span class="status-pill pill-current"><i class="fas fa-spinner fa-pulse"></i> Current Focus</span>
-                                            @else
-                                                <span class="status-pill pill-upcoming"><i class="fas fa-hourglass-start"></i> Upcoming</span>
-                                            @endif
-                                        </div>
-
-                                        <div class="road-card-meta">
-                                            Target by {{ optional($stop->event_date)->format('d M Y') }}
-                                            @if($stop->semester_number)
-                                                &middot; Semester {{ $stop->semester_number }}
-                                            @endif
-                                        </div>
-
-                                        @if($actualField === 'ekc500_admin_approved' && $actualValue)
-                                            <div class="checkpoint-pill">Passed</div>
-                                        @elseif($actualValue)
-                                            <div class="checkpoint-pill">Completed on {{ $actualValue->format('d M Y') }}</div>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-
-                            <div class="road-marker" style="margin-top: 0.65rem;">
-                                <div class="road-marker-icon" style="background: {{ $completedStops >= $totalStops && $totalStops > 0 ? '#3d9970' : 'var(--n-300)' }};">
-                                    <i class="fas fa-flag-checkered"></i>
-                                </div>
-                                <div class="road-marker-label">
-                                    @if($maxDurationRow)
-                                        Maximum candidature duration: {{ optional($maxDurationRow->event_date)->format('d M Y') }}
-                                    @else
-                                        Finish Line
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @else
-                        <div class="checkpoint-note info">
-                            No generated checkpoint roadmap is available yet. Complete the student registration details first.
-                        </div>
-                    @endif
-
-                    @if($customRows->isNotEmpty())
-                        <div class="additional-events">
-                            <section class="timeline-panel">
-                                <div class="timeline-panel-header">
-                                    <h4>Additional Timeline Events</h4>
-                                    <p>Extra events outside the core candidature checkpoint sequence.</p>
-                                </div>
-                                <div class="timeline-panel-body">
-                                    @foreach($customRows as $row)
-                                        <div class="additional-event-item">
-                                            <div class="additional-event-header">
-                                                <div>
-                                                    <div class="additional-event-title">{{ $row->title }}</div>
-                                                    <div class="additional-event-meta">
-                                                        {{ optional($row->event_date)->format('d M Y') }}
-                                                        &middot; {{ ucfirst($row->status ?? 'approved') }}
-                                                    </div>
-                                                </div>
-                                                @if($row->status === 'approved')
-                                                    <span class="status-pill pill-completed"><i class="fas fa-check-circle"></i> Approved</span>
-                                                @elseif($row->status === 'pending')
-                                                    <span class="status-pill pill-warning"><i class="fas fa-clock"></i> Pending Review</span>
-                                                @else
-                                                    <span class="status-pill pill-warning"><i class="fas fa-ban"></i> Rejected</span>
-                                                @endif
-                                            </div>
-
-                                            @if(auth()->user()->hasRole('lecturer') && $row->status === 'pending')
-                                                <div class="additional-event-actions">
-                                                    <form action="{{ route('timeline.approve', $row->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check-circle"></i> Approve</button>
-                                                    </form>
-                                                    <form action="{{ route('timeline.reject', $row->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-ban"></i> Reject</button>
-                                                    </form>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </section>
-                        </div>
-                    @endif
-                    </div>
-                </div>
-
-                <div class="tab-pane fade {{ $activeTab === 'checkpoint' ? 'show active' : '' }}" id="checkpoint-panel" role="tabpanel" aria-labelledby="checkpoint-tab">
+    <div class="timeline-tab-section">
                     @if($targetUser)
                         <div class="checkpoint-grid">
                             <section class="timeline-panel">
@@ -1044,7 +837,6 @@
                         </div>
                     @endif
                 </div>
-            </div>
 </div>
 
 @if(auth()->user()->hasRole('student'))

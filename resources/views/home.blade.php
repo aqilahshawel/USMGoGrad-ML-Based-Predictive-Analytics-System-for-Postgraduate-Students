@@ -485,121 +485,362 @@
         }
     }
 
-    /* ═══════════════════════════════════════════
-       HORIZONTAL JOURNEY PATH (Home page)
-       ═══════════════════════════════════════════ */
-    .hjourney-wrap {
-        overflow-x: auto;
-        overflow-y: visible;
-        padding: 0.25rem 0 0.25rem;
-        -webkit-overflow-scrolling: touch;
-        /* shrink to content so no phantom space appears to the right */
-        display: inline-block;
-        min-width: 100%;
-        box-sizing: border-box;
-    }
-    .hjourney-wrap::-webkit-scrollbar {
-        height: 6px;
-    }
-    .hjourney-wrap::-webkit-scrollbar-thumb {
-        background: var(--lav-200);
-        border-radius: 3px;
+    .timeline-panel {
+        background: var(--surface);
+        border: 1px solid var(--lav-200);
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
     }
 
-    .hjourney {
-        display: inline-flex;
-        align-items: flex-start;
-        gap: 0;
-        padding: 0.25rem 0 0.25rem;
+    .timeline-panel-header {
+        padding: 1.15rem 1.35rem 0.75rem;
     }
 
-    /* Connector line — sits between nodes, no overflow */
-    .hjourney-connector {
-        width: 48px;
-        height: 4px;
-        border-radius: 2px;
-        align-self: flex-start;
-        /* center vertically with 46px node: (46-4)/2 + 4px top padding = 25px */
-        margin-top: 25px;
-        flex-shrink: 0;
-        background: var(--lav-200);
+    .timeline-panel-header h4,
+    .timeline-panel-header h5 {
+        margin: 0;
+        color: var(--n-900);
+        font-family: var(--font-display);
     }
-    .hjourney-connector.connector-done   { background: #3d9970; }
-    .hjourney-connector.connector-active { background: linear-gradient(90deg, #3d9970, var(--lav-300)); }
-    .hjourney-connector.connector-future { background: var(--n-200); }
 
-    .hjourney-stop {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-width: 100px;
-        max-width: 130px;
+    .timeline-panel-header p {
+        margin: 0.35rem 0 0;
+        color: var(--n-700);
+    }
+
+    .timeline-panel-body {
+        padding: 0 1.35rem 1.35rem;
+    }
+
+    .progress-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-card {
+        background: var(--surface);
+        border: 1px solid var(--lav-200);
+        border-radius: 14px;
+        padding: 1rem 1.1rem;
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        text-align: center;
+    }
+
+    .progress-card .pc-value {
+        font-family: var(--font-display);
+        font-size: 1.55rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .progress-card .pc-label {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 0.35rem;
+    }
+
+    .progress-card .pc-meta {
+        margin-top: 0.45rem;
+        font-size: 0.76rem;
+        color: var(--n-700);
+    }
+
+    .risk-on_track .pc-value {
+        color: #2e7d32;
+    }
+
+    .risk-at_risk .pc-value {
+        color: #d97706;
+    }
+
+    .risk-overdue .pc-value {
+        color: #c2410c;
+    }
+
+    .risk-pending .pc-value {
+        color: var(--lav-500);
+    }
+
+    .risk-high_risk .pc-value {
+        color: #b42318;
+    }
+
+    .road-path {
         position: relative;
-        z-index: 1;
-        flex-shrink: 0;
-    }
-    .hjourney-marker {
-        min-width: 60px;
-        max-width: 60px;
+        padding: 1rem 0 2rem;
+        width: 100%;
     }
 
-    .hjourney-node {
-        width: 46px;
-        height: 46px;
+    .road-path::before {
+        content: '';
+        position: absolute;
+        left: 62px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--lav-300), var(--lav-200) 70%, #e0e0e0);
+        border-radius: 2px;
+    }
+
+    .road-marker {
+        padding-left: 42px;
+        position: relative;
+        z-index: 2;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .road-marker-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .road-marker-label {
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--muted);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .road-stop {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 0.7rem;
+        padding-left: 100px;
+    }
+
+    .road-node {
+        position: absolute;
+        left: 62px;
+        transform: translateX(-50%);
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1rem;
+        z-index: 2;
         border: 3px solid var(--surface);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        background: var(--n-100);
-        color: var(--n-700);
-        transition: transform 0.2s ease;
-        flex-shrink: 0;
-    }
-    .hjourney-stop:hover .hjourney-node {
-        transform: scale(1.12);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
     }
 
-    .hnode-done {
-        background: #3d9970 !important;
-        color: white !important;
-        border-color: #e8f5e9 !important;
-    }
-    .hnode-current {
-        background: white !important;
-        border-color: var(--lav-400) !important;
-        box-shadow: 0 0 0 4px rgba(124,111,179,0.18), 0 2px 8px rgba(0,0,0,0.1) !important;
-        animation: h-pulse 2s ease-out infinite;
-    }
-    @keyframes h-pulse {
-        0%   { box-shadow: 0 0 0 4px rgba(124,111,179,0.18), 0 0 0 0 rgba(124,111,179,0.3); }
-        70%  { box-shadow: 0 0 0 4px rgba(124,111,179,0.18), 0 0 0 12px rgba(124,111,179,0); }
-        100% { box-shadow: 0 0 0 4px rgba(124,111,179,0.18), 0 0 0 0 rgba(124,111,179,0); }
+    .road-node.node-completed {
+        background: #3d9970;
+        color: #fff;
     }
 
-    .hjourney-title {
+    .road-node.node-current {
+        background: #fff;
+        border-color: var(--lav-400);
+        box-shadow: 0 0 0 4px rgba(124, 111, 179, 0.18), 0 2px 8px rgba(0, 0, 0, 0.10);
+    }
+
+    .road-card {
+        position: relative;
+        flex: 1;
+        background: var(--surface);
+        border-radius: 14px;
+        padding: 0.95rem 1.1rem;
+        border: 1px solid var(--lav-200);
+        box-shadow: 0 2px 10px rgba(46, 41, 36, 0.04);
+    }
+
+    .road-card::after {
+        content: '';
+        position: absolute;
+        top: 18px;
+        left: -7px;
+        width: 12px;
+        height: 12px;
+        background: var(--surface);
+        border: 1px solid var(--lav-200);
+        border-right: none;
+        border-top: none;
+        transform: rotate(45deg);
+    }
+
+    .road-card.completed {
+        border-left: 4px solid #3d9970;
+    }
+
+    .road-card.warning {
+        border-left: 4px solid #d97706;
+    }
+
+    .road-card.current {
+        border-left: 4px solid var(--lav-500);
+    }
+
+    .road-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.25rem;
+    }
+
+    .road-card-title {
+        font-family: var(--font-display);
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--n-900);
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .road-card-meta {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
         font-size: 0.74rem;
         font-weight: 600;
-        text-align: center;
-        margin-top: 0.5rem;
-        line-height: 1.2;
-        color: var(--text);
-        word-break: break-word;
     }
-    .hjourney-date {
-        font-size: 0.68rem;
-        color: var(--muted);
-        margin-top: 0.15rem;
+
+    .pill-completed {
+        background: #e8f5e9;
+        color: #2e7d32;
     }
-    .hjourney-label {
-        font-size: 0.68rem;
+
+    .pill-current {
+        background: var(--lav-100);
+        color: var(--lav-500);
+    }
+
+    .pill-upcoming {
+        background: var(--n-100);
+        color: var(--n-700);
+    }
+
+    .pill-warning {
+        background: #fff5ef;
+        color: #d97706;
+    }
+
+    .checkpoint-pill {
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.84rem;
         font-weight: 600;
+        background: var(--lav-100);
+        color: var(--lav-500);
+    }
+
+    .additional-events {
+        margin-top: 1.5rem;
+    }
+
+    .additional-event-item {
+        border: 1px solid var(--lav-200);
+        border-radius: 12px;
+        padding: 0.95rem 1rem;
+        margin-bottom: 0.75rem;
+        background: #fff;
+    }
+
+    .additional-event-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .additional-event-title {
+        font-weight: 700;
+        color: var(--n-900);
+    }
+
+    .additional-event-meta {
         color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-top: 0.5rem;
+        font-size: 0.82rem;
+        margin-top: 0.2rem;
+    }
+
+    .additional-event-actions {
+        display: flex;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+        margin-top: 0.75rem;
+    }
+
+    .timeline-form-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr auto;
+        gap: 0.75rem;
+        align-items: end;
+    }
+
+    .timeline-form input {
+        width: 100%;
+        border: 1.5px solid var(--lav-200);
+        border-radius: 10px;
+        padding: 0.8rem 0.95rem;
+        background: #fff;
+    }
+
+    .checkpoint-note {
+        padding: 0.95rem 1rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+    }
+
+    .checkpoint-note.info {
+        background: var(--lav-100);
+        color: var(--lav-500);
+        border: 1px solid var(--lav-200);
+    }
+
+    @media (max-width: 768px) {
+        .road-path::before {
+            left: 20px;
+        }
+
+        .road-stop {
+            padding-left: 50px;
+        }
+
+        .road-node {
+            left: 20px;
+            width: 36px;
+            height: 36px;
+            font-size: 0.85rem;
+        }
+
+        .road-card::after {
+            display: none;
+        }
+
+        .road-marker {
+            padding-left: 4px;
+        }
+
+        .timeline-form-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -752,298 +993,267 @@
                 $predictionBadges[] = ['class' => 'pending', 'text' => 'Initializing model output'];
             }
         }
+
+        $checkpointStyles = [
+            'ekc500_admin_approval' => ['icon' => 'fa-file-circle-check', 'color' => '#7c6fb3', 'bg' => '#f3f0ff'],
+            'proposal_review' => ['icon' => 'fa-file-signature', 'color' => '#e07d45', 'bg' => '#fff5ef'],
+            'research_review' => ['icon' => 'fa-magnifying-glass-chart', 'color' => '#3d9970', 'bg' => '#e8f5e9'],
+            'nos'             => ['icon' => 'fa-envelope-open-text', 'color' => '#d97706', 'bg' => '#fff5ef'],
+            'final_draft_submission' => ['icon' => 'fa-file-arrow-up', 'color' => '#b7791f', 'bg' => '#fffbf0'],
+            'viva'            => ['icon' => 'fa-user-graduate', 'color' => '#c2410c', 'bg' => '#fdecea'],
+            'extension'       => ['icon' => 'fa-hourglass-half', 'color' => '#cc4b4b', 'bg' => '#fdecea'],
+            'overdue'         => ['icon' => 'fa-exclamation-triangle','color' => '#cc4b4b', 'bg' => '#fdecea'],
+            'max_duration'    => ['icon' => 'fa-flag-checkered', 'color' => '#cc4b4b', 'bg' => '#fdecea'],
+        ];
+        $defaultStyle = ['icon' => 'fa-circle-dot', 'color' => '#a99dd6', 'bg' => '#f3f0ff'];
+
+        $checkpointFieldMap = [
+            'checkpoint:ekc500_admin_approval' => 'ekc500_admin_approved',
+            'checkpoint:proposal_review' => 'proposal_review_date',
+            'checkpoint:research_review' => 'research_review_date',
+            'checkpoint:nos' => 'nos_date',
+            'checkpoint:final_draft_submission' => 'final_draft_submission_date',
+            'checkpoint:viva' => 'viva_date',
+        ];
+
+        $checkpoint = $dashboardCheckpoint;
+        $systemStops = collect();
+        $customRows = collect();
+        if (!Auth::user()->hasRole('lecturer') || request('student_id')) {
+            $systemStops = $timelines
+                ->filter(fn($t) => $t->system_key && (str_starts_with($t->system_key, 'checkpoint:') || $t->system_key === 'max_duration'))
+                ->sortBy('event_date')
+                ->values();
+
+            $customRows = $timelines
+                ->filter(fn($t) => ! $t->is_system_generated)
+                ->sortBy('event_date')
+                ->values();
+        }
+
+        $maxDurationRow = $timelines->firstWhere('system_key', 'max_duration');
+        $totalStops = $systemStops->count();
+        $completedStops = $systemStops->where('completed', true)->count();
+        $currentStopId = optional($systemStops->firstWhere('completed', false))->id;
     @endphp
-@endif
 
-@if(Auth::user()->hasRole('student') || (Auth::user()->hasRole('lecturer')))
-<!-- Roadmap Tabs -->
-<ul class="nav nav-tabs roadmap-tabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-section" type="button" role="tab" aria-controls="timeline-section" aria-selected="true">
-            <i class="fas fa-timeline"></i> Timeline Roadmap
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="milestone-tab" data-bs-toggle="tab" data-bs-target="#milestone-section" type="button" role="tab" aria-controls="milestone-section" aria-selected="false">
-            <i class="fas fa-flag"></i> Milestone Roadmap
-        </button>
-    </li>
-</ul>
+    <section class="tab-content-section mt-3">
+        @if(Auth::user()->hasRole('lecturer'))
+            <div class="mb-3">
+                <h5 style="font-family:var(--font-display); margin-bottom: 0.2rem;"><i class="fas fa-map"></i> Timeline Roadmap</h5>
+                <p class="text-muted mb-2" style="font-size: 0.83rem;">Select a student to preview their candidature progress</p>
+            </div>
+            <div class="student-selector">
+                <form method="GET" action="{{ route('home') }}">
+                    <div class="input-group">
+                        <label class="input-group-text" for="selectedStudent"><i class="fas fa-search"></i></label>
+                        <select name="student_id" id="selectedStudent" class="form-select" onchange="this.form.submit()">
+                            <option value="">- Choose a student -</option>
+                            @foreach($students as $student)
+                                <option value="{{ $student->id }}" {{ request('student_id') == $student->id ? 'selected' : '' }}>
+                                    {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
+            </div>
+        @else
+            <div class="mb-1">
+                <h5 style="font-family:var(--font-display); margin-bottom: 0.1rem;"><i class="fas fa-map"></i> Timeline Roadmap</h5>
+                <p class="text-muted mb-0" style="font-size:0.82rem;">Your candidature progress at a glance</p>
+            </div>
+        @endif
 
-<!-- Tab Content -->
-<div class="tab-content">
-    <!-- Timeline Section -->
-    <div class="tab-pane fade show active" id="timeline-section" role="tabpanel" aria-labelledby="timeline-tab">
-        <div class="tab-content-section">
-            @php
-                $hStageStyles = [
-                    'ekc500_admin_approval' => ['icon' => 'fa-file-circle-check', 'color' => '#7c6fb3', 'bg' => '#f3f0ff'],
-                    'proposal_review' => ['icon' => 'fa-file-signature', 'color' => '#e07d45', 'bg' => '#fff5ef'],
-                    'research_review' => ['icon' => 'fa-magnifying-glass-chart', 'color' => '#3d9970', 'bg' => '#e8f5e9'],
-                    'nos'             => ['icon' => 'fa-envelope-open-text', 'color' => '#d97706', 'bg' => '#fff5ef'],
-                    'final_draft_submission' => ['icon' => 'fa-file-arrow-up', 'color' => '#b7791f', 'bg' => '#fffbf0'],
-                    'viva'            => ['icon' => 'fa-user-graduate', 'color' => '#c2410c', 'bg' => '#fdecea'],
-                    'extension'       => ['icon' => 'fa-hourglass-half', 'color' => '#cc4b4b', 'bg' => '#fdecea'],
-                    'overdue'         => ['icon' => 'fa-exclamation-triangle','color' => '#cc4b4b', 'bg' => '#fdecea'],
-                    'max_duration'    => ['icon' => 'fa-flag-checkered', 'color' => '#cc4b4b', 'bg' => '#fdecea'],
-                ];
-                $hDefaultStyle = ['icon' => 'fa-circle-dot', 'color' => '#a99dd6', 'bg' => '#f3f0ff'];
-
-                $hStops = $timelines
-                    ->filter(fn($t) => $t->system_key && (str_starts_with($t->system_key, 'checkpoint:') || $t->system_key === 'max_duration'))
-                    ->sortBy('event_date')
-                    ->values();
-
-                if ($hStops->isEmpty()) {
-                    $hStops = $timelines->sortBy('event_date')->take(8)->values();
-                }
-
-                $hTotal = $hStops->count();
-                $hDone  = $hStops->where('completed', true)->count();
-            @endphp
-
-            @if(Auth::user()->hasRole('lecturer'))
-                <div class="mb-3">
-                    <h5 style="font-family:var(--font-display); margin-bottom: 0.2rem;"><i class="fas fa-route"></i> Student Journey</h5>
-                    <p class="text-muted mb-2" style="font-size: 0.83rem;">Select a student to preview their candidature progress</p>
+        @if($progressSnapshot)
+            <div class="progress-summary">
+                <div class="progress-card risk-{{ $progressSnapshot['risk_status'] }}">
+                    <div class="pc-value">{{ $progressSnapshot['current_semester'] ?: '-' }}</div>
+                    <div class="pc-label">Current Semester</div>
                 </div>
-                <div class="student-selector">
-                    <form method="GET" action="{{ route('home') }}">
-                        <div class="input-group">
-                            <label class="input-group-text" for="selectedStudent"><i class="fas fa-search"></i></label>
-                            <select name="student_id" id="selectedStudent" class="form-select" onchange="this.form.submit()">
-                                <option value="">— Choose a student —</option>
-                                @foreach($students as $student)
-                                    <option value="{{ $student->id }}" {{ request('student_id') == $student->id ? 'selected' : '' }}>
-                                        {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </form>
+                <div class="progress-card">
+                    <div class="pc-value" style="color: var(--lav-500);">{{ $completedStops }}/{{ $totalStops }}</div>
+                    <div class="pc-label">Core Checkpoints Completed</div>
                 </div>
-            @else
-                <div class="mb-1">
-                    <h5 style="font-family:var(--font-display); margin-bottom: 0.1rem;"><i class="fas fa-route"></i> My Journey</h5>
-                    <p class="text-muted mb-0" style="font-size:0.82rem;">Your candidature progress at a glance</p>
-                </div>
-            @endif
-
-            @if($hStops->isNotEmpty())
-                {{-- Progress mini-bar --}}
-                @if($progressSnapshot)
-                <div class="d-flex gap-2 mb-1 flex-wrap" style="font-size: 0.82rem;">
-                    <span class="badge rounded-pill" style="background:var(--lav-100); color:var(--lav-500); font-size:0.82rem; padding:0.4rem 0.8rem;">
-                        Semester {{ $progressSnapshot['current_semester'] }}
-                    </span>
-                    <span class="badge rounded-pill" style="background:#e8f5e9; color:#2e7d32; font-size:0.82rem; padding:0.4rem 0.8rem;">
-                        {{ $hDone }}/{{ $hTotal }} Done
-                    </span>
-                    @if($progressSnapshot['risk_status'] === 'pending')
-                        <span class="badge rounded-pill" style="background:var(--lav-100); color:var(--lav-500); font-size:0.82rem; padding:0.4rem 0.8rem;">
-                            <i class="fas fa-hourglass-half"></i> Pending
-                        </span>
-                    @elseif($progressSnapshot['risk_status'] === 'on_track')
-                        <span class="badge rounded-pill" style="background:#e8f5e9; color:#2e7d32; font-size:0.82rem; padding:0.4rem 0.8rem;">
-                            <i class="fas fa-check-circle"></i> On Track
-                        </span>
-                    @elseif($progressSnapshot['risk_status'] === 'high_risk')
-                        <span class="badge rounded-pill" style="background:#fdecea; color:#b42318; font-size:0.82rem; padding:0.4rem 0.8rem;">
-                            <i class="fas fa-triangle-exclamation"></i> High Risk
-                        </span>
-                    @elseif($progressSnapshot['risk_status'] === 'at_risk')
-                        <span class="badge rounded-pill" style="background:#fff5ef; color:#e07d45; font-size:0.82rem; padding:0.4rem 0.8rem;">
-                            <i class="fas fa-exclamation-circle"></i> At Risk
-                        </span>
-                    @else
-                        <span class="badge rounded-pill" style="background:#fdecea; color:#cc4b4b; font-size:0.82rem; padding:0.4rem 0.8rem;">
-                            <i class="fas fa-times-circle"></i> Overdue
-                        </span>
-                    @endif
+                <div class="progress-card risk-{{ $progressSnapshot['risk_status'] }}">
+                    <div class="pc-value">{{ $progressSnapshot['display_risk_label'] ?? str_replace('_', ' ', ucwords($progressSnapshot['risk_status'], '_')) }}</div>
+                    <div class="pc-label">Current Status</div>
                     @if(!empty($progressSnapshot['show_ml_pending_badge']))
-                        <span class="badge rounded-pill" style="background:var(--lav-100); color:var(--lav-500); font-size:0.82rem; padding:0.4rem 0.8rem;">
-                            <i class="fas fa-brain"></i> ML Pending
-                        </span>
-                    @endif
-                    @if(!empty($progressSnapshot['has_checkpoint_delay']))
-                        <span class="badge rounded-pill" style="background:#fff5ef; color:#d97706; font-size:0.82rem; padding:0.4rem 0.8rem;">
-                            <i class="fas fa-clock"></i> Checkpoint Delay
-                        </span>
+                        <div class="pc-meta">ML prediction pending</div>
+                    @elseif(!empty($progressSnapshot['has_checkpoint_delay']))
+                        <div class="pc-meta">Checkpoint delay detected</div>
                     @endif
                 </div>
-                @endif
+                <div class="progress-card">
+                    <div class="pc-value" style="font-size: 1rem; color: var(--gold-500); padding-top: 0.25rem;">{{ $progressSnapshot['stage_title'] ?? '-' }}</div>
+                    <div class="pc-label">Current Stage</div>
+                </div>
+            </div>
+        @endif
 
-                {{-- Horizontal journey path --}}
-                <div class="hjourney-wrap">
-                    <div class="hjourney">
-                        {{-- Start pip --}}
-                        <div class="hjourney-stop hjourney-marker">
-                            <div class="hjourney-node" style="background:var(--lav-500); width:32px; height:32px; font-size:0.7rem;">
-                                <i class="fas fa-play" style="color:white;"></i>
+        @if(Auth::user()->hasRole('student'))
+            <section class="timeline-panel mb-3">
+                <div class="timeline-panel-header">
+                    <h5>Add New Event</h5>
+                </div>
+                <div class="timeline-panel-body timeline-form">
+                    <form action="{{ route('timeline.store') }}" method="POST">
+                        @csrf
+                        <div class="timeline-form-grid">
+                            <div>
+                                <label for="home_timeline_title" class="form-label fw-semibold">Title</label>
+                                <input type="text" id="home_timeline_title" name="title" value="{{ old('title') }}" class="@error('title') is-invalid @enderror" placeholder="e.g. Internal mock presentation" required>
+                                @error('title') <span class="invalid-feedback d-block mt-2">{{ $message }}</span> @enderror
                             </div>
-                            <div class="hjourney-label">Start</div>
-                        </div>
-
-                        @foreach($hStops as $idx => $stop)
-                            @php
-                                $sk = $stop->stage_key ?? ($stop->system_key ? str_replace(['checkpoint:','max_duration'], ['','max_duration'], $stop->system_key) : null);
-                                $st = $hStageStyles[$sk] ?? $hDefaultStyle;
-                                $done = (bool) $stop->completed;
-                                $isCurr = !$done && ($stop->status ?? 'approved') === 'approved'
-                                          && $hStops->where('completed', false)->where('status', 'approved')->first()?->id === $stop->id;
-                                // Connector colour: done→done = green, done→current = gradient, else grey
-                                $prevDone = $idx === 0 ? true : (bool) $hStops[$idx - 1]->completed;
-                                $connClass = ($prevDone && $done) ? 'connector-done'
-                                           : ($prevDone && $isCurr ? 'connector-active' : 'connector-future');
-                            @endphp
-
-                            {{-- Connector before this stop --}}
-                            <div class="hjourney-connector {{ $connClass }}"></div>
-
-                            <div class="hjourney-stop {{ $done ? 'hstop-done' : ($isCurr ? 'hstop-current' : 'hstop-future') }}">
-                                <div class="hjourney-node {{ $done ? 'hnode-done' : ($isCurr ? 'hnode-current' : '') }}"
-                                     @if(!$done && !$isCurr) style="background: {{ $st['bg'] }}; color: {{ $st['color'] }}; border-color: {{ $st['bg'] }};" @endif>
-                                    @if($done)
-                                        <i class="fas fa-check"></i>
-                                    @elseif($isCurr)
-                                        <i class="fas fa-location-dot" style="color:{{ $st['color'] }};"></i>
-                                    @else
-                                        <i class="fas {{ $st['icon'] }}"></i>
-                                    @endif
-                                </div>
-                                <div class="hjourney-title" @if($done) style="color:#3d9970;" @endif>
-                                    {{ Str::limit($stop->title, 28) }}
-                                </div>
-                                <div class="hjourney-date">
-                                    {{ \Carbon\Carbon::parse($stop->event_date)->format('M Y') }}
-                                </div>
+                            <div>
+                                <label for="home_timeline_event_date" class="form-label fw-semibold">Target Date</label>
+                                <input type="date" id="home_timeline_event_date" name="event_date" value="{{ old('event_date') }}" class="@error('event_date') is-invalid @enderror" required>
+                                @error('event_date') <span class="invalid-feedback d-block mt-2">{{ $message }}</span> @enderror
                             </div>
-                        @endforeach
-
-                        {{-- Connector before finish --}}
-                        <div class="hjourney-connector {{ $hDone >= $hTotal ? 'connector-done' : 'connector-future' }}"></div>
-
-                        {{-- Finish pip --}}
-                        <div class="hjourney-stop hjourney-marker">
-                            <div class="hjourney-node" style="background:{{ $hDone >= $hTotal ? '#3d9970' : 'var(--n-200)' }}; width:32px; height:32px; font-size:0.7rem;">
-                                <i class="fas fa-flag-checkered" style="color:{{ $hDone >= $hTotal ? 'white' : 'var(--n-700)' }};"></i>
+                            <div>
+                                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-paper-plane"></i> Submit</button>
                             </div>
-                            <div class="hjourney-label">Finish</div>
-                        </div>
-                    </div>
-                </div>
-            @else
-                <div class="text-center py-4 text-muted">
-                    <i class="fas fa-road" style="font-size:2rem; color:var(--lav-300);"></i>
-                    <p class="mt-2 mb-0">
-                        @if(Auth::user()->hasRole('lecturer'))
-                            Select a student above to see their journey.
-                        @else
-                            Your journey path will appear once your start date is configured.
-                        @endif
-                    </p>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Milestone Section -->
-    <div class="tab-pane fade" id="milestone-section" role="tabpanel" aria-labelledby="milestone-tab">
-        <div class="tab-content-section">
-            @if(Auth::user()->hasRole('student'))
-                <div class="mb-3 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 style="margin-bottom:0.1rem;"><i class="fas fa-flag"></i> Your Milestones</h5>
-                        <p class="text-muted mb-0" style="font-size:0.82rem;">Propose and track your project milestones</p>
-                    </div>
-                    <a href="{{ route('milestones.create') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Propose Milestone
-                    </a>
-                </div>
-
-                @forelse($milestones as $milestone)
-                    <div class="timeline-card {{ $milestone->status == 'completed' ? 'completed' : '' }}">
-                        <h5><i class="fas fa-flag"></i> {{ $milestone->title }}</h5>
-                        <div class="date">
-                            <i class="fas fa-calendar-alt"></i>
-                            Due: {{ \Carbon\Carbon::parse($milestone->due_date)->format('M d, Y') }}
-                        </div>
-                        <p class="text-muted mb-2">{{ $milestone->description }}</p>
-                        <p class="mb-0">
-                            <span class="status-badge {{ $milestone->status == 'completed' ? 'completed' : 'pending' }}">
-                                {{ ucfirst($milestone->status) }}
-                            </span>
-                        </p>
-                    </div>
-                @empty
-                    <div class="alert alert-info" role="alert">
-                        <i class="fas fa-info-circle"></i> No milestones yet. <a href="{{ route('milestones.create') }}" class="alert-link">Propose one now</a>
-                    </div>
-                @endforelse
-            @elseif(Auth::user()->hasRole('lecturer'))
-                <div class="mb-3">
-                    <h5 style="margin-bottom:0.1rem;"><i class="fas fa-flag"></i> Students' Milestones</h5>
-                    <p class="text-muted mb-0" style="font-size:0.82rem;">Review and manage your students' milestone proposals</p>
-                </div>
-
-                <div class="student-selector">
-                    <form method="GET" action="{{ route('home') }}">
-                        <div class="input-group">
-                            <label class="input-group-text" for="milestoneStudentSelect">
-                                <i class="fas fa-search"></i>
-                            </label>
-                            <select name="student_id" id="milestoneStudentSelect" class="form-select" onchange="this.form.submit()">
-                                <option value="">-- Select a Student --</option>
-                                @foreach($students as $student)
-                                    <option value="{{ $student->id }}" {{ request('student_id') == $student->id ? 'selected' : '' }}>
-                                        {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
-                                    </option>
-                                @endforeach
-                            </select>
                         </div>
                     </form>
                 </div>
+            </section>
+        @endif
 
-                @if(request('student_id'))
+        @if($systemStops->isNotEmpty())
+            <div class="road-path">
+                <div class="road-marker">
+                    <div class="road-marker-icon" style="background: var(--lav-500);"><i class="fas fa-play"></i></div>
+                    <div class="road-marker-label">Registration Completed</div>
+                </div>
+
+                @foreach($systemStops as $stop)
                     @php
-                        $selectedStudent = $students->where('id', request('student_id'))->first();
+                        $key = str_replace('checkpoint:', '', $stop->system_key);
+                        $style = $checkpointStyles[$key] ?? $defaultStyle;
+                        $actualField = $checkpointFieldMap[$stop->system_key] ?? null;
+                        $actualValue = $actualField && $checkpoint ? $checkpoint->{$actualField} : null;
+                        $isCompleted = (bool) $stop->completed;
+                        $isCurrent = ! $isCompleted && $currentStopId === $stop->id;
+                        $isOverdue = ! $isCompleted && $progressSnapshot && $stop->semester_number && $progressSnapshot['current_semester'] > $stop->semester_number;
+                        $cardClass = $isCompleted ? 'completed' : ($isOverdue ? 'warning' : ($isCurrent ? 'current' : ''));
                     @endphp
 
-                    @if($selectedStudent)
-                        <h6 class="mb-2">{{ $selectedStudent->name }}'s Milestones</h6>
-                        @forelse($selectedStudent->milestones as $milestone)
-                            <div class="timeline-card {{ $milestone->status == 'completed' ? 'completed' : '' }}">
-                                <h5><i class="fas fa-flag"></i> {{ $milestone->title }}</h5>
-                                <div class="date">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    Due: {{ \Carbon\Carbon::parse($milestone->due_date)->format('M d, Y') }}
-                                </div>
-                                <p class="text-muted mb-2">{{ $milestone->description }}</p>
-                                <p class="mb-0">
-                                    <span class="status-badge {{ $milestone->status == 'completed' ? 'completed' : 'pending' }}">
-                                        {{ ucfirst($milestone->status) }}
-                                    </span>
-                                </p>
-                            </div>
-                        @empty
-                            <div class="alert alert-info" role="alert">
-                                <i class="fas fa-info-circle"></i> No milestones proposed yet.
-                            </div>
-                        @endforelse
-                    @else
-                        <div class="alert alert-warning" role="alert">
-                            <i class="fas fa-exclamation-triangle"></i> Student not found.
+                    <div class="road-stop">
+                        <div class="road-node {{ $isCompleted ? 'node-completed' : ($isCurrent ? 'node-current' : '') }}"
+                             @if(! $isCompleted && ! $isCurrent) style="background: {{ $style['bg'] }}; color: {{ $style['color'] }}; border-color: {{ $style['bg'] }};" @endif>
+                            @if($isCompleted)
+                                <i class="fas fa-check"></i>
+                            @elseif($isCurrent)
+                                <i class="fas fa-location-dot" style="color: {{ $style['color'] }};"></i>
+                            @else
+                                <i class="fas {{ $style['icon'] }}"></i>
+                            @endif
                         </div>
-                    @endif
-                @else
-                    <div class="alert alert-info" role="alert">
-                        <i class="fas fa-info-circle"></i> Select a student from the dropdown to view their milestones.
+
+                        <div class="road-card {{ $cardClass }}">
+                            <div class="road-card-header">
+                                <div class="road-card-title">
+                                    <i class="fas {{ $style['icon'] }}" style="color: {{ $style['color'] }};"></i>
+                                    {{ $stop->title }}
+                                </div>
+                                @if($isCompleted)
+                                    <span class="status-pill pill-completed"><i class="fas fa-check-circle"></i> Completed</span>
+                                @elseif($isOverdue)
+                                    <span class="status-pill pill-warning"><i class="fas fa-bell"></i> Reminder Needed</span>
+                                @elseif($isCurrent)
+                                    <span class="status-pill pill-current"><i class="fas fa-spinner fa-pulse"></i> Current Focus</span>
+                                @else
+                                    <span class="status-pill pill-upcoming"><i class="fas fa-hourglass-start"></i> Upcoming</span>
+                                @endif
+                            </div>
+
+                            <div class="road-card-meta">
+                                Target by {{ optional($stop->event_date)->format('d M Y') }}
+                                @if($stop->semester_number)
+                                    &middot; Semester {{ $stop->semester_number }}
+                                @endif
+                            </div>
+
+                            @if($actualField === 'ekc500_admin_approved' && $actualValue)
+                                <div class="checkpoint-pill">Passed</div>
+                            @elseif($actualValue)
+                                <div class="checkpoint-pill">Completed on {{ $actualValue->format('d M Y') }}</div>
+                            @endif
+                        </div>
                     </div>
-                @endif
+                @endforeach
+
+                <div class="road-marker" style="margin-top: 0.65rem;">
+                    <div class="road-marker-icon" style="background: {{ $completedStops >= $totalStops && $totalStops > 0 ? '#3d9970' : 'var(--n-300)' }};">
+                        <i class="fas fa-flag-checkered"></i>
+                    </div>
+                    <div class="road-marker-label">
+                        @if($maxDurationRow)
+                            Maximum candidature duration: {{ optional($maxDurationRow->event_date)->format('d M Y') }}
+                        @else
+                            Finish Line
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            @if($customRows->isNotEmpty())
+                <div class="additional-events">
+                    <section class="timeline-panel">
+                        <div class="timeline-panel-header">
+                            <h5>Additional Timeline Events</h5>
+                            <p>Extra events outside the core candidature checkpoint sequence.</p>
+                        </div>
+                        <div class="timeline-panel-body">
+                            @foreach($customRows as $row)
+                                <div class="additional-event-item">
+                                    <div class="additional-event-header">
+                                        <div>
+                                            <div class="additional-event-title">{{ $row->title }}</div>
+                                            <div class="additional-event-meta">
+                                                {{ optional($row->event_date)->format('d M Y') }}
+                                                &middot; {{ ucfirst($row->status ?? 'approved') }}
+                                            </div>
+                                        </div>
+                                        @if($row->status === 'approved')
+                                            <span class="status-pill pill-completed"><i class="fas fa-check-circle"></i> Approved</span>
+                                        @elseif($row->status === 'pending')
+                                            <span class="status-pill pill-warning"><i class="fas fa-clock"></i> Pending Review</span>
+                                        @else
+                                            <span class="status-pill pill-warning"><i class="fas fa-ban"></i> Rejected</span>
+                                        @endif
+                                    </div>
+
+                                    @if(auth()->user()->hasRole('lecturer') && $row->status === 'pending')
+                                        <div class="additional-event-actions">
+                                            <form action="{{ route('timeline.approve', $row->id) }}" method="POST">
+                                                @csrf
+                                                @method('PUT')
+                                                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check-circle"></i> Approve</button>
+                                            </form>
+                                            <form action="{{ route('timeline.reject', $row->id) }}" method="POST">
+                                                @csrf
+                                                @method('PUT')
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-ban"></i> Reject</button>
+                                            </form>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+                </div>
             @endif
-        </div>
-    </div>
-</div>
+        @else
+            <div class="checkpoint-note info">
+                @if(Auth::user()->hasRole('lecturer'))
+                    Select a student above to see the roadmap.
+                @else
+                    No generated checkpoint roadmap is available yet. Complete your registration details first.
+                @endif
+            </div>
+        @endif
+    </section>
 @endif
 
 @else
