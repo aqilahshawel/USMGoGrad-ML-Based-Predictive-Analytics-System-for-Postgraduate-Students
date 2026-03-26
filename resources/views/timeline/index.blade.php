@@ -84,13 +84,6 @@
     $totalStops = $systemStops->count();
     $completedStops = $systemStops->where('completed', true)->count();
     $currentStopId = optional($systemStops->firstWhere('completed', false))->id;
-
-    $overdueStops = $systemStops->filter(function ($stop) use ($progressSnapshot) {
-        return $progressSnapshot
-            && ! $stop->completed
-            && $stop->semester_number
-            && $progressSnapshot['current_semester'] > $stop->semester_number;
-    });
 @endphp
 
 <style>
@@ -678,13 +671,6 @@
                                 <div class="pc-value" style="font-size: 1rem; color: var(--gold-500); padding-top: 0.25rem;">{{ $progressSnapshot['stage_title'] ?? '—' }}</div>
                                 <div class="pc-label">Current Stage</div>
                             </div>
-                        </div>
-                    @endif
-
-                    @if($overdueStops->isNotEmpty())
-                        <div class="checkpoint-note warning mb-4">
-                            <strong><i class="fas fa-bell"></i> Reminder</strong><br>
-                            The following checkpoints are already past their target semester: {{ $overdueStops->pluck('title')->implode(', ') }}.
                         </div>
                     @endif
 

@@ -63,6 +63,10 @@
         gap: 1.5rem;
         margin-bottom: 1.5rem;
     }
+    .calendar-container.has-sidebar #calendar {
+        flex: 0 1 auto;
+        width: calc(100% - 380px);
+    }
     #calendar {
         flex: 1;
         min-width: 0;
@@ -73,12 +77,15 @@
         box-shadow: 0 2px 8px rgba(46,41,36,0.04);
     }
     .calendar-sidebar {
-        width: 350px;
+        width: 380px;
         flex-shrink: 0;
     }
     @media (max-width: 1200px) {
         .calendar-container {
             flex-direction: column;
+        }
+        .calendar-container.has-sidebar #calendar {
+            width: 100%;
         }
         .calendar-sidebar {
             width: 100%;
@@ -165,19 +172,90 @@
         gap: 0.5rem;
         flex-wrap: wrap;
     }
+    .inline-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 1200;
+        padding: 1rem;
+    }
+    .inline-modal-backdrop.is-open {
+        display: flex;
+    }
+    .inline-modal {
+        width: min(520px, 100%);
+        background: var(--surface);
+        border: 1px solid var(--lav-200);
+        border-radius: 14px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+    }
+    .inline-modal-header {
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--lav-200);
+    }
+    .inline-modal-header h5 {
+        margin: 0;
+        color: var(--n-900);
+    }
+    .inline-modal-body {
+        padding: 1rem;
+    }
+    .inline-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.6rem;
+        padding: 0.9rem 1rem;
+        border-top: 1px solid var(--lav-200);
+    }
+    .inline-modal .form-label {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    .meeting-slot-preview {
+        font-size: 0.88rem;
+        color: var(--n-700);
+        margin-bottom: 0.75rem;
+    }
+    .inline-feedback {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        display: none;
+    }
+    .inline-feedback.is-visible {
+        display: block;
+    }
+    .inline-feedback.feedback-success {
+        background: #e8f7ef;
+        border-color: #bde5cc;
+        color: #11663b;
+    }
+    .inline-feedback.feedback-error {
+        background: #fff1f3;
+        border-color: #f5c2c7;
+        color: #8b1f2d;
+    }
+    .meeting-time-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 0.85rem;
+    }
+    @media (max-width: 576px) {
+        .meeting-time-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 @endsection
 
 @section('content')
 <head><meta name="csrf-token" content="{{ csrf_token() }}"></head>
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
     <div class="scheduling-header">
         <h1><i class="fas fa-calendar-alt me-2"></i> Manage Schedule </h1>
     </div>
@@ -231,10 +309,78 @@
             @endif
         </div>
 
-    <div class="calendar-container">
+    <div id="schedulingInlineFeedback" class="inline-feedback" role="status" aria-live="polite"></div>
+
+    <div class="calendar-container {{ ($canCreateEvents || ($isStudent && ! $supervisorMissing)) ? 'has-sidebar' : '' }}">
         <div id="calendar"></div>
 
-        @if($isStudent && ! $supervisorMissing)
+        @if($canCreateEvents)
+        <div class="calendar-sidebar">
+            <div class="meeting-history-card">
+                <h5><i class="fas fa-inbox me-1"></i> Pending Student Meeting Requests</h5>
+                @forelse($pendingMeetingRequests as $meetingRequest)
+                    <div class="meeting-request-item">
+                        <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                            <div>
+                                <strong>{{ $meetingRequest->student?->name ?? 'Student' }}</strong> requested:
+                                <strong>{{ $meetingRequest->topic }}</strong>
+                                <div class="meeting-request-meta">
+                                    {{ $meetingRequest->requested_start->format('d M Y H:i') }} - {{ $meetingRequest->requested_end->format('H:i') }}
+                                </div>
+                            </div>
+                            <span class="meeting-status-pill meeting-status-pending">pending</span>
+                        </div>
+
+                        @if($meetingRequest->student_note)
+                            <div class="meeting-request-meta mt-1">Student note: {{ $meetingRequest->student_note }}</div>
+                        @endif
+
+                        <div class="meeting-request-actions mt-2">
+                            <form method="POST" action="{{ route('meeting-requests.approve', $meetingRequest) }}">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form method="POST" action="{{ route('meeting-requests.reject', $meetingRequest) }}" onsubmit="return attachRejectNote(this);">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="review_note" value="">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted mb-0">No pending requests right now.</p>
+                @endforelse
+            </div>
+
+            <div class="meeting-history-card mb-0">
+                <h5><i class="fas fa-clock-rotate-left me-1"></i> Recently Reviewed Requests</h5>
+                @forelse($reviewedMeetingRequests as $meetingRequest)
+                    @php
+                        $statusClass = $meetingRequest->status === 'approved' ? 'meeting-status-approved' : 'meeting-status-rejected';
+                    @endphp
+                    <div class="meeting-request-item">
+                        <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                            <div>
+                                <strong>{{ $meetingRequest->student?->name ?? 'Student' }}</strong>
+                                <span class="meeting-request-meta">({{ $meetingRequest->topic }})</span>
+                                <div class="meeting-request-meta">
+                                    {{ $meetingRequest->requested_start->format('d M Y H:i') }} - {{ $meetingRequest->requested_end->format('H:i') }}
+                                </div>
+                            </div>
+                            <span class="meeting-status-pill {{ $statusClass }}">{{ $meetingRequest->status }}</span>
+                        </div>
+                        @if($meetingRequest->review_note)
+                            <div class="meeting-request-meta mt-1">Review note: {{ $meetingRequest->review_note }}</div>
+                        @endif
+                    </div>
+                @empty
+                    <p class="text-muted mb-0">No reviewed requests yet.</p>
+                @endforelse
+            </div>
+        </div>
+        @elseif($isStudent && ! $supervisorMissing)
         <div class="calendar-sidebar">
             <div class="meeting-request-panel">
             <h5><i class="fas fa-hand-paper me-1"></i> Apply for a Supervisor Meeting</h5>
@@ -297,69 +443,82 @@
     </div>
 
     @if($canCreateEvents)
-        <div class="meeting-history-card mt-3">
-            <h5><i class="fas fa-inbox me-1"></i> Pending Student Meeting Requests</h5>
-            @forelse($pendingMeetingRequests as $meetingRequest)
-                <div class="meeting-request-item">
-                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
-                        <div>
-                            <strong>{{ $meetingRequest->student?->name ?? 'Student' }}</strong> requested:
-                            <strong>{{ $meetingRequest->topic }}</strong>
-                            <div class="meeting-request-meta">
-                                {{ $meetingRequest->requested_start->format('d M Y H:i') }} - {{ $meetingRequest->requested_end->format('H:i') }}
-                            </div>
-                        </div>
-                        <span class="meeting-status-pill meeting-status-pending">pending</span>
-                    </div>
-
-                    @if($meetingRequest->student_note)
-                        <div class="meeting-request-meta mt-1">Student note: {{ $meetingRequest->student_note }}</div>
-                    @endif
-
-                    <div class="meeting-request-actions mt-2">
-                        <form method="POST" action="{{ route('meeting-requests.approve', $meetingRequest) }}">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                        </form>
-                        <form method="POST" action="{{ route('meeting-requests.reject', $meetingRequest) }}" onsubmit="return attachRejectNote(this);">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="review_note" value="">
-                            <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
-                        </form>
-                    </div>
+    <div id="eventTitleModal" class="inline-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="eventTitleModalHeading">
+        <div class="inline-modal">
+            <div class="inline-modal-header">
+                <h5 id="eventTitleModalHeading"><i class="fas fa-calendar-plus me-1"></i> Add Event</h5>
+            </div>
+            <form id="eventTitleForm">
+                <div class="inline-modal-body">
+                    <label for="eventTitleInput" class="form-label">Event title</label>
+                    <input id="eventTitleInput" type="text" class="form-control" maxlength="120" required>
                 </div>
-            @empty
-                <p class="text-muted mb-0">No pending requests right now.</p>
-            @endforelse
-        </div>
-
-        <div class="meeting-history-card">
-            <h5><i class="fas fa-clock-rotate-left me-1"></i> Recently Reviewed Requests</h5>
-            @forelse($reviewedMeetingRequests as $meetingRequest)
-                @php
-                    $statusClass = $meetingRequest->status === 'approved' ? 'meeting-status-approved' : 'meeting-status-rejected';
-                @endphp
-                <div class="meeting-request-item">
-                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
-                        <div>
-                            <strong>{{ $meetingRequest->student?->name ?? 'Student' }}</strong>
-                            <span class="meeting-request-meta">({{ $meetingRequest->topic }})</span>
-                            <div class="meeting-request-meta">
-                                {{ $meetingRequest->requested_start->format('d M Y H:i') }} - {{ $meetingRequest->requested_end->format('H:i') }}
-                            </div>
-                        </div>
-                        <span class="meeting-status-pill {{ $statusClass }}">{{ $meetingRequest->status }}</span>
-                    </div>
-                    @if($meetingRequest->review_note)
-                        <div class="meeting-request-meta mt-1">Review note: {{ $meetingRequest->review_note }}</div>
-                    @endif
+                <div class="inline-modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-close-modal="event">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Event</button>
                 </div>
-            @empty
-                <p class="text-muted mb-0">No reviewed requests yet.</p>
-            @endforelse
+            </form>
         </div>
+    </div>
+
+    <div id="rejectNoteModal" class="inline-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="rejectNoteModalHeading">
+        <div class="inline-modal">
+            <div class="inline-modal-header">
+                <h5 id="rejectNoteModalHeading"><i class="fas fa-comment-dots me-1"></i> Reject Request</h5>
+            </div>
+            <form id="rejectNoteForm">
+                <div class="inline-modal-body">
+                    <label for="rejectNoteInput" class="form-label">Optional note for student</label>
+                    <textarea id="rejectNoteInput" class="form-control" rows="4" maxlength="500" placeholder="Add context for the rejection (optional)"></textarea>
+                </div>
+                <div class="inline-modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-close-modal="reject">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
+    @if($isStudent && ! $supervisorMissing)
+    <div id="meetingRequestModal" class="inline-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="meetingRequestModalHeading">
+        <div class="inline-modal">
+            <div class="inline-modal-header">
+                <h5 id="meetingRequestModalHeading"><i class="fas fa-hand-paper me-1"></i> Apply for Meeting</h5>
+            </div>
+            <form id="meetingRequestForm">
+                <div class="inline-modal-body">
+                    <p class="meeting-slot-preview mb-2" id="meetingSlotPreview"></p>
+
+                    <div class="meeting-time-grid">
+                        <div>
+                            <label for="meetingDateInput" class="form-label">Meeting date</label>
+                            <input id="meetingDateInput" type="date" class="form-control" required>
+                        </div>
+                        <div>
+                            <label for="meetingStartTimeInput" class="form-label">Start time</label>
+                            <input id="meetingStartTimeInput" type="time" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="meetingEndTimeInput" class="form-label">End time</label>
+                        <input id="meetingEndTimeInput" type="time" class="form-control" required>
+                    </div>
+
+                    <label for="meetingTopicInput" class="form-label">Meeting topic</label>
+                    <input id="meetingTopicInput" type="text" class="form-control mb-3" maxlength="120" required>
+
+                    <label for="meetingNoteInput" class="form-label">Optional note for your supervisor</label>
+                    <textarea id="meetingNoteInput" class="form-control" rows="3" maxlength="500"></textarea>
+                </div>
+                <div class="inline-modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-close-modal="meeting">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
     @endif
 
     <!-- Include FullCalendar -->
@@ -371,6 +530,32 @@ document.addEventListener('DOMContentLoaded', function () {
     const canCreateEvents = @json($canCreateEvents);
     const isStudent = @json($isStudent);
     const canSubmitMeetingRequests = @json($isStudent && ! $supervisorMissing);
+    const meetingSlotLocale = {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    };
+
+    const eventTitleModal = document.getElementById('eventTitleModal');
+    const eventTitleForm = document.getElementById('eventTitleForm');
+    const eventTitleInput = document.getElementById('eventTitleInput');
+
+    const meetingRequestModal = document.getElementById('meetingRequestModal');
+    const meetingRequestForm = document.getElementById('meetingRequestForm');
+    const meetingTopicInput = document.getElementById('meetingTopicInput');
+    const meetingNoteInput = document.getElementById('meetingNoteInput');
+    const meetingSlotPreview = document.getElementById('meetingSlotPreview');
+    const meetingDateInput = document.getElementById('meetingDateInput');
+    const meetingStartTimeInput = document.getElementById('meetingStartTimeInput');
+    const meetingEndTimeInput = document.getElementById('meetingEndTimeInput');
+
+    const rejectNoteModal = document.getElementById('rejectNoteModal');
+    const rejectNoteForm = document.getElementById('rejectNoteForm');
+    const rejectNoteInput = document.getElementById('rejectNoteInput');
+    const inlineFeedback = document.getElementById('schedulingInlineFeedback');
+
+    let pendingEventSelection = null;
+    let pendingMeetingSelection = null;
+    let pendingRejectForm = null;
 
     let calendarEl = document.getElementById('calendar');
 
@@ -381,19 +566,11 @@ document.addEventListener('DOMContentLoaded', function () {
         events: '/get-events',
         select: function (info) {
             if (canCreateEvents) {
-                let title = prompt('Enter Event Title:');
-                if (title) {
-                    saveEvent(title, info.startStr, info.endStr)
-                        .then((data) => {
-                            calendar.refetchEvents();
-                            if (data.message) {
-                                alert(data.message);
-                            }
-                        })
-                        .catch((error) => {
-                            alert(error.message);
-                        });
-                }
+                pendingEventSelection = {
+                    start: info.startStr,
+                    end: info.endStr
+                };
+                openModal(eventTitleModal, eventTitleInput);
                 return;
             }
 
@@ -401,24 +578,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            let topic = prompt('Enter meeting topic for this request:');
-            if (!topic) {
-                return;
-            }
-
-            let note = prompt('Optional note for your supervisor:') || '';
-
-            submitMeetingRequest(topic, info.startStr, info.endStr, note)
-                .then((data) => {
-                    calendar.refetchEvents();
-                    if (data.message) {
-                        alert(data.message);
-                    }
-                    window.location.reload();
-                })
-                .catch((error) => {
-                    alert(error.message);
-                });
+            openMeetingRequestModal(info.startStr, info.endStr);
         }
     });
 
@@ -426,26 +586,369 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.js-recommended-slot').forEach(function (button) {
         button.addEventListener('click', function () {
-            let topic = prompt('Enter meeting topic for this recommended slot:');
-            if (!topic) {
+            openMeetingRequestModal(button.dataset.start, button.dataset.end);
+        });
+    });
+
+    if (eventTitleForm) {
+        eventTitleForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            if (!pendingEventSelection) {
+                closeModal(eventTitleModal);
                 return;
             }
 
-            let note = prompt('Optional note for your supervisor:') || '';
+            const title = (eventTitleInput.value || '').trim();
+            if (!title) {
+                eventTitleInput.focus();
+                return;
+            }
 
-            submitMeetingRequest(topic, button.dataset.start, button.dataset.end, note)
-                .then(function (data) {
+            saveEvent(title, pendingEventSelection.start, pendingEventSelection.end)
+                .then((data) => {
                     calendar.refetchEvents();
                     if (data.message) {
-                        alert(data.message);
+                        showInlineFeedback(data.message, 'success');
                     }
-                    window.location.reload();
+                    closeModal(eventTitleModal);
+                    pendingEventSelection = null;
+                    eventTitleForm.reset();
+                    calendar.unselect();
                 })
-                .catch(function (error) {
-                    alert(error.message);
+                .catch((error) => {
+                    showInlineFeedback(error.message, 'error');
                 });
         });
+    }
+
+    if (meetingRequestForm) {
+        meetingRequestForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            if (!pendingMeetingSelection) {
+                closeModal(meetingRequestModal);
+                return;
+            }
+
+            const topic = (meetingTopicInput.value || '').trim();
+            if (!topic) {
+                meetingTopicInput.focus();
+                return;
+            }
+
+            const dateValue = meetingDateInput ? meetingDateInput.value : '';
+            const startTimeValue = meetingStartTimeInput ? meetingStartTimeInput.value : '';
+            const endTimeValue = meetingEndTimeInput ? meetingEndTimeInput.value : '';
+
+            if (!dateValue || !startTimeValue || !endTimeValue) {
+                showInlineFeedback('Please select meeting date and time.', 'error');
+                return;
+            }
+
+            const startIso = combineDateAndTime(dateValue, startTimeValue);
+            const endIso = combineDateAndTime(dateValue, endTimeValue);
+
+            if (new Date(endIso) <= new Date(startIso)) {
+                showInlineFeedback('End time must be later than start time.', 'error');
+                return;
+            }
+
+            const note = (meetingNoteInput.value || '').trim();
+
+            submitMeetingRequest(topic, startIso, endIso, note)
+                .then((data) => {
+                    calendar.refetchEvents();
+                    if (data.message) {
+                        showInlineFeedback(data.message, 'success');
+                    }
+                    closeModal(meetingRequestModal);
+                    pendingMeetingSelection = null;
+                    meetingRequestForm.reset();
+                    calendar.unselect();
+                })
+                .catch((error) => {
+                    showInlineFeedback(error.message, 'error');
+                });
+        });
+    }
+
+    [meetingDateInput, meetingStartTimeInput, meetingEndTimeInput].forEach(function (inputElement) {
+        if (!inputElement) {
+            return;
+        }
+
+        inputElement.addEventListener('change', updateMeetingSlotPreview);
     });
+
+    if (rejectNoteForm) {
+        rejectNoteForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            if (!pendingRejectForm) {
+                closeModal(rejectNoteModal);
+                return;
+            }
+
+            const hiddenInput = pendingRejectForm.querySelector('input[name="review_note"]');
+            if (hiddenInput) {
+                hiddenInput.value = (rejectNoteInput.value || '').trim();
+            }
+
+            const formToSubmit = pendingRejectForm;
+            pendingRejectForm = null;
+            closeModal(rejectNoteModal);
+            rejectNoteForm.reset();
+            formToSubmit.submit();
+        });
+    }
+
+    document.querySelectorAll('[data-close-modal="event"]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            pendingEventSelection = null;
+            if (eventTitleForm) {
+                eventTitleForm.reset();
+            }
+            closeModal(eventTitleModal);
+            calendar.unselect();
+        });
+    });
+
+    document.querySelectorAll('[data-close-modal="meeting"]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            pendingMeetingSelection = null;
+            if (meetingRequestForm) {
+                meetingRequestForm.reset();
+            }
+            closeModal(meetingRequestModal);
+            calendar.unselect();
+        });
+    });
+
+    document.querySelectorAll('[data-close-modal="reject"]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            pendingRejectForm = null;
+            if (rejectNoteForm) {
+                rejectNoteForm.reset();
+            }
+            closeModal(rejectNoteModal);
+        });
+    });
+
+    if (eventTitleModal) {
+        eventTitleModal.addEventListener('click', function (event) {
+            if (event.target === eventTitleModal) {
+                pendingEventSelection = null;
+                if (eventTitleForm) {
+                    eventTitleForm.reset();
+                }
+                closeModal(eventTitleModal);
+                calendar.unselect();
+            }
+        });
+    }
+
+    if (meetingRequestModal) {
+        meetingRequestModal.addEventListener('click', function (event) {
+            if (event.target === meetingRequestModal) {
+                pendingMeetingSelection = null;
+                if (meetingRequestForm) {
+                    meetingRequestForm.reset();
+                }
+                closeModal(meetingRequestModal);
+                calendar.unselect();
+            }
+        });
+    }
+
+    if (rejectNoteModal) {
+        rejectNoteModal.addEventListener('click', function (event) {
+            if (event.target === rejectNoteModal) {
+                pendingRejectForm = null;
+                if (rejectNoteForm) {
+                    rejectNoteForm.reset();
+                }
+                closeModal(rejectNoteModal);
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') {
+            return;
+        }
+
+        if (eventTitleModal && eventTitleModal.classList.contains('is-open')) {
+            pendingEventSelection = null;
+            if (eventTitleForm) {
+                eventTitleForm.reset();
+            }
+            closeModal(eventTitleModal);
+            calendar.unselect();
+            return;
+        }
+
+        if (meetingRequestModal && meetingRequestModal.classList.contains('is-open')) {
+            pendingMeetingSelection = null;
+            if (meetingRequestForm) {
+                meetingRequestForm.reset();
+            }
+            closeModal(meetingRequestModal);
+            calendar.unselect();
+            return;
+        }
+
+        if (rejectNoteModal && rejectNoteModal.classList.contains('is-open')) {
+            pendingRejectForm = null;
+            if (rejectNoteForm) {
+                rejectNoteForm.reset();
+            }
+            closeModal(rejectNoteModal);
+        }
+    });
+
+    window.openRejectNoteModal = function (formElement) {
+        if (!rejectNoteModal) {
+            return;
+        }
+
+        pendingRejectForm = formElement;
+        if (rejectNoteForm) {
+            rejectNoteForm.reset();
+        }
+        openModal(rejectNoteModal, rejectNoteInput);
+    };
+
+    function openMeetingRequestModal(start, end) {
+        if (!meetingRequestModal) {
+            return;
+        }
+
+        pendingMeetingSelection = { start, end };
+
+        const parsedStart = parseSelectionDate(start);
+        const parsedEnd = parseSelectionDate(end);
+        const includesTime = typeof start === 'string' && start.includes('T');
+
+        if (meetingDateInput) {
+            meetingDateInput.value = toDateInputValue(parsedStart);
+        }
+
+        if (meetingStartTimeInput) {
+            meetingStartTimeInput.value = includesTime
+                ? toTimeInputValue(parsedStart)
+                : '09:00';
+        }
+
+        if (meetingEndTimeInput) {
+            meetingEndTimeInput.value = includesTime
+                ? toTimeInputValue(parsedEnd)
+                : '09:30';
+        }
+
+        updateMeetingSlotPreview();
+
+        openModal(meetingRequestModal, meetingTopicInput);
+    }
+
+    function parseSelectionDate(value) {
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) {
+            return new Date();
+        }
+
+        return parsed;
+    }
+
+    function toDateInputValue(dateValue) {
+        const year = dateValue.getFullYear();
+        const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+        const day = String(dateValue.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+
+    function toTimeInputValue(dateValue) {
+        const hours = String(dateValue.getHours()).padStart(2, '0');
+        const minutes = String(dateValue.getMinutes()).padStart(2, '0');
+        return hours + ':' + minutes;
+    }
+
+    function combineDateAndTime(dateValue, timeValue) {
+        return dateValue + 'T' + timeValue;
+    }
+
+    function updateMeetingSlotPreview() {
+        if (!meetingSlotPreview || !meetingDateInput || !meetingStartTimeInput || !meetingEndTimeInput) {
+            return;
+        }
+
+        const dateValue = meetingDateInput.value;
+        const startTimeValue = meetingStartTimeInput.value;
+        const endTimeValue = meetingEndTimeInput.value;
+
+        if (!dateValue || !startTimeValue || !endTimeValue) {
+            meetingSlotPreview.textContent = 'Choose meeting date and time.';
+            return;
+        }
+
+        const startValue = new Date(combineDateAndTime(dateValue, startTimeValue));
+        const endValue = new Date(combineDateAndTime(dateValue, endTimeValue));
+
+        meetingSlotPreview.textContent = 'Selected slot: '
+            + startValue.toLocaleDateString(undefined, { dateStyle: meetingSlotLocale.dateStyle })
+            + ', '
+            + startValue.toLocaleTimeString(undefined, { timeStyle: 'short' })
+            + ' - '
+            + endValue.toLocaleTimeString(undefined, { timeStyle: 'short' });
+    }
+
+    function showInlineFeedback(message, type) {
+        if (!inlineFeedback) {
+            return;
+        }
+
+        inlineFeedback.textContent = message;
+        inlineFeedback.classList.add('is-visible');
+        inlineFeedback.classList.remove('feedback-success', 'feedback-error');
+
+        if (type === 'error') {
+            inlineFeedback.classList.add('feedback-error');
+        } else {
+            inlineFeedback.classList.add('feedback-success');
+        }
+
+        window.clearTimeout(showInlineFeedback.hideTimer);
+        showInlineFeedback.hideTimer = window.setTimeout(function () {
+            inlineFeedback.classList.remove('is-visible');
+        }, 5000);
+    }
+
+    function openModal(modalElement, focusElement) {
+        if (!modalElement) {
+            return;
+        }
+
+        modalElement.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+
+        if (focusElement) {
+            setTimeout(function () {
+                focusElement.focus();
+            }, 20);
+        }
+    }
+
+    function closeModal(modalElement) {
+        if (!modalElement) {
+            return;
+        }
+
+        modalElement.classList.remove('is-open');
+
+        if (!document.querySelector('.inline-modal-backdrop.is-open')) {
+            document.body.style.overflow = '';
+        }
+    }
 });
 
 
@@ -509,10 +1012,9 @@ function submitMeetingRequest(topic, start, end, studentNote) {
 }
 
 function attachRejectNote(formElement) {
-    let note = prompt('Optional reason to send to student:') || '';
-    let input = formElement.querySelector('input[name="review_note"]');
-    if (input) {
-        input.value = note;
+    if (typeof window.openRejectNoteModal === 'function') {
+        window.openRejectNoteModal(formElement);
+        return false;
     }
 
     return true;

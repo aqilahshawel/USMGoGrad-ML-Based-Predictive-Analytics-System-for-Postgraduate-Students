@@ -51,6 +51,33 @@
         border-color: var(--lav-500) !important;
         border-radius: 4px !important;
     }
+    .event-title-inline {
+        background: var(--surface);
+        border: 1px solid var(--lav-200);
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        margin-bottom: 1rem;
+    }
+    .inline-feedback {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        display: none;
+    }
+    .inline-feedback.is-visible {
+        display: block;
+    }
+    .inline-feedback.feedback-success {
+        background: #e8f7ef;
+        border-color: #bde5cc;
+        color: #11663b;
+    }
+    .inline-feedback.feedback-error {
+        background: #fff1f3;
+        border-color: #f5c2c7;
+        color: #8b1f2d;
+    }
 </style>
 @endsection
 
@@ -60,6 +87,13 @@
         <h1><i class="fas fa-calendar-alt"></i> Scheduling</h1>
         <p>Schedule an event or check available time slots.</p>
     </div>
+
+    <div class="event-title-inline">
+        <label for="event-title-input" class="form-label mb-1">Event title for new slots</label>
+        <input id="event-title-input" class="form-control" type="text" maxlength="120" value="New Event" placeholder="Type event title">
+    </div>
+
+    <div id="legacySchedulingFeedback" class="inline-feedback" role="status" aria-live="polite"></div>
 
     <div id="calendar"></div>
 
@@ -77,7 +111,11 @@ document.addEventListener('DOMContentLoaded', function () {
         editable: true,
         events: '/get-events',  // Fetch events from the backend
         select: function (info) {
-            let title = prompt('Enter Event Title:');
+            let titleInput = document.getElementById('event-title-input');
+            let title = titleInput ? titleInput.value.trim() : '';
+            if (!title) {
+                title = 'New Event';
+            }
             if (title) {
                 saveEvent(title, info.startStr, info.endStr);
                 calendar.addEvent({
@@ -95,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function saveEvent(title, start, end) {
     console.log("Saving Event:", { title, start, end });
+    const feedbackElement = document.getElementById('legacySchedulingFeedback');
 
     // Ensure CSRF token exists before calling getAttribute
     let csrfToken = document.querySelector('meta[name="csrf-token"]');
@@ -119,15 +158,31 @@ function saveEvent(title, start, end) {
     .then(data => {
         console.log("Server Response:", data);
         if (data.message) {
-            alert('Event saved successfully!');
+            showFeedback(data.message, 'success');
         } else {
-            alert('Failed to save event.');
+            showFeedback('Failed to save event.', 'error');
         }
     })
     .catch(error => {
         console.error('Error saving event:', error);
-        alert('Error saving event. Check console for details.');
+        showFeedback('Error saving event. Check console for details.', 'error');
     });
+
+    function showFeedback(message, type) {
+        if (!feedbackElement) {
+            return;
+        }
+
+        feedbackElement.textContent = message;
+        feedbackElement.classList.add('is-visible');
+        feedbackElement.classList.remove('feedback-success', 'feedback-error');
+        feedbackElement.classList.add(type === 'error' ? 'feedback-error' : 'feedback-success');
+
+        window.clearTimeout(showFeedback.hideTimer);
+        showFeedback.hideTimer = window.setTimeout(() => {
+            feedbackElement.classList.remove('is-visible');
+        }, 4000);
+    }
 }
 
 

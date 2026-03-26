@@ -800,9 +800,6 @@
 
                 $hTotal = $hStops->count();
                 $hDone  = $hStops->where('completed', true)->count();
-                $overdueHomeStops = $progressSnapshot
-                    ? $hStops->filter(fn($stop) => ! $stop->completed && $stop->semester_number && $progressSnapshot['current_semester'] > $stop->semester_number)
-                    : collect();
             @endphp
 
             @if(Auth::user()->hasRole('lecturer'))
@@ -833,13 +830,6 @@
             @endif
 
             @if($hStops->isNotEmpty())
-                @if($overdueHomeStops->isNotEmpty())
-                <div class="alert alert-warning mt-3 mb-3" role="alert">
-                    <i class="fas fa-bell"></i>
-                    Reminder: {{ $overdueHomeStops->pluck('title')->implode(', ') }} {{ $overdueHomeStops->count() === 1 ? 'is' : 'are' }} already past the target semester.
-                </div>
-                @endif
-
                 {{-- Progress mini-bar --}}
                 @if($progressSnapshot)
                 <div class="d-flex gap-2 mb-1 flex-wrap" style="font-size: 0.82rem;">
@@ -1054,30 +1044,6 @@
         </div>
     </div>
 </div>
-@endif
-
-@if(Auth::user()->hasRole('student') || Auth::user()->hasRole('lecturer'))
-    <div class="prediction-summary {{ $predictionState }}">
-        <div class="prediction-header">
-            <div>
-                <div class="prediction-kicker">Machine Learning Prediction</div>
-                <h3 class="prediction-title">{{ $predictionTitle }}</h3>
-                <p class="prediction-copy">{{ $predictionCopy }}</p>
-            </div>
-            <div class="prediction-metric {{ $predictionState }}">{{ $predictionMetric }}</div>
-        </div>
-
-        @if($predictionBadges !== [])
-            <div class="prediction-badges">
-                @foreach($predictionBadges as $badge)
-                    <span class="prediction-badge {{ $badge['class'] }}">{{ $badge['text'] }}</span>
-                @endforeach
-                <a href="{{ $predictionHref }}" class="prediction-badge pending text-decoration-none">
-                    <i class="fas fa-arrow-right"></i> Open checkpoint tab
-                </a>
-            </div>
-        @endif
-    </div>
 @endif
 
 @else
