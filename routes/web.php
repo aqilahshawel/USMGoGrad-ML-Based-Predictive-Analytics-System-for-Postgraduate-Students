@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\MilestoneController;
 use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\LoginController;
@@ -42,9 +41,7 @@ Route::middleware(['auth'])->group(function () {
 // Home Route (Only accessible after login)
 Route::get('/home', [HomeController::class, 'index'])->middleware('auth')->name('home');
 
-// Milestones: student-personal checkpoints (students manage; lecturers can view supervisees)
 Route::middleware(['auth', 'role:student|lecturer'])->group(function () {
-    Route::get('milestones', [MilestoneController::class, 'index'])->name('milestones.index');
     Route::get('checkpoints', function (Request $request) {
         $params = ['tab' => 'checkpoint'];
 
@@ -57,10 +54,6 @@ Route::middleware(['auth', 'role:student|lecturer'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:student'])->group(function () {
-    Route::get('milestones/create', [MilestoneController::class, 'create'])->name('milestones.create');
-    Route::post('milestones', [MilestoneController::class, 'store'])->name('milestones.store');
-    Route::get('milestones/{milestone}/edit', [MilestoneController::class, 'edit'])->name('milestones.edit');
-    Route::put('milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
     Route::put('checkpoints', [TimelineController::class, 'updateCheckpoint'])->name('checkpoints.update');
     Route::put('timeline/checkpoints', [TimelineController::class, 'updateCheckpoint'])->name('timeline.checkpoints.update');
 });

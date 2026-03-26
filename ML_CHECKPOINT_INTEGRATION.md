@@ -9,10 +9,10 @@ This repository now uses a dual-task machine-learning flow:
 
 1. Admin registers a student account and assigns the cluster.
 2. Admin sets the student's registration date from the student management page.
-3. Student opens the Checkpoints page and updates actual milestone dates.
+3. Student opens the Checkpoints page and updates actual checkpoint dates.
 4. Laravel stores those dates in `student_checkpoints`.
 5. Laravel calls `ml/predict_got.py` through Symfony Process.
-6. Python converts milestone dates into semester-based features and returns:
+6. Python converts checkpoint dates into semester-based features and returns:
     - GoT probability
     - predicted GoT label
     - decision threshold used for predicted label

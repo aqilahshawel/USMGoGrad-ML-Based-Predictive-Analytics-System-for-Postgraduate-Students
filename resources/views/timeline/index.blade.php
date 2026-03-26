@@ -777,7 +777,7 @@
                                                 <div class="checkpoint-note warning mt-3">
                                                     <strong>Forecast Notes</strong><br>
                                                     @if($compressedByMaxSemester)
-                                                        Forecast milestones were compressed to fit the candidature maximum semester window.<br>
+                                                        Forecast checkpoints were compressed to fit the candidature maximum semester window.<br>
                                                     @endif
                                                     @if($sameSemesterGroups->isNotEmpty())
                                                         @foreach($sameSemesterGroups as $group)

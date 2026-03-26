@@ -100,7 +100,7 @@ class StudentAssistantService
 
     private function isCheckpointIntent(string $message): bool
     {
-        return Str::contains($message, ['next checkpoint', 'checkpoint due', 'when is checkpoint', 'next milestone']);
+        return Str::contains($message, ['next checkpoint', 'checkpoint due', 'when is checkpoint']);
     }
 
     private function isDurationIntent(string $message): bool

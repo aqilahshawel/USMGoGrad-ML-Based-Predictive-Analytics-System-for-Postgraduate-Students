@@ -37,11 +37,6 @@ class User extends Authenticatable
         return $this->hasMany(Timeline::class, 'user_id');
     }
 
-    public function milestones()
-    {
-        return $this->hasMany(Milestone::class, 'student_id');
-    }
-
     public function calendarIntegrations(): HasMany
     {
         return $this->hasMany(CalendarIntegration::class);

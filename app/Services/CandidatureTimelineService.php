@@ -283,7 +283,7 @@ class CandidatureTimelineService
 
     /**
      * Generates default professional checkpoints (one per stage + max duration marker).
-     * Stored in the Timeline roadmap (NOT the student's personal milestones).
+        * Stored in the Timeline roadmap (NOT the student's personal checklist data).
      *
      * @return array<int,array{system_key:string,stage_key:string,title:string,description:string|null,event_date:CarbonImmutable,target_semester_number:int,field:string}>
      */

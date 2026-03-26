@@ -16,21 +16,18 @@ return [
                     'title' => 'EKC500 approval and proposal preparation',
                     'from' => 1,
                     'to' => 3,
-                    'milestone_title' => 'Proposal review target',
                 ],
                 [
                     'key' => 'research_review_window',
                     'title' => 'Research review progression',
                     'from' => 4,
                     'to' => 5,
-                    'milestone_title' => 'Research review target',
                 ],
                 [
                     'key' => 'submission_window',
                     'title' => 'Submission and viva preparation',
                     'from' => 6,
                     'to' => 8,
-                    'milestone_title' => 'Notice of submission target',
                 ],
             ],
             'checkpoint_targets' => [

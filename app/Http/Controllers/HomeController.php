@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Timeline;
-use App\Models\Milestone;
 use App\Models\StudentCheckpoint;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +22,6 @@ class HomeController extends Controller
     
         $students = collect();
         $timelines = collect();
-        $milestones = collect();
         $supervisors = collect();
         $unassignedStudents = collect();
         $studentsMissingCandidature = collect();
@@ -45,7 +43,6 @@ class HomeController extends Controller
             if ($user->hasRole('student')) {
                 $dashboardTargetUser = $user;
                 $timelines = $user->timelines()->orderBy('event_date')->get();
-                $milestones = Milestone::where('student_id', $user->id)->get();
 
                 // Best-effort sync + snapshot
                 if ($user->start_date) {
@@ -63,7 +60,6 @@ class HomeController extends Controller
             } elseif ($user->hasRole('lecturer')) {
                 $students = User::where('supervisor_id', $user->id)->get();
                 $timelines = Timeline::whereIn('user_id', $students->pluck('id'))->get();
-                $milestones = Milestone::whereIn('student_id', $students->pluck('id'))->get();
 
                 // If lecturer selected a student, get that student's data
                 $selectedStudentId = request('student_id');
@@ -144,7 +140,6 @@ class HomeController extends Controller
 
 
         return view('home', compact(
-            'milestones',
             'timelines',
             'students',
             'supervisors',

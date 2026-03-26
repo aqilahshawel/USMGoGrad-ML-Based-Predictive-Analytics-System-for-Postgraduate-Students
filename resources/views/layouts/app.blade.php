@@ -801,7 +801,6 @@
 
                     @role('lecturer')
                     <a class="sidebar-nav-link {{ request()->is('timeline') ? 'active' : '' }}" href="{{ url('/timeline') }}"><i class="fas fa-timeline"></i> Timeline</a>
-                    <a class="sidebar-nav-link {{ request()->is('milestones') ? 'active' : '' }}" href="{{ url('/milestones') }}"><i class="fas fa-flag"></i> Milestones</a>
                     <a class="sidebar-nav-link {{ request()->is('lecturer/messages') ? 'active' : '' }}" href="{{ url('/lecturer/messages') }}"><i class="fas fa-envelope"></i> Messenger</a>
                     <a class="sidebar-nav-link {{ request()->is('scheduling') ? 'active' : '' }}" href="{{ url('/scheduling') }}"><i class="fas fa-calendar"></i> Schedule</a>
                     @endrole

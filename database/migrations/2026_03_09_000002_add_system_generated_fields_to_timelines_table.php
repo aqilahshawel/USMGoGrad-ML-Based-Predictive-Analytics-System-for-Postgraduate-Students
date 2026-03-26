@@ -32,28 +32,9 @@ return new class extends Migration
             }
         });
 
-        Schema::table('milestones', function (Blueprint $table) {
-            if (! Schema::hasColumn('milestones', 'is_system_generated')) {
-                $table->boolean('is_system_generated')->default(false);
-            }
-            if (! Schema::hasColumn('milestones', 'system_key')) {
-                $table->string('system_key')->nullable();
-            }
-            if (! Schema::hasColumn('milestones', 'stage_key')) {
-                $table->string('stage_key')->nullable();
-            }
-            if (! Schema::hasColumn('milestones', 'target_semester_number')) {
-                $table->unsignedSmallInteger('target_semester_number')->nullable();
-            }
-        });
-
         // Add uniqueness for idempotent sync (safe with NULL system_key)
         Schema::table('timelines', function (Blueprint $table) {
             $table->unique(['user_id', 'system_key'], 'timelines_user_id_system_key_unique');
-        });
-
-        Schema::table('milestones', function (Blueprint $table) {
-            $table->unique(['student_id', 'system_key'], 'milestones_student_id_system_key_unique');
         });
     }
 
@@ -82,23 +63,6 @@ return new class extends Migration
                 $table->dropColumn('system_key');
             }
             if (Schema::hasColumn('timelines', 'is_system_generated')) {
-                $table->dropColumn('is_system_generated');
-            }
-        });
-
-        Schema::table('milestones', function (Blueprint $table) {
-            $table->dropUnique('milestones_student_id_system_key_unique');
-
-            if (Schema::hasColumn('milestones', 'target_semester_number')) {
-                $table->dropColumn('target_semester_number');
-            }
-            if (Schema::hasColumn('milestones', 'stage_key')) {
-                $table->dropColumn('stage_key');
-            }
-            if (Schema::hasColumn('milestones', 'system_key')) {
-                $table->dropColumn('system_key');
-            }
-            if (Schema::hasColumn('milestones', 'is_system_generated')) {
                 $table->dropColumn('is_system_generated');
             }
         });
