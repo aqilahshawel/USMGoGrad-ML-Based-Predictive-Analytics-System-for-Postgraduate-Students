@@ -143,48 +143,99 @@ class StudentAssistantService
 
     private function buildReminderResponse(User $student): string
     {
-        $parts = [];
+        $html = '<div class="usmg-reminder-container">';
+        $html .= '<div class="usmg-reminder-heading">📋 Reminder Summary</div>';
+        $html .= '<div class="usmg-reminder-grid">';
 
-        $parts[] = 'Reminder summary for you:';
-
+        // Next Checkpoint Card
         $next = $this->nextCheckpoint($student);
         if ($next) {
-            $parts[] = '- Next checkpoint: ' . $next['title'] . ' on ' . $next['date_label'] . ' (' . $next['relative'] . ').';
+            $statusClass = str_contains(strtolower($next['relative']), 'overdue') ? 'usmg-status-alert' : '';
+            $html .= '<div class="usmg-reminder-card ' . $statusClass . '">';
+            $html .= '<div class="usmg-reminder-card-icon">🎯</div>';
+            $html .= '<div class="usmg-reminder-card-content">';
+            $html .= '<div class="usmg-reminder-card-label">Next Checkpoint</div>';
+            $html .= '<div class="usmg-reminder-card-title">' . htmlspecialchars($next['title']) . '</div>';
+            $html .= '<div class="usmg-reminder-card-meta">' . htmlspecialchars($next['date_label']) . '</div>';
+            $html .= '<div class="usmg-reminder-card-status">' . htmlspecialchars($next['relative']) . '</div>';
+            $html .= '</div></div>';
         } else {
-            $parts[] = '- No pending checkpoint is detected yet. Keep your checkpoint record updated.';
+            $html .= '<div class="usmg-reminder-card">';
+            $html .= '<div class="usmg-reminder-card-icon">✓</div>';
+            $html .= '<div class="usmg-reminder-card-content">';
+            $html .= '<div class="usmg-reminder-card-label">Checkpoints</div>';
+            $html .= '<div class="usmg-reminder-card-title">No pending checkpoint</div>';
+            $html .= '<div class="usmg-reminder-card-meta">Keep your checkpoint record updated</div>';
+            $html .= '</div></div>';
         }
 
+        // Progress Snapshot Card
         $snapshot = $this->progressSnapshot($student);
         if ($snapshot) {
-            $parts[] = '- Current progress: Semester ' . $snapshot['current_semester'] . ', stage: ' . $snapshot['stage_title'] . ', risk: ' . $snapshot['risk_status'] . '.';
+            $riskClass = $snapshot['risk_status'] === 'high_risk' ? 'usmg-status-alert' : 'usmg-status-ok';
+            $html .= '<div class="usmg-reminder-card ' . $riskClass . '">';
+            $html .= '<div class="usmg-reminder-card-icon">📈</div>';
+            $html .= '<div class="usmg-reminder-card-content">';
+            $html .= '<div class="usmg-reminder-card-label">Progress</div>';
+            $html .= '<div class="usmg-reminder-card-title">Semester ' . htmlspecialchars($snapshot['current_semester']) . '</div>';
+            $html .= '<div class="usmg-reminder-card-meta">Stage: ' . htmlspecialchars($snapshot['stage_title']) . '</div>';
+            $html .= '<div class="usmg-reminder-card-status">Risk: ' . htmlspecialchars($snapshot['risk_status']) . '</div>';
+            $html .= '</div></div>';
         }
 
+        // Next Meeting Card
         $nextMeeting = $this->nextApprovedMeeting($student);
         if ($nextMeeting) {
-            $parts[] = '- Next approved supervisor meeting: ' . $nextMeeting->requested_start->format('d M Y H:i') . ' (' . $nextMeeting->topic . ').';
+            $html .= '<div class="usmg-reminder-card">';
+            $html .= '<div class="usmg-reminder-card-icon">📅</div>';
+            $html .= '<div class="usmg-reminder-card-content">';
+            $html .= '<div class="usmg-reminder-card-label">Next Meeting</div>';
+            $html .= '<div class="usmg-reminder-card-title">' . htmlspecialchars($nextMeeting->topic) . '</div>';
+            $html .= '<div class="usmg-reminder-card-meta">' . $nextMeeting->requested_start->format('d M Y H:i') . '</div>';
+            $html .= '</div></div>';
+        } else if (! $this->hasRecentSupervisorInteraction($student)) {
+            $html .= '<div class="usmg-reminder-card usmg-status-alert">';
+            $html .= '<div class="usmg-reminder-card-icon">⚠️</div>';
+            $html .= '<div class="usmg-reminder-card-content">';
+            $html .= '<div class="usmg-reminder-card-label">Follow-up</div>';
+            $html .= '<div class="usmg-reminder-card-title">No meeting this month</div>';
+            $html .= '<div class="usmg-reminder-card-meta">Please apply for a new meeting slot</div>';
+            $html .= '</div></div>';
         }
 
-        if (! $this->hasRecentSupervisorInteraction($student)) {
-            $parts[] = '- Monthly follow-up: no approved meeting was recorded in the last 30 days, so please apply for a new meeting slot.';
-        }
-
+        // Suggested Topic Card
         $topic = $this->pickRotatingSuggestion((string) $student->cluster);
         if ($topic) {
-            $parts[] = '- Suggested topic this time: ' . $topic['title'] . ' (' . $topic['url'] . ').';
+            $html .= '<div class="usmg-reminder-card">';
+            $html .= '<div class="usmg-reminder-card-icon">💡</div>';
+            $html .= '<div class="usmg-reminder-card-content">';
+            $html .= '<div class="usmg-reminder-card-label">Suggested Topic</div>';
+            $html .= '<div class="usmg-reminder-card-title">' . htmlspecialchars($topic['title']) . '</div>';
+            $html .= '<div class="usmg-reminder-card-link"><a href="' . htmlspecialchars($topic['url']) . '" target="_blank" rel="noopener noreferrer">View Resource →</a></div>';
+            $html .= '</div></div>';
         }
 
+        // Notification Status
         try {
             $sent = $this->overdueNotificationService->dispatchForStudent($student->fresh('supervisor'));
             if ($sent > 0) {
-                $parts[] = '- I also sent ' . $sent . ' overdue checkpoint reminder notification(s).';
+                $html .= '<div class="usmg-reminder-card usmg-status-info">';
+                $html .= '<div class="usmg-reminder-card-icon">🔔</div>';
+                $html .= '<div class="usmg-reminder-card-content">';
+                $html .= '<div class="usmg-reminder-card-label">Notifications</div>';
+                $html .= '<div class="usmg-reminder-card-title">Reminders Sent</div>';
+                $html .= '<div class="usmg-reminder-card-meta">' . $sent . ' overdue checkpoint reminder(s) sent</div>';
+                $html .= '</div></div>';
             }
         } catch (\Throwable) {
             // Ignore notification dispatch failures in chatbot flow.
         }
 
-        $parts[] = 'You can also ask: "is my supervisor free this week" or "show latest IPS news".';
+        $html .= '</div>';
+        $html .= '<div class="usmg-reminder-footer">💬 You can also ask: "is my supervisor free this week" or "show latest IPS news"</div>';
+        $html .= '</div>';
 
-        return implode("\n", $parts);
+        return $html;
     }
 
     private function buildSupervisorAvailabilityResponse(User $student): string
@@ -236,34 +287,41 @@ class StudentAssistantService
             ->map(fn (CarbonImmutable $day) => $day->format('D, d M'))
             ->values();
 
-        $lines = [];
-        $lines[] = 'Based on ' . $source . ' for your supervisor (' . $supervisor->name . ') this week:';
+        $html = '<div class="usmg-schedule-container">';
+        $html .= '<div class="usmg-schedule-heading">📅 Supervisor Availability - ' . htmlspecialchars($supervisor->name) . '</div>';
+        $html .= '<div class="usmg-schedule-source">Based on ' . $source . ' (next 7 days)</div>';
 
-        if ($freeDays->isEmpty()) {
-            $lines[] = '- No fully free day detected in the next 7 days.';
+        if (! $freeDays->isEmpty()) {
+            $html .= '<div class="usmg-schedule-section">';
+            $html .= '<div class="usmg-schedule-section-title">✓ Free Days:</div>';
+            $html .= '<div class="usmg-schedule-chips">';
+            foreach ($freeDays->take(4) as $day) {
+                $html .= '<span class="usmg-schedule-chip usmg-chip-free">' . htmlspecialchars($day) . '</span>';
+            }
+            $html .= '</div></div>';
         } else {
-            $lines[] = '- Likely free day(s): ' . $freeDays->take(4)->implode(', ') . '.';
+            $html .= '<div class="usmg-schedule-alert">No fully free days detected in the next 7 days.</div>';
         }
 
-        $busyPreview = $events
-            ->take(3)
-            ->map(function (array $event) {
+        $busyPreview = $events->take(3);
+        if ($busyPreview->isNotEmpty()) {
+            $html .= '<div class="usmg-schedule-section">';
+            $html .= '<div class="usmg-schedule-section-title">⏱️ Busy Slots:</div>';
+            foreach ($busyPreview as $event) {
                 $startDate = $this->safeParseDate((string) ($event['start'] ?? ''));
                 $label = $startDate ? $startDate->format('D, d M H:i') : 'Unknown time';
-
-                return '- Busy slot: ' . ((string) ($event['title'] ?? 'Untitled event')) . ' (' . $label . ')';
-            })
-            ->values();
-
-        if ($busyPreview->isNotEmpty()) {
-            foreach ($busyPreview as $line) {
-                $lines[] = $line;
+                $html .= '<div class="usmg-schedule-event">';
+                $html .= '<div class="usmg-schedule-event-title">' . htmlspecialchars((string) ($event['title'] ?? 'Untitled')) . '</div>';
+                $html .= '<div class="usmg-schedule-event-time">' . htmlspecialchars($label) . '</div>';
+                $html .= '</div>';
             }
+            $html .= '</div>';
         }
 
-        $lines[] = 'For exact booking, please still confirm with your supervisor directly.';
+        $html .= '<div class="usmg-schedule-footer">For exact booking, please confirm with your supervisor directly.</div>';
+        $html .= '</div>';
 
-        return implode("\n", $lines);
+        return $html;
     }
 
     private function buildMeetingRecommendationResponse(User $student): string
@@ -280,20 +338,27 @@ class StudentAssistantService
             return 'I could not find clear slots in the next 14 days. Please check the schedule page and try applying for another time.';
         }
 
-        $lines = [];
-        $lines[] = 'Here are suitable meeting slots with your supervisor (' . $supervisor->name . '):';
+        $html = '<div class="usmg-slots-container">';
+        $html .= '<div class="usmg-slots-heading">⏰ Suggested Meeting Slots</div>';
+        $html .= '<div class="usmg-slots-subtext">With ' . htmlspecialchars($supervisor->name) . ' (next 14 days)</div>';
+        $html .= '<div class="usmg-slots-grid">';
 
         foreach ($slots as $slot) {
-            $lines[] = '- ' . ($slot['label'] ?? 'Suggested slot');
+            $html .= '<div class="usmg-slot-card">';
+            $html .= '<div class="usmg-slot-label">' . htmlspecialchars($slot['label'] ?? 'Suggested slot') . '</div>';
+            $html .= '</div>';
         }
+
+        $html .= '</div>';
 
         if (! $this->hasRecentSupervisorInteraction($student)) {
-            $lines[] = 'Monthly reminder: you have no approved supervisor meeting in the last 30 days. Please submit one of these slots.';
+            $html .= '<div class="usmg-slots-reminder">⚠️ Reminder: No approved meeting in the last 30 days. Please submit one of these slots.</div>';
         }
 
-        $lines[] = 'Apply directly from the Schedule page by selecting a slot on the calendar.';
+        $html .= '<div class="usmg-slots-footer">Apply from the Schedule page by selecting a slot on the calendar.</div>';
+        $html .= '</div>';
 
-        return implode("\n", $lines);
+        return $html;
     }
 
     private function buildCheckpointResponse(User $student): string
@@ -301,16 +366,27 @@ class StudentAssistantService
         $next = $this->nextCheckpoint($student);
 
         if (! $next) {
-            return 'I cannot compute your next checkpoint yet. Please ensure start date is set, then update your checkpoint records.';
+            return '<div class="usmg-info-box"><i class="fas fa-info-circle"></i> I cannot compute your next checkpoint yet. Please ensure start date is set, then update your checkpoint records.</div>';
         }
 
-        return 'Your next checkpoint is ' . $next['title'] . ' on ' . $next['date_label'] . ' (' . $next['relative'] . ').';
+        $statusClass = str_contains(strtolower($next['relative']), 'overdue') ? 'usmg-status-alert' : '';
+        $html = '<div class="usmg-checkpoint-container">';
+        $html .= '<div class="usmg-checkpoint-card ' . $statusClass . '">';
+        $html .= '<div class="usmg-checkpoint-icon">🎯</div>';
+        $html .= '<div class="usmg-checkpoint-content">';
+        $html .= '<div class="usmg-checkpoint-label">Next Checkpoint</div>';
+        $html .= '<div class="usmg-checkpoint-title">' . htmlspecialchars($next['title']) . '</div>';
+        $html .= '<div class="usmg-checkpoint-date">📅 ' . htmlspecialchars($next['date_label']) . '</div>';
+        $html .= '<div class="usmg-checkpoint-status">' . htmlspecialchars($next['relative']) . '</div>';
+        $html .= '</div></div>';
+        $html .= '</div>';
+        return $html;
     }
 
     private function buildDurationResponse(User $student): string
     {
         if (! $student->start_date) {
-            return 'I need your start date to estimate time before graduation.';
+            return '<div class="usmg-info-box"><i class="fas fa-info-circle"></i> I need your start date to estimate time before graduation.</div>';
         }
 
         try {
@@ -328,14 +404,25 @@ class StudentAssistantService
             $remainingExpected = max(0, (int) $rules['expected_semesters'] - $currentSemester);
             $remainingMax = max(0, (int) $rules['max_semesters'] - $currentSemester);
 
-            return implode("\n", [
-                'Estimated candidature timeline:',
-                '- Current semester: ' . $currentSemester . '.',
-                '- Expected graduation window end: ' . $expectedEnd->format('d M Y') . ' (about ' . $remainingExpected . ' semester(s) remaining).',
-                '- Maximum candidature end: ' . $maxEnd->format('d M Y') . ' (' . $remainingMax . ' semester(s) left before overdue).',
-            ]);
+            $html = '<div class="usmg-timeline-container">';
+            $html .= '<div class="usmg-timeline-heading">⏳ Candidature Timeline</div>';
+            $html .= '<div class="usmg-timeline-card"><div class="usmg-timeline-card-icon">📍</div><div class="usmg-timeline-card-content">';
+            $html .= '<div class="usmg-timeline-card-label">Current</div>';
+            $html .= '<div class="usmg-timeline-card-value">Semester ' . $currentSemester . '</div>';
+            $html .= '</div></div>';
+            $html .= '<div class="usmg-timeline-card"><div class="usmg-timeline-card-icon">🎓</div><div class="usmg-timeline-card-content">';
+            $html .= '<div class="usmg-timeline-card-label">Expected Graduation</div>';
+            $html .= '<div class="usmg-timeline-card-value">' . $expectedEnd->format('d M Y') . '</div>';
+            $html .= '<div class="usmg-timeline-card-meta">' . $remainingExpected . ' semester(s) remaining</div>';
+            $html .= '</div></div>';
+            $html .= '<div class="usmg-timeline-card"><div class="usmg-timeline-card-icon">⏰</div><div class="usmg-timeline-card-content">';
+            $html .= '<div class="usmg-timeline-card-label">Maximum Candidature</div>';
+            $html .= '<div class="usmg-timeline-card-value">' . $maxEnd->format('d M Y') . '</div>';
+            $html .= '<div class="usmg-timeline-card-meta">' . $remainingMax . ' semester(s) left before overdue</div>';
+            $html .= '</div></div></div>';
+            return $html;
         } catch (\Throwable) {
-            return 'I could not compute graduation duration right now. Please check that your profile and timeline data are complete.';
+            return '<div class="usmg-info-box usmg-error"><i class="fas fa-exclamation-triangle"></i> I could not compute graduation duration right now. Please check that your profile and timeline data are complete.</div>';
         }
     }
 
@@ -345,19 +432,25 @@ class StudentAssistantService
         $next = $this->nextCheckpoint($student);
 
         if (! $snapshot) {
-            return 'I need your start date before I can identify your ideal checkpoint period.';
+            return '<div class="usmg-info-box"><i class="fas fa-info-circle"></i> I need your start date before I can identify your ideal checkpoint period.</div>';
         }
 
-        $lines = [];
-        $lines[] = 'Your current ideal progress focus:';
-        $lines[] = '- Stage: ' . $snapshot['stage_title'] . ' (Semester ' . $snapshot['current_semester'] . ').';
-        $lines[] = '- Risk status: ' . $snapshot['risk_status'] . '.';
-
+        $riskClass = $snapshot['risk_status'] === 'high_risk' ? 'usmg-status-alert' : 'usmg-status-ok';
+        $html = '<div class="usmg-period-container"><div class="usmg-period-heading">📍 Your Current Focus</div>';
+        $html .= '<div class="usmg-period-card ' . $riskClass . '"><div class="usmg-period-card-icon">📈</div><div class="usmg-period-card-content">';
+        $html .= '<div class="usmg-period-card-label">Stage</div>';
+        $html .= '<div class="usmg-period-card-title">' . htmlspecialchars($snapshot['stage_title']) . '</div>';
+        $html .= '<div class="usmg-period-card-meta">Semester ' . $snapshot['current_semester'] . ' · Risk: ' . htmlspecialchars($snapshot['risk_status']) . '</div>';
+        $html .= '</div></div>';
         if ($next) {
-            $lines[] = '- Recommended checkpoint focus now: ' . $next['title'] . ' by ' . $next['date_label'] . '.';
+            $html .= '<div class="usmg-period-card"><div class="usmg-period-card-icon">🎯</div><div class="usmg-period-card-content">';
+            $html .= '<div class="usmg-period-card-label">Recommended Focus</div>';
+            $html .= '<div class="usmg-period-card-title">' . htmlspecialchars($next['title']) . '</div>';
+            $html .= '<div class="usmg-period-card-meta">Due by ' . htmlspecialchars($next['date_label']) . '</div>';
+            $html .= '</div></div>';
         }
-
-        return implode("\n", $lines);
+        $html .= '</div>';
+        return $html;
     }
 
     private function buildRecommendationResponse(User $student): string
@@ -365,16 +458,15 @@ class StudentAssistantService
         $cluster = (string) ($student->cluster ?? 'general');
         $suggestions = $this->clusterSuggestions($cluster)->take(3);
 
-        $lines = [];
-        $lines[] = 'Suggested readings/topics for your cluster (' . $cluster . '):';
-
+        $html = '<div class="usmg-resources-container"><div class="usmg-resources-heading">📚 Suggested Readings</div>';
+        $html .= '<div class="usmg-resources-cluster">Cluster: <strong>' . htmlspecialchars($cluster) . '</strong></div>';
+        $html .= '<div class="usmg-resources-grid">';
         foreach ($suggestions as $suggestion) {
-            $lines[] = '- ' . $suggestion['title'] . ': ' . $suggestion['url'];
+            $html .= '<div class="usmg-resource-card"><div class="usmg-resource-title">' . htmlspecialchars($suggestion['title']) . '</div>';
+            $html .= '<div class="usmg-resource-link"><a href="' . htmlspecialchars($suggestion['url']) . '" target="_blank" rel="noopener noreferrer">Read More →</a></div></div>';
         }
-
-        $lines[] = 'Ask "reminder" anytime and I will also include one rotating topic suggestion.';
-
-        return implode("\n", $lines);
+        $html .= '</div><div class="usmg-resources-tip">💡 Ask "reminder" anytime and I will include one rotating topic suggestion.</div></div>';
+        return $html;
     }
 
     private function buildNewsResponse(): string
@@ -413,17 +505,24 @@ class StudentAssistantService
 
     private function helpText(): string
     {
-        return implode("\n", [
-            'You can ask me things like:',
-            '- Is my supervisor free this week?',
-            '- Suggest suitable meeting times with my supervisor.',
-            '- When is my next checkpoint?',
-            '- How much time before graduation?',
-            '- What is my ideal period/current stage now?',
-            '- Recommend reading topics for my cluster.',
-            '- Show latest IPS USM announcements.',
-            '- Reminder',
-        ]);
+        $html = '<div class="usmg-help-container"><div class="usmg-help-heading">💬 What I Can Help You With</div><div class="usmg-help-grid">';
+        $items = [
+            ['icon' => '📅', 'title' => 'Supervisor Schedule', 'text' => 'Is my supervisor free this week?'],
+            ['icon' => '⏰', 'title' => 'Meeting Slots', 'text' => 'Suggest suitable meeting times with my supervisor.'],
+            ['icon' => '🎯', 'title' => 'Next Checkpoint', 'text' => 'When is my next checkpoint?'],
+            ['icon' => '⏳', 'title' => 'Graduation Timeline', 'text' => 'How much time before graduation?'],
+            ['icon' => '📈', 'title' => 'My Progress', 'text' => 'What is my ideal period/current stage now?'],
+            ['icon' => '📚', 'title' => 'Resources', 'text' => 'Recommend reading topics for my cluster.'],
+            ['icon' => '📰', 'title' => 'Updates', 'text' => 'Show latest IPS USM announcements.'],
+            ['icon' => '🔔', 'title' => 'Reminders', 'text' => 'Reminder'],
+        ];
+        foreach ($items as $item) {
+            $html .= '<div class="usmg-help-item"><div class="usmg-help-item-icon">' . $item['icon'] . '</div><div class="usmg-help-item-content">';
+            $html .= '<div class="usmg-help-item-title">' . htmlspecialchars($item['title']) . '</div>';
+            $html .= '<div class="usmg-help-item-text">"' . htmlspecialchars($item['text']) . '"</div></div></div>';
+        }
+        $html .= '</div></div>';
+        return $html;
     }
 
     /**

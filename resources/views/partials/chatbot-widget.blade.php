@@ -241,6 +241,450 @@
             .ips-news-title:hover { text-decoration: underline; }
             .ips-news-date { color: var(--muted); font-size: .72rem; }
 
+            /* ── Reminder Cards ── */
+            .usmg-reminder-container {
+                display: flex;
+                flex-direction: column;
+                gap: .75rem;
+            }
+            .usmg-reminder-heading {
+                font-weight: 700;
+                font-size: .95rem;
+                color: var(--lav-500);
+                margin-bottom: .25rem;
+            }
+            .usmg-reminder-grid {
+                display: flex;
+                flex-direction: column;
+                gap: .6rem;
+            }
+            .usmg-reminder-card {
+                display: flex;
+                gap: .75rem;
+                padding: .75rem;
+                background: var(--n-50);
+                border: 1.5px solid var(--lav-200);
+                border-radius: 12px;
+                transition: all .15s ease;
+            }
+            .usmg-reminder-card:hover {
+                border-color: var(--lav-400);
+                background: var(--n-0);
+                box-shadow: 0 2px 8px rgba(124,111,179,.1);
+            }
+            .usmg-reminder-card.usmg-status-alert {
+                border-color: #fee;
+                background: #fef5f5;
+            }
+            .usmg-reminder-card.usmg-status-alert:hover {
+                border-color: #f99;
+                background: #fef9f9;
+            }
+            .usmg-reminder-card.usmg-status-ok {
+                border-color: #e8f5e9;
+                background: #f1f8f5;
+            }
+            .usmg-reminder-card.usmg-status-ok:hover {
+                border-color: #80c88e;
+                background: #f5faf8;
+            }
+            .usmg-reminder-card.usmg-status-info {
+                border-color: #e3f2fd;
+                background: #f3f8fc;
+            }
+            .usmg-reminder-card.usmg-status-info:hover {
+                border-color: #90caf9;
+                background: #f7fafd;
+            }
+            .usmg-reminder-card-icon {
+                font-size: 1.4rem;
+                flex-shrink: 0;
+                min-width: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .usmg-reminder-card-content {
+                display: flex;
+                flex-direction: column;
+                gap: .25rem;
+                flex: 1;
+                min-width: 0;
+            }
+            .usmg-reminder-card-label {
+                font-size: .75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .5px;
+                color: var(--muted);
+            }
+            .usmg-reminder-card-title {
+                font-size: .88rem;
+                font-weight: 600;
+                color: var(--n-900);
+                line-height: 1.3;
+            }
+            .usmg-reminder-card-meta {
+                font-size: .78rem;
+                color: var(--muted);
+                line-height: 1.3;
+            }
+            .usmg-reminder-card-status {
+                font-size: .78rem;
+                font-weight: 600;
+                color: #d9534f;
+                margin-top: .15rem;
+            }
+            .usmg-reminder-card-link {
+                margin-top: .35rem;
+            }
+            .usmg-reminder-card-link a {
+                font-size: .78rem;
+                font-weight: 600;
+                color: var(--lav-500);
+                text-decoration: none;
+                transition: all .15s;
+            }
+            .usmg-reminder-card-link a:hover {
+                color: var(--lav-600);
+                text-decoration: underline;
+            }
+            .usmg-reminder-footer {
+                font-size: .78rem;
+                color: var(--muted);
+                padding-top: .35rem;
+                border-top: 1px solid var(--lav-100);
+                margin-top: .35rem;
+            }
+
+            /* ── Schedule Availability ── */
+            .usmg-schedule-container {
+                display: flex;
+                flex-direction: column;
+                gap: .6rem;
+            }
+            .usmg-schedule-heading {
+                font-weight: 700;
+                font-size: .95rem;
+                color: var(--lav-500);
+            }
+            .usmg-schedule-source {
+                font-size: .75rem;
+                color: var(--muted);
+                font-weight: 500;
+            }
+            .usmg-schedule-section {
+                display: flex;
+                flex-direction: column;
+                gap: .4rem;
+            }
+            .usmg-schedule-section-title {
+                font-size: .8rem;
+                font-weight: 700;
+                color: var(--n-700);
+                text-transform: uppercase;
+                letter-spacing: .3px;
+            }
+            .usmg-schedule-chips {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .4rem;
+            }
+            .usmg-schedule-chip {
+                display: inline-block;
+                padding: .4rem .65rem;
+                border-radius: 999px;
+                font-size: .75rem;
+                font-weight: 600;
+                background: var(--n-100);
+                color: var(--lav-500);
+                border: 1px solid var(--lav-200);
+            }
+            .usmg-schedule-chip.usmg-chip-free {
+                background: #e8f5e9;
+                color: #2e7d32;
+                border-color: #81c784;
+            }
+            .usmg-schedule-event {
+                padding: .5rem .6rem;
+                background: var(--n-50);
+                border-left: 3px solid var(--lav-300);
+                border-radius: 4px;
+                display: flex;
+                flex-direction: column;
+                gap: .15rem;
+            }
+            .usmg-schedule-event-title {
+                font-size: .8rem;
+                font-weight: 600;
+                color: var(--n-900);
+            }
+            .usmg-schedule-event-time {
+                font-size: .72rem;
+                color: var(--muted);
+            }
+            .usmg-schedule-alert {
+                padding: .6rem;
+                background: #fff3cd;
+                border: 1px solid #ffc107;
+                border-radius: 6px;
+                color: #856404;
+                font-size: .8rem;
+                font-weight: 500;
+            }
+            .usmg-schedule-footer {
+                font-size: .75rem;
+                color: var(--muted);
+                padding-top: .4rem;
+                border-top: 1px solid var(--lav-100);
+            }
+
+            /* ── Meeting Slots ── */
+            .usmg-slots-container {
+                display: flex;
+                flex-direction: column;
+                gap: .5rem;
+            }
+            .usmg-slots-heading {
+                font-weight: 700;
+                font-size: .95rem;
+                color: var(--lav-500);
+            }
+            .usmg-slots-subtext {
+                font-size: .75rem;
+                color: var(--muted);
+            }
+            .usmg-slots-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: .5rem;
+            }
+            .usmg-slot-card {
+                padding: .6rem;
+                background: var(--lav-50);
+                border: 1.5px solid var(--lav-200);
+                border-radius: 8px;
+                text-align: center;
+                transition: all .15s;
+                cursor: pointer;
+            }
+            .usmg-slot-card:hover {
+                border-color: var(--lav-400);
+                background: var(--lav-100);
+                box-shadow: 0 2px 8px rgba(124,111,179,.15);
+            }
+            .usmg-slot-label {
+                font-size: .78rem;
+                font-weight: 600;
+                color: var(--lav-600);
+                line-height: 1.3;
+            }
+            .usmg-slots-reminder {
+                padding: .5rem .6rem;
+                background: #ffeaa7;
+                border-left: 3px solid #fdcb6e;
+                border-radius: 4px;
+                color: #d63031;
+                font-size: .78rem;
+                font-weight: 500;
+            }
+            .usmg-slots-footer {
+                font-size: .75rem;
+                color: var(--muted);
+                padding-top: .3rem;
+                border-top: 1px solid var(--lav-100);
+            }
+
+            /* ── Info Boxes ── */
+            .usmg-info-box {
+                padding: .65rem .75rem;
+                background: #f8f9fa;
+                border: 1.5px solid var(--lav-200);
+                border-radius: 8px;
+                color: var(--n-700);
+                font-size: .85rem;
+                display: flex;
+                gap: .5rem;
+                align-items: flex-start;
+            }
+            .usmg-info-box i { margin-top: 2px; color: var(--lav-500); flex-shrink: 0; }
+            .usmg-info-box.usmg-error {
+                background: #fef5f5;
+                border-color: #fac5c5;
+                color: #a20707;
+            }
+            .usmg-info-box.usmg-error i { color: #d9534f; }
+
+            /* ── Checkpoint Card ── */
+            .usmg-checkpoint-container {
+                display: flex;
+                flex-direction: column;
+                gap: .5rem;
+            }
+            .usmg-checkpoint-card {
+                display: flex;
+                gap: .6rem;
+                padding: .65rem;
+                background: var(--n-50);
+                border: 1.5px solid var(--lav-200);
+                border-radius: 10px;
+                transition: all .15s;
+            }
+            .usmg-checkpoint-card:hover {
+                border-color: var(--lav-400);
+                box-shadow: 0 2px 8px rgba(124,111,179,.1);
+            }
+            .usmg-checkpoint-card.usmg-status-alert {
+                border-color: #fac5c5;
+                background: #fef5f5;
+            }
+            .usmg-checkpoint-icon { font-size: 1.3rem; flex-shrink: 0; }
+            .usmg-checkpoint-content {
+                display: flex;
+                flex-direction: column;
+                gap: .2rem;
+                flex: 1;
+                min-width: 0;
+            }
+            .usmg-checkpoint-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+            .usmg-checkpoint-title { font-size: .86rem; font-weight: 600; color: var(--n-900); }
+            .usmg-checkpoint-date { font-size: .78rem; color: var(--muted); }
+            .usmg-checkpoint-status { font-size: .78rem; font-weight: 600; color: #d9534f; margin-top: .1rem; }
+
+            /* ── Timeline Cards ── */
+            .usmg-timeline-container {
+                display: flex;
+                flex-direction: column;
+                gap: .5rem;
+            }
+            .usmg-timeline-heading { font-weight: 700; font-size: .95rem; color: var(--lav-500); margin-bottom: .1rem; }
+            .usmg-timeline-card {
+                display: flex;
+                gap: .6rem;
+                padding: .65rem;
+                background: var(--n-50);
+                border: 1.5px solid var(--lav-200);
+                border-radius: 10px;
+                transition: all .15s;
+            }
+            .usmg-timeline-card:hover {
+                border-color: var(--lav-400);
+                background: var(--n-0);
+                box-shadow: 0 2px 8px rgba(124,111,179,.1);
+            }
+            .usmg-timeline-card-icon { font-size: 1.3rem; flex-shrink: 0; }
+            .usmg-timeline-card-content {
+                display: flex;
+                flex-direction: column;
+                gap: .15rem;
+                flex: 1;
+            }
+            .usmg-timeline-card-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+            .usmg-timeline-card-value { font-size: .88rem; font-weight: 600; color: var(--n-900); }
+            .usmg-timeline-card-meta { font-size: .75rem; color: var(--muted); }
+
+            /* ── Period Cards ── */
+            .usmg-period-container {
+                display: flex;
+                flex-direction: column;
+                gap: .5rem;
+            }
+            .usmg-period-heading { font-weight: 700; font-size: .95rem; color: var(--lav-500); margin-bottom: .1rem; }
+            .usmg-period-card {
+                display: flex;
+                gap: .6rem;
+                padding: .65rem;
+                background: var(--n-50);
+                border: 1.5px solid var(--lav-200);
+                border-radius: 10px;
+                transition: all .15s;
+            }
+            .usmg-period-card:hover {
+                border-color: var(--lav-400);
+                box-shadow: 0 2px 8px rgba(124,111,179,.1);
+            }
+            .usmg-period-card.usmg-status-alert {
+                border-color: #fac5c5;
+                background: #fef5f5;
+            }
+            .usmg-period-card.usmg-status-ok {
+                border-color: #e0f2e9;
+                background: #f1f9f5;
+            }
+            .usmg-period-card-icon { font-size: 1.3rem; flex-shrink: 0; }
+            .usmg-period-card-content {
+                display: flex;
+                flex-direction: column;
+                gap: .15rem;
+                flex: 1;
+            }
+            .usmg-period-card-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+            .usmg-period-card-title { font-size: .86rem; font-weight: 600; color: var(--n-900); }
+            .usmg-period-card-meta { font-size: .75rem; color: var(--muted); }
+
+            /* ── Resources/Readings ── */
+            .usmg-resources-container {
+                display: flex;
+                flex-direction: column;
+                gap: .5rem;
+            }
+            .usmg-resources-heading { font-weight: 700; font-size: .95rem; color: var(--lav-500); }
+            .usmg-resources-cluster { font-size: .78rem; color: var(--muted); margin-bottom: .2rem; }
+            .usmg-resources-grid {
+                display: flex;
+                flex-direction: column;
+                gap: .45rem;
+            }
+            .usmg-resource-card {
+                padding: .55rem .65rem;
+                background: var(--lav-50);
+                border: 1.5px solid var(--lav-200);
+                border-radius: 8px;
+                transition: all .15s;
+            }
+            .usmg-resource-card:hover {
+                border-color: var(--lav-400);
+                background: var(--lav-100);
+                box-shadow: 0 2px 6px rgba(124,111,179,.12);
+            }
+            .usmg-resource-title { font-size: .82rem; font-weight: 600; color: var(--lav-600); margin-bottom: .2rem; }
+            .usmg-resource-link a { font-size: .75rem; font-weight: 600; color: var(--lav-500); text-decoration: none; transition: all .15s; }
+            .usmg-resource-link a:hover { color: var(--lav-600); text-decoration: underline; }
+            .usmg-resources-tip { font-size: .75rem; color: var(--muted); padding-top: .35rem; border-top: 1px solid var(--lav-100); }
+
+            /* ── Help Container ── */
+            .usmg-help-container {
+                display: flex;
+                flex-direction: column;
+                gap: .5rem;
+            }
+            .usmg-help-heading { font-weight: 700; font-size: .95rem; color: var(--lav-500); margin-bottom: .1rem; }
+            .usmg-help-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: .45rem;
+            }
+            .usmg-help-item {
+                padding: .55rem;
+                background: var(--n-50);
+                border: 1.5px solid var(--lav-200);
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                gap: .3rem;
+                align-items: center;
+                text-align: center;
+                transition: all .15s;
+            }
+            .usmg-help-item:hover {
+                border-color: var(--lav-400);
+                background: var(--lav-50);
+                box-shadow: 0 2px 8px rgba(124,111,179,.1);
+            }
+            .usmg-help-item-icon { font-size: 1.3rem; }
+            .usmg-help-item-title { font-size: .78rem; font-weight: 700; color: var(--lav-500); }
+            .usmg-help-item-text { font-size: .7rem; color: var(--muted); line-height: 1.3; }
+
             /* ── Typing Indicator ── */
             .usmg-typing {
                 align-self: flex-start;
