@@ -50,5 +50,4 @@ return [
             'https://www.googleapis.com/auth/calendar',
         ],
     ],
-
 ];

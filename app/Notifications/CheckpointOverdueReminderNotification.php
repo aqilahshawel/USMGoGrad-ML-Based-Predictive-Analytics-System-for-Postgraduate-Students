@@ -17,6 +17,7 @@ class CheckpointOverdueReminderNotification extends Notification
         private readonly int $targetSemester,
         private readonly int $currentSemester,
         private readonly string $reminderKey,
+        private readonly ?string $message = null,
     ) {
     }
 
@@ -41,18 +42,23 @@ class CheckpointOverdueReminderNotification extends Notification
             'target_date' => $this->targetDate,
             'target_semester' => $this->targetSemester,
             'current_semester' => $this->currentSemester,
-            'message' => sprintf(
-                '%s is overdue for %s (target semester %d, current semester %d).',
-                $this->studentName,
-                $this->checkpointTitle,
-                $this->targetSemester,
-                $this->currentSemester
-            ),
+            'message' => $this->message ?: $this->defaultMessage(),
             'timeline_url' => route('timeline.index', [
                 'student_id' => $this->resolveStudentIdForRoute($notifiable),
                 'tab' => 'checkpoint',
             ]),
         ];
+    }
+
+    private function defaultMessage(): string
+    {
+        return sprintf(
+            '%s is overdue for %s (target semester %d, current semester %d).',
+            $this->studentName,
+            $this->checkpointTitle,
+            $this->targetSemester,
+            $this->currentSemester
+        );
     }
 
     private function resolveStudentIdForRoute(object $notifiable): ?int

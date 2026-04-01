@@ -10,8 +10,9 @@ use Illuminate\Support\Carbon;
 
 class OverdueCheckpointNotificationService
 {
-    public function __construct(private readonly CandidatureTimelineService $timelineService)
-    {
+    public function __construct(
+        private readonly CandidatureTimelineService $timelineService,
+    ) {
     }
 
     public function dispatchForStudent(User $student): int
@@ -63,6 +64,16 @@ class OverdueCheckpointNotificationService
                     continue;
                 }
 
+                $defaultMessage = sprintf(
+                    '%s is overdue for %s (target semester %d, current semester %d).',
+                    (string) $student->name,
+                    (string) $stop->title,
+                    (int) $stop->semester_number,
+                    $currentSemester
+                );
+
+                $personalizedMessage = $defaultMessage;
+
                 $recipient->notify(new CheckpointOverdueReminderNotification(
                     studentId: (int) $student->id,
                     studentName: (string) $student->name,
@@ -71,6 +82,7 @@ class OverdueCheckpointNotificationService
                     targetSemester: (int) $stop->semester_number,
                     currentSemester: $currentSemester,
                     reminderKey: $reminderKey,
+                    message: $personalizedMessage,
                 ));
 
                 $sent++;

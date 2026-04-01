@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 class StudentAssistantService
@@ -19,7 +20,7 @@ class StudentAssistantService
         private readonly GoogleCalendarService $googleCalendarService,
         private readonly MeetingRequestService $meetingRequestService,
         private readonly OverdueCheckpointNotificationService $overdueNotificationService,
-        private readonly IpsNewsService $ipsNewsService,
+        private readonly IpsService $ipsService,
     ) {
     }
 
@@ -61,6 +62,10 @@ class StudentAssistantService
 
         if ($this->isRecommendationIntent($normalized)) {
             return $this->buildRecommendationResponse($user);
+        }
+
+        if ($this->isIpsVivaVoceDownloadsIntent($normalized)) {
+            return $this->buildVivaVoceDownloadsResponse();
         }
 
         if ($this->isNewsIntent($normalized)) {
@@ -134,6 +139,16 @@ class StudentAssistantService
     private function isNewsIntent(string $message): bool
     {
         return Str::contains($message, ['ips', 'university news', 'announcement', 'latest updates', 'usm news']);
+    }
+
+    private function isIpsVivaVoceDownloadsIntent(string $message): bool
+    {
+        if (! Str::contains($message, ['download', 'viva', 'voce', 'borang', 'form'])) {
+            return false;
+        }
+
+        // Keep it IPS-scoped to avoid hijacking generic "download" requests.
+        return Str::contains($message, ['ips', 'viva', 'voce']);
     }
 
     private function isHelpIntent(string $message): bool
@@ -472,7 +487,7 @@ class StudentAssistantService
     private function buildNewsResponse(): string
     {
         try {
-            $items = $this->ipsNewsService->latest(5);
+            $items = $this->ipsService->latestNews(5);
         } catch (\Throwable $e) {
             return 'I cannot fetch IPS news at the moment. Please try again shortly. (' . $e->getMessage() . ')';
         }
@@ -503,6 +518,53 @@ class StudentAssistantService
         return $html;
     }
 
+    private function buildVivaVoceDownloadsResponse(): string
+    {
+        try {
+            $items = $this->ipsService->vivaVoceDownloads(10);
+        } catch (\Throwable $e) {
+            return 'I cannot fetch IPS Viva Voce downloads at the moment. Please try again shortly. (' . $e->getMessage() . ')';
+        }
+
+        $html = '<div class="ips-news-heading">Latest Viva Voce downloads (IPS USM):</div>';
+        $html .= '<div class="ips-news-grid">';
+
+        foreach ($items as $item) {
+            $title = e($item['title']);
+            $sourceUrl = (string) ($item['url'] ?? '');
+            $section = e((string) ($item['section'] ?? ''));
+
+            $encoded = $this->base64UrlEncode($sourceUrl);
+            $preferredName = $this->base64UrlEncode((string) ($item['title'] ?? 'ips-download'));
+
+            $downloadUrl = URL::temporarySignedRoute(
+                'ips.download',
+                now()->addMinutes(10),
+                ['u' => $encoded, 'n' => $preferredName],
+                false
+            );
+
+            $html .= '<div class="ips-news-card">';
+            $html .= '<div class="ips-news-body">';
+            $html .= '<a href="' . e($downloadUrl) . '" class="ips-news-title">' . $title . '</a>';
+            if ($section !== '') {
+                $html .= '<small class="ips-news-date">' . $section . '</small>';
+            }
+            $html .= '<small class="ips-news-date"><a href="' . e($downloadUrl) . '">Download</a> &nbsp;|&nbsp; <a href="' . e($sourceUrl) . '" target="_blank" rel="noopener noreferrer">Open</a></small>';
+            $html .= '</div></div>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    private function base64UrlEncode(string $value): string
+    {
+        $b64 = base64_encode($value);
+        return rtrim(strtr($b64, '+/', '-_'), '=');
+    }
+
     private function helpText(): string
     {
         $html = '<div class="usmg-help-container"><div class="usmg-help-heading">💬 What I Can Help You With</div><div class="usmg-help-grid">';
@@ -514,6 +576,7 @@ class StudentAssistantService
             ['icon' => '📈', 'title' => 'My Progress', 'text' => 'What is my ideal period/current stage now?'],
             ['icon' => '📚', 'title' => 'Resources', 'text' => 'Recommend reading topics for my cluster.'],
             ['icon' => '📰', 'title' => 'Updates', 'text' => 'Show latest IPS USM announcements.'],
+            ['icon' => '📥', 'title' => 'Viva Voce Files', 'text' => 'IPS viva voce download'],
             ['icon' => '🔔', 'title' => 'Reminders', 'text' => 'Reminder'],
         ];
         foreach ($items as $item) {

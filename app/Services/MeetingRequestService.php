@@ -11,8 +11,9 @@ use Illuminate\Support\Collection;
 
 class MeetingRequestService
 {
-    public function __construct(private readonly GoogleCalendarService $googleCalendarService)
-    {
+    public function __construct(
+        private readonly GoogleCalendarService $googleCalendarService,
+    ) {
     }
 
     /**
@@ -135,6 +136,8 @@ class MeetingRequestService
             $meetingRequest->requested_start->format('d M Y H:i')
         );
 
+        // Use default message directly (personalization removed)
+
         $supervisor->notify(new MeetingRequestWorkflowNotification(
             notificationKey: $notificationKey,
             message: $message,
@@ -174,6 +177,8 @@ class MeetingRequestService
             );
         }
 
+        // Use default message directly (personalization removed)
+
         $student->notify(new MeetingRequestWorkflowNotification(
             notificationKey: $notificationKey,
             message: $message,
@@ -208,13 +213,17 @@ class MeetingRequestService
             $notificationKey = 'meeting-request-reminder:' . $request->id . ':' . $request->requested_start->format('YmdHi');
 
             if (! $this->notificationAlreadySent($student, $notificationKey)) {
+                $message = sprintf(
+                    'Reminder: Your approved meeting with %s is at %s.',
+                    $supervisor->name,
+                    $request->requested_start->format('d M Y H:i')
+                );
+
+                // Use default message directly (personalization removed)
+
                 $student->notify(new MeetingRequestWorkflowNotification(
                     notificationKey: $notificationKey,
-                    message: sprintf(
-                        'Reminder: Your approved meeting with %s is at %s.',
-                        $supervisor->name,
-                        $request->requested_start->format('d M Y H:i')
-                    ),
+                    message: $message,
                     actionUrl: url('/scheduling'),
                     actionLabel: 'View schedule',
                     workflowType: 'meeting_reminder'
@@ -257,9 +266,11 @@ class MeetingRequestService
                 continue;
             }
 
+            $message = 'Monthly reminder: no approved meeting with your supervisor is recorded in the last 30 days. Consider applying for a meeting this month.';
+
             $student->notify(new MeetingRequestWorkflowNotification(
                 notificationKey: $notificationKey,
-                message: 'Monthly reminder: no approved meeting with your supervisor is recorded in the last 30 days. Consider applying for a meeting this month.',
+                message: $message,
                 actionUrl: url('/scheduling'),
                 actionLabel: 'Apply now',
                 workflowType: 'monthly_meeting_reminder'

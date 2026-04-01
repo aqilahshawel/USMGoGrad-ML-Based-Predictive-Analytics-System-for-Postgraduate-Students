@@ -13,6 +13,7 @@ use App\Http\Controllers\ChatBotController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\CalendarOAuthController;
+use App\Http\Controllers\IpsDownloadController;
 use App\Notifications\CheckpointOverdueReminderNotification;
 
 
@@ -145,6 +146,10 @@ Route::middleware(['auth', 'role:lecturer'])->group(function () {
 // ChatBot Routes
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::post('/chatbot/message', [ChatBotController::class, 'sendMessage'])->name('chatbot.message');
+
+    Route::get('/ips/download', [IpsDownloadController::class, 'download'])
+        ->middleware('signed:relative')
+        ->name('ips.download');
 });
 
 // Messenger Routes
