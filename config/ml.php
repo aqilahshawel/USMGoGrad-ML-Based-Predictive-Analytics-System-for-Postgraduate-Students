@@ -17,6 +17,10 @@ return [
     'predict_script' => base_path('ml/predict_got.py'),
     'model_path' => base_path('ml/artifacts/got_xgb_model.pkl'),
     'meta_path' => base_path('ml/artifacts/got_model_meta.json'),
+
+    'paper_recommender_script' => base_path('ml/recommend_papers.py'),
+    'paper_catalog_path' => base_path('ml/papers_catalog.csv'),
+
     'predict_on_profile_view' => (bool) env('ML_PREDICT_ON_PROFILE_VIEW', true),
     'profile_refresh_cooldown_seconds' => (int) env('ML_PROFILE_REFRESH_COOLDOWN_SECONDS', 0),
     'low_risk_threshold' => (float) env('ML_LOW_RISK_THRESHOLD', 0.80),

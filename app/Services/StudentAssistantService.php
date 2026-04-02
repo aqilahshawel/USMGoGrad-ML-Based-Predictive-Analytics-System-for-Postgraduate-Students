@@ -21,6 +21,7 @@ class StudentAssistantService
         private readonly MeetingRequestService $meetingRequestService,
         private readonly OverdueCheckpointNotificationService $overdueNotificationService,
         private readonly IpsService $ipsService,
+        private readonly PaperRecommendationService $paperRecommendationService,
     ) {
     }
 
@@ -471,14 +472,25 @@ class StudentAssistantService
     private function buildRecommendationResponse(User $student): string
     {
         $cluster = (string) ($student->cluster ?? 'general');
-        $suggestions = $this->clusterSuggestions($cluster)->take(3);
+        $suggestions = collect();
+
+        try {
+            $suggestions = collect($this->paperRecommendationService->recommendForStudent($student, 3));
+        } catch (\Throwable) {
+            $suggestions = $this->clusterSuggestions($cluster)->take(3);
+        }
 
         $html = '<div class="usmg-resources-container"><div class="usmg-resources-heading">📚 Suggested Readings</div>';
         $html .= '<div class="usmg-resources-cluster">Cluster: <strong>' . htmlspecialchars($cluster) . '</strong></div>';
         $html .= '<div class="usmg-resources-grid">';
         foreach ($suggestions as $suggestion) {
-            $html .= '<div class="usmg-resource-card"><div class="usmg-resource-title">' . htmlspecialchars($suggestion['title']) . '</div>';
-            $html .= '<div class="usmg-resource-link"><a href="' . htmlspecialchars($suggestion['url']) . '" target="_blank" rel="noopener noreferrer">Read More →</a></div></div>';
+            $title = (string) ($suggestion['title'] ?? 'Reading');
+            $url = (string) ($suggestion['url'] ?? '');
+            if ($url === '') {
+                continue;
+            }
+            $html .= '<div class="usmg-resource-card"><div class="usmg-resource-title">' . htmlspecialchars($title) . '</div>';
+            $html .= '<div class="usmg-resource-link"><a href="' . htmlspecialchars($url) . '" target="_blank" rel="noopener noreferrer">Read More →</a></div></div>';
         }
         $html .= '</div><div class="usmg-resources-tip">💡 Ask "reminder" anytime and I will include one rotating topic suggestion.</div></div>';
         return $html;

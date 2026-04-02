@@ -64,6 +64,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/supervisors', [SupervisorController::class, 'index'])->name('supervisors.index');
     Route::post('/assign-supervisor', [SupervisorController::class, 'assign'])->name('supervisors.assign');
     Route::post('/students/cluster', [SupervisorController::class, 'updateCluster'])->name('students.cluster.update');
+    Route::post('/students/research-title', [SupervisorController::class, 'updateResearchTitle'])->name('students.research-title.update');
     Route::post('/students/registration-date', [SupervisorController::class, 'updateRegistrationDate'])->name('students.registration-date.update');
     Route::post('/students/study-mode', [SupervisorController::class, 'updateStudyMode'])->name('students.study-mode.update');
 });

@@ -298,6 +298,60 @@
 </div>
 
 <div class="assignment-form-section">
+    <h4 class="mb-3"><i class="fas fa-book"></i> Update Student Research Title</h4>
+
+    <form action="{{ route('students.research-title.update') }}" method="POST">
+        @csrf
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="research_title_student">
+                    <i class="fas fa-user-graduate"></i> Select Student
+                </label>
+                <select name="research_title_student_id" id="research_title_student" class="form-select" required>
+                    <option value="">-- Choose a Student --</option>
+                    @foreach(($allStudents ?? collect()) as $student)
+                        <option value="{{ $student->id }}" {{ (string)old('research_title_student_id') === (string)$student->id ? 'selected' : '' }}>
+                            {{ $student->name }}
+                            @if($student->cluster)
+                                ({{ $student->cluster }})
+                            @endif
+                            @if($student->research_title)
+                                - {{ $student->research_title }}
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
+                @error('research_title_student_id')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="research_title">
+                    <i class="fas fa-book"></i> Research Title
+                </label>
+                <input
+                    type="text"
+                    name="research_title"
+                    id="research_title"
+                    class="form-control @error('research_title') is-invalid @enderror"
+                    value="{{ old('research_title') }}"
+                    placeholder="e.g., Predictive analytics for postgraduate milestones"
+                >
+                @error('research_title')
+                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
+
+        <button type="submit" class="btn-assign">
+            <i class="fas fa-save"></i> Update Research Title
+        </button>
+    </form>
+</div>
+
+<div class="assignment-form-section">
     <h4 class="mb-3"><i class="fas fa-calendar-day"></i> Update Registration Date</h4>
 
     <form action="{{ route('students.registration-date.update') }}" method="POST">

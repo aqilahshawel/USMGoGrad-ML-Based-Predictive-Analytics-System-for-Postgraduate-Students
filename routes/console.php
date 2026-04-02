@@ -9,6 +9,7 @@ use App\Services\CandidatureTimelineService;
 use App\Services\MeetingRequestService;
 use App\Services\OverdueCheckpointNotificationService;
 use App\Services\StudentCheckpointPredictionService;
+use App\Services\PaperRecommendationService;
 
 Artisan::command('inspire', function () {
     /** @var ClosureCommand $this */
@@ -213,4 +214,29 @@ Schedule::command('assistant:dispatch-meeting-notifications')
 Schedule::command('ml:predict-got --all')
     ->dailyAt('08:30')
     ->withoutOverlapping();
+
+Artisan::command('ml:recommend-papers {studentId : Student user id} {--limit=3 : Number of papers}', function () {
+    /** @var ClosureCommand $this */
+    $service = app(PaperRecommendationService::class);
+    $studentId = (int) $this->argument('studentId');
+    $limit = max(1, (int) $this->option('limit'));
+
+    $student = User::role('student')->find($studentId);
+    if (! $student) {
+        $this->error('Student not found.');
+        return self::FAILURE;
+    }
+
+    $papers = $service->recommendForStudent($student, $limit);
+    if ($papers === []) {
+        $this->warn('No papers returned. Check ml/papers_catalog.csv');
+        return self::SUCCESS;
+    }
+
+    foreach ($papers as $paper) {
+        $this->line(sprintf('- %s (%s)', $paper['title'] ?? 'Untitled', $paper['url'] ?? 'n/a'));
+    }
+
+    return self::SUCCESS;
+})->purpose('Recommend research readings for a student (TF-IDF baseline)');
 
