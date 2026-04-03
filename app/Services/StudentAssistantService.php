@@ -477,6 +477,10 @@ class StudentAssistantService
         try {
             $suggestions = collect($this->paperRecommendationService->recommendForStudent($student, 3));
         } catch (\Throwable) {
+            $suggestions = collect();
+        }
+
+        if ($suggestions->isEmpty()) {
             $suggestions = $this->clusterSuggestions($cluster)->take(3);
         }
 
@@ -706,7 +710,110 @@ class StudentAssistantService
                     'title' => 'Explainable AI for postgraduate thesis work',
                     'url' => 'https://scholar.google.com/scholar?q=explainable+ai+graduate+research',
                 ],
+                [
+                    'title' => 'Automated knowledge graph construction using large language models',
+                    'url' => 'https://scholar.google.com/scholar?q=automated+knowledge+graph+construction+LLM+scientific+literature',
+                ],
+                [
+                    'title' => 'Federated learning for privacy-preserving predictive analytics',
+                    'url' => 'https://scholar.google.com/scholar?q=federated+learning+privacy+preserving+healthcare+analytics',
+                ],
+                [
+                    'title' => 'Causal inference frameworks for temporal data streams',
+                    'url' => 'https://scholar.google.com/scholar?q=causal+inference+temporal+data+streams+financial+markets',
+                ],
+                [
+                    'title' => 'Semantic data integration across heterogeneous IoT ecosystems',
+                    'url' => 'https://scholar.google.com/scholar?q=semantic+data+integration+heterogeneous+IoT',
+                ],
+                [
+                    'title' => 'Graph neural networks for relational reasoning in knowledge bases',
+                    'url' => 'https://scholar.google.com/scholar?q=graph+neural+networks+relational+reasoning+knowledge+base',
+                ],
+                [
+                    'title' => 'Transfer learning strategies for low-resource NLP tasks',
+                    'url' => 'https://scholar.google.com/scholar?q=transfer+learning+low+resource+NLP',
+                ],
             ],
+
+            'service_computing' => [
+                [
+                    'title' => 'Adaptive microservices orchestration using reinforcement learning',
+                    'url' => 'https://scholar.google.com/scholar?q=adaptive+microservices+orchestration+reinforcement+learning+cloud',
+                ],
+                [
+                    'title' => 'QoS-aware web service composition under dynamic conditions',
+                    'url' => 'https://scholar.google.com/scholar?q=QoS+aware+web+service+composition+dynamic+uncertain',
+                ],
+                [
+                    'title' => 'Serverless computing resource allocation with SLA guarantees',
+                    'url' => 'https://scholar.google.com/scholar?q=serverless+computing+resource+allocation+SLA+deep+learning',
+                ],
+                [
+                    'title' => 'Trust and reputation management in multi-cloud API ecosystems',
+                    'url' => 'https://scholar.google.com/scholar?q=trust+reputation+management+multi+cloud+API+ecosystem',
+                ],
+                [
+                    'title' => 'Edge-cloud continuum service scheduling for latency-sensitive applications',
+                    'url' => 'https://scholar.google.com/scholar?q=edge+cloud+continuum+service+scheduling+latency+sensitive',
+                ],
+                [
+                    'title' => 'Blockchain-based SLA enforcement in distributed cloud systems',
+                    'url' => 'https://scholar.google.com/scholar?q=blockchain+service+level+agreement+enforcement+cloud',
+                ],
+                [
+                    'title' => 'API security and threat modeling for cloud microservices architectures',
+                    'url' => 'https://scholar.google.com/scholar?q=API+security+threat+modeling+cloud+microservices',
+                ],
+                [
+                    'title' => 'Autonomous service fault detection and recovery in IoT-cloud pipelines',
+                    'url' => 'https://scholar.google.com/scholar?q=autonomous+service+fault+detection+recovery+IoT+cloud',
+                ],
+                [
+                    'title' => 'Cybersecurity risk assessment methods for cloud service organizations',
+                    'url' => 'https://scholar.google.com/scholar?q=cybersecurity+risk+assessment+methods+survey',
+                ],
+            ],
+
+            'enabling_technologies_&_infrastructres' => [
+                [
+                    'title' => 'Energy-efficient neural network inference on heterogeneous edge hardware',
+                    'url' => 'https://scholar.google.com/scholar?q=energy+efficient+neural+network+inference+edge+hardware',
+                ],
+                [
+                    'title' => 'Quantum-resilient cryptographic protocols for distributed ledger systems',
+                    'url' => 'https://scholar.google.com/scholar?q=quantum+resilient+cryptographic+protocols+distributed+ledger',
+                ],
+                [
+                    'title' => 'Self-healing network architectures for autonomous fault detection and recovery',
+                    'url' => 'https://scholar.google.com/scholar?q=self+healing+network+architecture+autonomous+fault+detection',
+                ],
+                [
+                    'title' => 'High-performance in-memory computing frameworks for graph-based workloads',
+                    'url' => 'https://scholar.google.com/scholar?q=high+performance+in+memory+computing+graph+workloads',
+                ],
+                [
+                    'title' => 'Hardware-software co-design for real-time AI acceleration in embedded systems',
+                    'url' => 'https://scholar.google.com/scholar?q=hardware+software+co+design+real+time+AI+acceleration+embedded',
+                ],
+                [
+                    'title' => '5G network slicing for ultra-low latency industrial IoT applications',
+                    'url' => 'https://scholar.google.com/scholar?q=5G+network+slicing+ultra+low+latency+industrial+IoT',
+                ],
+                [
+                    'title' => 'Containerization and orchestration security in Kubernetes-based deployments',
+                    'url' => 'https://scholar.google.com/scholar?q=containerization+orchestration+security+kubernetes',
+                ],
+                [
+                    'title' => 'Software-defined networking for adaptive cyber-physical system management',
+                    'url' => 'https://scholar.google.com/scholar?q=software+defined+networking+cyber+physical+system+management',
+                ],
+                [
+                    'title' => 'Green computing strategies for sustainable data center operations',
+                    'url' => 'https://scholar.google.com/scholar?q=green+computing+sustainable+data+center+operations',
+                ],
+            ],
+
             'default' => [
                 [
                     'title' => 'Research methodology for postgraduate students',
@@ -719,6 +826,18 @@ class StudentAssistantService
                 [
                     'title' => 'Academic writing and thesis structuring',
                     'url' => 'https://scholar.google.com/scholar?q=thesis+writing+structure+graduate+students',
+                ],
+                [
+                    'title' => 'Choosing a research topic in computer science',
+                    'url' => 'https://scholar.google.com/scholar?q=choosing+research+topic+computer+science+phd',
+                ],
+                [
+                    'title' => 'How to prepare for a PhD viva voce examination',
+                    'url' => 'https://scholar.google.com/scholar?q=phd+viva+voce+preparation+computer+science',
+                ],
+                [
+                    'title' => 'Ethical considerations in computer science research',
+                    'url' => 'https://scholar.google.com/scholar?q=ethical+considerations+computer+science+research',
                 ],
             ],
         ];

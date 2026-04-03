@@ -159,7 +159,6 @@ class IpsDownloadController extends Controller
             $name = trim($preferredBaseName);
         }
 
-        // Prefer server-provided filename if present (often best for SharePoint).
         if ($name === null || $name === '') {
             $detected = $this->filenameFromContentDisposition($contentDisposition);
             if (is_string($detected) && $detected !== '') {
@@ -173,7 +172,6 @@ class IpsDownloadController extends Controller
 
         $name = $this->sanitizeFilename($name);
 
-        // If still looks like a SharePoint token/id, prefer a generic base name.
         if ($name === '' || preg_match('/^[A-Za-z0-9_-]{20,}$/', pathinfo($name, PATHINFO_FILENAME) ?: '')) {
             $name = 'ips-viva-voce';
         }

@@ -90,9 +90,6 @@ class AuthController extends Controller
             $user->assignRole('lecturer');
         }
     
-        // OPTIONAL: For debugging, you can log the password (remove in production)
-        // logger("Generated password for {$user->email}: $randomPassword");
-    
         return redirect()->route('register')->with('generated_password', $randomPassword);
 
     }

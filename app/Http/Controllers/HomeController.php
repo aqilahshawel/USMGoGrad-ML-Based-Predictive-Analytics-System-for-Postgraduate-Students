@@ -133,7 +133,6 @@ class HomeController extends Controller
 
                     $overdueNotificationService->dispatchForStudent($dashboardTargetUser->fresh('supervisor'));
                 } catch (\Throwable $e) {
-                    // Ignore notification failures in dashboard rendering
                 }
             }
         }

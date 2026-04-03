@@ -177,8 +177,6 @@ class MeetingRequestService
             );
         }
 
-        // Use default message directly (personalization removed)
-
         $student->notify(new MeetingRequestWorkflowNotification(
             notificationKey: $notificationKey,
             message: $message,
@@ -218,8 +216,6 @@ class MeetingRequestService
                     $supervisor->name,
                     $request->requested_start->format('d M Y H:i')
                 );
-
-                // Use default message directly (personalization removed)
 
                 $student->notify(new MeetingRequestWorkflowNotification(
                     notificationKey: $notificationKey,

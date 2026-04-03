@@ -66,9 +66,6 @@ class IpsService
         });
     }
 
-    /**
-     * Enforces that the URL is one of the downloadable items present on the Viva Voce downloads page.
-     */
     public function isAllowedVivaVoceDownloadUrl(string $url): bool
     {
         if (! Str::startsWith($url, ['http://', 'https://'])) {

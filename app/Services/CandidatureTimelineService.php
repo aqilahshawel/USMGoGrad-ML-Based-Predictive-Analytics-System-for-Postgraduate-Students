@@ -30,7 +30,7 @@ class CandidatureTimelineService
         $year = (int) $d->year;
         $month = (int) $d->month;
 
-        // Semester 1: Sep–Feb (spans year boundary)
+        // Semester 1: Sep–Feb
         if ($month >= 9) {
             $start = CarbonImmutable::create($year, 9, 1);
             $end = CarbonImmutable::create($year + 1, 2, 1)->endOfMonth();
@@ -47,7 +47,7 @@ class CandidatureTimelineService
             return ['key' => 'S1', 'start' => $start, 'end' => $end, 'label' => $label];
         }
 
-        // Semester 2: Mar–Aug (same year)
+        // Semester 2: Mar–Aug
         $start = CarbonImmutable::create($year, 3, 1);
         $end = CarbonImmutable::create($year, 8, 31);
         $label = sprintf('S2 %d', $year);
@@ -152,7 +152,7 @@ class CandidatureTimelineService
     }
 
     /**
-     * Builds academic semesters (with date ranges) up to maximum duration.
+     * Builds academic semesters up to maximum duration.
      *
      * @return array<int,array{semester_number:int,semester_key:string,semester_label:string,start:CarbonImmutable,end:CarbonImmutable,stage_key:string|null,stage_title:string|null,risk_status:string}>
      */
@@ -283,7 +283,7 @@ class CandidatureTimelineService
 
     /**
      * Generates default professional checkpoints (one per stage + max duration marker).
-        * Stored in the Timeline roadmap (NOT the student's personal checklist data).
+        * Stored in the Timeline roadmap.
      *
      * @return array<int,array{system_key:string,stage_key:string,title:string,description:string|null,event_date:CarbonImmutable,target_semester_number:int,field:string}>
      */
@@ -349,7 +349,7 @@ class CandidatureTimelineService
     }
 
     /**
-        * Persists (upserts) the generated semesters + professional checkpoints into `timelines`.
+        * Persists the generated semesters + professional checkpoints into `timelines`.
         * Existing manual records are untouched. Generator-locked rows are never overwritten.
      */
     public function syncForStudent(User $student, ?CarbonInterface $today = null): array

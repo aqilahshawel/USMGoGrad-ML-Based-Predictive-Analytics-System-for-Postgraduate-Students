@@ -23,21 +23,19 @@ class TimelineController extends Controller
         $overdueNotificationService = app(OverdueCheckpointNotificationService::class);
         $predictionService = app(StudentCheckpointPredictionService::class);
     
-        $students = collect(); // Default empty collection
-        $timelines = collect(); // Default empty collection
-        $selectedStudentId = null; // Ensure it's always defined
+        $students = collect(); 
+        $timelines = collect(); 
+        $selectedStudentId = null; 
         $targetUser = null;
     
         if ($user) {
             if ($user->hasRole('student')) {
                 $targetUser = $user;
-                // Ensure default professional checkpoints exist (best-effort)
                 try {
                     if ($user->start_date) {
                         $timelineService->syncForStudent($user);
                     }
                 } catch (\Throwable $e) {
-                    // Ignore sync failures (e.g., migrations not run yet)
                 }
 
                 // Students: see their approved items + their pending/rejected requests
@@ -58,7 +56,6 @@ class TimelineController extends Controller
     
                 // Fetch timelines of the selected student (approved + pending requests)
                 if ($selectedStudentId) {
-                    // Best-effort auto sync when lecturer views a student
                     try {
                         $student = User::find($selectedStudentId);
                         if ($student && (int) $student->supervisor_id === (int) $user->id && $student->start_date) {
@@ -66,7 +63,6 @@ class TimelineController extends Controller
                             $timelineService->syncForStudent($student);
                         }
                     } catch (\Throwable $e) {
-                        // Ignore sync failures
                     }
 
                     $timelines = Timeline::query()
@@ -106,7 +102,6 @@ class TimelineController extends Controller
                     $checkpoint
                 );
             } catch (\Throwable $e) {
-                // ignore
             }
 
             try {
@@ -236,7 +231,7 @@ class TimelineController extends Controller
             return redirect()->route('timeline.index')->with('success', 'Change request submitted for supervisor approval.');
         }
 
-        // Lecturer/admin: can update directly (lecturer only for supervisees)
+        // Lecturer: can update directly (lecturer only for supervisees)
         if ($user->hasRole('lecturer')) {
             $student = User::find($timeline->user_id);
             if (! $student || (int) $student->supervisor_id !== (int) $user->id) {
@@ -250,7 +245,7 @@ class TimelineController extends Controller
             'completed' => $request->has('completed'),
         ]);
 
-        // If they changed a generator-backed checkpoint, lock it so sync won't overwrite it
+        // If  changed a generator-backed checkpoint, lock it so sync won't overwrite
         if ($timeline->system_key && $timeline->is_system_generated) {
             $timeline->is_generator_locked = true;
             $timeline->save();
@@ -387,7 +382,6 @@ class TimelineController extends Controller
             $timeline->status = 'approved';
             $timeline->save();
 
-            // Keep audit? For now, remove proposal after applying.
             $timeline->delete();
 
             return redirect()->route('timeline.index')->with('success', 'Change request approved and applied.');

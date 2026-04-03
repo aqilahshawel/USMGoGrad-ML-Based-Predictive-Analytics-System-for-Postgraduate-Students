@@ -150,7 +150,7 @@ class ScheduleController extends Controller
     }
 
     /**
-     * Show the create schedule form (for lecturers only).
+     * Show the create schedule form
      */
     public function create()
     {
@@ -158,7 +158,7 @@ class ScheduleController extends Controller
     }
 
     /**
-     * Store a new schedule (for lecturers only).
+     * Store a new schedule
      */
     public function saveEvent(Request $request)
     {

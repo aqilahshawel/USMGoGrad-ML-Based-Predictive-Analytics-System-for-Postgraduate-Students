@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Feedback; // If you created the model
+use App\Models\Feedback; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\FeedbackReceived; // We'll create this Mailable
+use App\Mail\FeedbackReceived;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 
@@ -32,11 +32,8 @@ class FeedbackController extends Controller
             'description' => 'required|string',
         ]);
 
-        // Optional: Save feedback to the database
-        // Feedback::create($request->all());
-
         // Send email
-        $recipientEmail = 'imranzaini389@student.usm.my'; // Replace with your actual email
+        $recipientEmail = 'aqilahshawel03@student.usm.my'; 
         Mail::to($recipientEmail)->send(new FeedbackReceived($request->all()));
 
         return redirect()->route('feedback.create')->with('success', 'Your feedback has been submitted and sent!');

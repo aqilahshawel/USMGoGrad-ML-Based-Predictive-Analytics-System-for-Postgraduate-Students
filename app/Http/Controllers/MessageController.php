@@ -35,7 +35,7 @@ class MessageController extends Controller
     public function lecturerChat()
     {
         $lecturer = Auth::user();
-        $students = User::where('supervisor_id', $lecturer->id)->get(); // Assuming 'supervisor_id' on User model
+        $students = User::where('supervisor_id', $lecturer->id)->get();
 
         $students->each(function ($student) use ($lecturer) {
             $student->unread_count = Message::where('sender_id', $student->id)
@@ -75,10 +75,10 @@ class MessageController extends Controller
         $message = new Message();
         $message->sender_id = auth()->id();
         $message->receiver_id = $receiverId;
-        $message->message = $request->message; // Changed 'content' to 'message' to match migration
+        $message->message = $request->message;
         $message->save();
 
-        if (auth()->user()->hasRole('student')) { // Assuming you have roles
+        if (auth()->user()->hasRole('student')) { 
             return redirect()->route('student.messages.index')
                 ->with('success', 'Message sent successfully!');
         } elseif (auth()->user()->hasRole('lecturer')) {
