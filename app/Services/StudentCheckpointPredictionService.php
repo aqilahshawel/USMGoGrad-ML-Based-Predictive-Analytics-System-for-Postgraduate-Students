@@ -367,8 +367,6 @@ class StudentCheckpointPredictionService
                 }
             }
 
-            // Keep checkpoint chronology monotonic even when a fixed observed date is
-            // very late within a semester and later checkpoints share the same semester.
             $previousDate = null;
             foreach (self::CHECKPOINT_FIELDS as $field) {
                 $value = $normalizedDates[$field] ?? null;

@@ -64,7 +64,7 @@
     "min_semesters": 4,
     "max_semesters": 10
   },
-  "model_version": "20260318053927",
+  "model_version": "20260404155823",
   "training_report": {
     "total_rows": 900,
     "row_counts": {

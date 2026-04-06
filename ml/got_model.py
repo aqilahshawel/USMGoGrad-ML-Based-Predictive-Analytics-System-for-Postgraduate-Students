@@ -53,7 +53,6 @@ GAP_TARGET_COLUMNS = {
 }
 
 GAP_MINIMUMS = {
-    # Proposal can happen within registration semester in rare cases.
     "proposal_review_sem": 0,
     "research_review_sem": 1,
     "nos_sem": 1,
@@ -83,7 +82,7 @@ CLASSIFIER_FEATURE_COLUMNS = [
 MIN_MODEL_ROWS = 8
 FULL_TIME_MAX_SEMESTERS = 10
 
-
+##fallback models for small datasets or single-class targets
 class MedianRegressor:
     def __init__(self) -> None:
         self.value = 1.0

@@ -38,7 +38,6 @@ class TimelineController extends Controller
                 } catch (\Throwable $e) {
                 }
 
-                // Students: see their approved items + their pending/rejected requests
                 $timelines = Timeline::query()
                     ->where('user_id', $user->id)
                     ->where(function ($q) {
@@ -48,10 +47,9 @@ class TimelineController extends Controller
                     ->orderBy('event_date')
                     ->get();
             } elseif ($user->hasRole('lecturer')) {
-                // Get students under this lecturer's supervision
                 $students = User::where('supervisor_id', $user->id)->get();
     
-                // Check if the lecturer selected a student from dropdown (if applicable)
+                // Check if lecturer selected a student from dropdown (if applicable)
                 $selectedStudentId = $request->input('student_id', $students->first()->id ?? null);
     
                 // Fetch timelines of the selected student (approved + pending requests)
@@ -71,12 +69,10 @@ class TimelineController extends Controller
                         ->get();
                 }
             } else {
-                // Admins see all timelines
                 $timelines = Timeline::query()->orderBy('event_date')->get();
             }
         }
     
-        // Build progress snapshot for the target student
         $progressSnapshot = null;
         $checkpoint = null;
         $predictionState = 'unavailable';
@@ -231,7 +227,6 @@ class TimelineController extends Controller
             return redirect()->route('timeline.index')->with('success', 'Change request submitted for supervisor approval.');
         }
 
-        // Lecturer: can update directly (lecturer only for supervisees)
         if ($user->hasRole('lecturer')) {
             $student = User::find($timeline->user_id);
             if (! $student || (int) $student->supervisor_id !== (int) $user->id) {
