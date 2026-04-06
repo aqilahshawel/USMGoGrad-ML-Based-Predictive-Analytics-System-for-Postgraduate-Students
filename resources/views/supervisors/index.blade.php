@@ -22,184 +22,220 @@
         font-family: var(--font-display);
     }
 
-    .assignment-form-section {
-        background: var(--surface);
-        border-radius: 14px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(46,41,36,0.04);
-        margin-bottom: 2rem;
-        border: 1px solid var(--lav-200);
+    /* ── Accordion ─────────────────────────────── */
+    .accordion-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
-    .assignment-form-section h4 {
+    .accordion-item {
+        background: var(--surface);
+        border: 1px solid var(--lav-200);
+        border-radius: 14px;
+        overflow: hidden;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .accordion-item:has(.accordion-body.open) {
+        box-shadow: 0 4px 16px rgba(124, 111, 179, 0.1);
+    }
+
+    .accordion-header {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.1rem 1.5rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.15s ease;
+        border-bottom: 1px solid transparent;
+    }
+
+    .accordion-header:hover {
+        background: rgba(124, 111, 179, 0.04);
+    }
+
+    .accordion-header.open {
+        border-bottom-color: var(--lav-200);
+    }
+
+    .accordion-header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+    .accordion-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .accordion-icon.purple { background: rgba(124, 111, 179, 0.12); color: var(--lav-500); }
+    .accordion-icon.amber  { background: rgba(239, 159, 39, 0.12);  color: #854F0B; }
+    .accordion-icon.red    { background: rgba(226, 75, 74, 0.12);   color: #A32D2D; }
+
+    .accordion-header-text .acc-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--n-900);
         font-family: var(--font-display);
-        color: var(--lav-500);
+        display: block;
+    }
+
+    .accordion-header-text .acc-desc {
+        font-size: 0.82rem;
+        color: var(--muted);
+        display: block;
+        margin-top: 1px;
+    }
+
+    .accordion-chevron {
+        font-size: 0.75rem;
+        color: var(--muted);
+        transition: transform 0.25s ease;
+        flex-shrink: 0;
+    }
+
+    .accordion-header.open .accordion-chevron {
+        transform: rotate(180deg);
+    }
+
+    .accordion-body {
+        display: none;
+        padding: 1.5rem;
+    }
+
+    .accordion-body.open {
+        display: block;
+    }
+
+    /* ── Form elements ──────────────────────────── */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
     }
 
     .form-group {
-        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
     .form-group label {
+        font-size: 0.82rem;
         font-weight: 600;
         color: var(--n-900);
         display: flex;
         align-items: center;
-        margin-bottom: 0.75rem;
-        font-size: 0.92rem;
+        gap: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 
     .form-group label i {
-        margin-right: 0.5rem;
         color: var(--lav-400);
-        font-size: 1rem;
+        font-size: 0.85rem;
     }
 
-    .form-select {
+    .form-select,
+    .form-control {
         border-radius: 8px;
         border: 1.5px solid var(--n-200);
-        padding: 0.85rem 1rem;
-        font-size: 0.95rem;
-        transition: all 0.25s ease;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        background: var(--surface);
+        color: var(--n-900);
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    .form-select:focus {
+    .form-select:focus,
+    .form-control:focus {
         border-color: var(--lav-400);
-        box-shadow: 0 0 0 3px rgba(124,111,179,0.12);
+        box-shadow: 0 0 0 3px rgba(124, 111, 179, 0.12);
         outline: none;
     }
 
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .btn-assign {
-        background: var(--lav-500);
-        color: white;
-        padding: 0.85rem 1.5rem;
+    .btn-submit {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
         font-weight: 600;
         border-radius: 8px;
         border: none;
-        transition: all 0.25s ease;
         cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
-    .btn-assign:hover {
-        background: var(--lav-400);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(124,111,179,0.25);
+    .btn-submit.purple {
+        background: var(--lav-500);
         color: white;
     }
 
-    .assignments-section {
-        margin-top: 2rem;
-    }
-
-    .assignments-section h3 {
-        color: var(--lav-500);
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        font-size: 1.5rem;
-        display: flex;
-        align-items: center;
-        font-family: var(--font-display);
-    }
-
-    .assignments-section h3 i {
-        margin-right: 0.75rem;
-    }
-
-    .supervisor-card {
-        background: var(--surface);
-        border-radius: 14px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(46,41,36,0.04);
-        margin-bottom: 1.5rem;
-        border-top: 4px solid var(--lav-400);
-        border: 1px solid var(--lav-200);
-        border-top: 4px solid var(--lav-400);
-        transition: all 0.25s ease;
-    }
-
-    .supervisor-card:hover {
-        box-shadow: 0 4px 16px rgba(124,111,179,0.12);
+    .btn-submit.purple:hover {
+        background: var(--lav-400);
         transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(124, 111, 179, 0.3);
     }
 
-    .supervisor-name {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--lav-500);
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        font-family: var(--font-display);
+    .btn-submit.red {
+        background: #A32D2D;
+        color: white;
     }
 
-    .supervisor-name i {
-        margin-right: 0.75rem;
-        font-size: 1.5rem;
+    .btn-submit.red:hover {
+        background: #791F1F;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(162, 45, 45, 0.3);
     }
 
-    .students-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .students-list li {
-        padding: 0.75rem;
+    .note-box {
         background: var(--n-50);
         border-radius: 8px;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        border-left: 3px solid var(--lav-400);
-    }
-
-    .students-list li i {
-        margin-right: 0.75rem;
-        color: var(--lav-400);
-    }
-
-    .no-students {
+        padding: 0.75rem 1rem;
+        font-size: 0.88rem;
         color: var(--muted);
-        font-style: italic;
-        padding: 1rem;
-        background: var(--n-50);
+        border-left: 3px solid var(--lav-300);
+        height: fit-content;
+        margin-top: auto;
+    }
+
+    .warning-box {
+        background: #FAEEDA;
         border-radius: 8px;
-        text-align: center;
+        padding: 0.75rem 1rem;
+        font-size: 0.88rem;
+        color: #633806;
+        border-left: 3px solid #EF9F27;
+        height: fit-content;
+        margin-top: auto;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 2rem;
-        background: var(--n-50);
-        border-radius: 14px;
-        border: 1px solid var(--border);
-    }
-
-    .empty-state i {
-        font-size: 2.5rem;
-        color: var(--n-200);
-        margin-bottom: 1rem;
+    .invalid-feedback {
+        font-size: 0.82rem;
+        color: #A32D2D;
     }
 
     @media (max-width: 768px) {
-        .form-row {
-            grid-template-columns: 1fr;
-        }
-
-        .supervisors-header h2 {
-            font-size: 1.5rem;
-        }
-
-        .assignment-form-section {
-            padding: 1.5rem;
-        }
+        .supervisors-header h2 { font-size: 1.5rem; }
+        .form-row { grid-template-columns: 1fr; }
+        .accordion-header { padding: 1rem 1.25rem; }
+        .accordion-body { padding: 1.25rem; }
     }
 </style>
 
@@ -207,199 +243,349 @@
     <h2><i class="fas fa-users-cog"></i> Assignment</h2>
 </div>
 
-<!-- Assignment Form -->
-<div class="assignment-form-section">
-    <h4 class="mb-3"><i class="fas fa-plus-circle"></i> Assign Student to Supervisor</h4>
-    
-    <form action="{{ route('supervisors.assign') }}" method="POST">
-        @csrf
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="student">
-                    <i class="fas fa-user-graduate"></i> Select Student
-                </label>
-                <select name="student_id" id="student" class="form-select" required>
-                    <option value="">-- Choose a Student --</option>
-                    @foreach($students as $student)
-                        <option value="{{ $student->id }}">
-                            {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+<div class="accordion-list">
 
-            <div class="form-group">
-                <label for="supervisor">
-                    <i class="fas fa-user-tie"></i> Select Supervisor
-                </label>
-                <select name="supervisor_id" id="supervisor" class="form-select" required>
-                    <option value="">-- Choose a Supervisor --</option>
-                    @foreach($supervisors as $supervisor)
-                        <option value="{{ $supervisor->id }}">{{ $supervisor->name }}</option>
-                    @endforeach
-                </select>
+    {{-- 1. Assign supervisor --}}
+    <div class="accordion-item">
+        <button type="button" class="accordion-header open" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+                <div class="accordion-icon purple">
+                    <i class="fas fa-link"></i>
+                </div>
+                <div class="accordion-header-text">
+                    <span class="acc-title">Assign Supervisor</span>
+                    <span class="acc-desc">Link a student to their supervisor</span>
+                </div>
             </div>
-        </div>
-
-        <button type="submit" class="btn-assign">
-            <i class="fas fa-link"></i> Assign Supervisor
+            <i class="fas fa-chevron-down accordion-chevron"></i>
         </button>
-    </form>
+        <div class="accordion-body open">
+            <form action="{{ route('supervisors.assign') }}" method="POST">
+                @csrf
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student">
+                            <i class="fas fa-user-graduate"></i> Student
+                        </label>
+                        <select name="student_id" id="student" class="form-select" required>
+                            <option value="">-- Choose a Student --</option>
+                            @foreach($students as $student)
+                                <option value="{{ $student->id }}">
+                                    {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="supervisor">
+                            <i class="fas fa-user-tie"></i> Supervisor
+                        </label>
+                        <select name="supervisor_id" id="supervisor" class="form-select" required>
+                            <option value="">-- Choose a Supervisor --</option>
+                            @foreach($supervisors as $supervisor)
+                                <option value="{{ $supervisor->id }}">{{ $supervisor->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit purple">
+                    <i class="fas fa-link"></i> Assign Supervisor
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- 2. Update cluster --}}
+    <div class="accordion-item">
+        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+                <div class="accordion-icon purple">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="accordion-header-text">
+                    <span class="acc-title">Update Student Cluster</span>
+                    <span class="acc-desc">Change a student's research cluster</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-down accordion-chevron"></i>
+        </button>
+        <div class="accordion-body">
+            <form action="{{ route('students.cluster.update') }}" method="POST">
+                @csrf
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cluster_student">
+                            <i class="fas fa-user-graduate"></i> Student
+                        </label>
+                        <select name="student_id" id="cluster_student" class="form-select" required>
+                            <option value="">-- Choose a Student --</option>
+                            @foreach(($allStudents ?? collect()) as $student)
+                                <option value="{{ $student->id }}" {{ (string)old('student_id') === (string)$student->id ? 'selected' : '' }}>
+                                    {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('student_id')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="cluster_select">
+                            <i class="fas fa-layer-group"></i> Cluster
+                        </label>
+                        <select name="cluster" id="cluster_select" class="form-select">
+                            <option value="">-- Clear Cluster --</option>
+                            @foreach(($clusters ?? []) as $cluster)
+                                <option value="{{ $cluster }}" {{ old('cluster') === $cluster ? 'selected' : '' }}>
+                                    {{ $cluster }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('cluster')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit purple">
+                    <i class="fas fa-save"></i> Update Cluster
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- 3. Research title --}}
+    <div class="accordion-item">
+        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+                <div class="accordion-icon purple">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="accordion-header-text">
+                    <span class="acc-title">Update Research Title</span>
+                    <span class="acc-desc">Set or update a student's research title</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-down accordion-chevron"></i>
+        </button>
+        <div class="accordion-body">
+            <form action="{{ route('students.research-title.update') }}" method="POST">
+                @csrf
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="research_title_student">
+                            <i class="fas fa-user-graduate"></i> Student
+                        </label>
+                        <select name="research_title_student_id" id="research_title_student" class="form-select" required>
+                            <option value="">-- Choose a Student --</option>
+                            @foreach(($allStudents ?? collect()) as $student)
+                                <option value="{{ $student->id }}" {{ (string)old('research_title_student_id') === (string)$student->id ? 'selected' : '' }}>
+                                    {{ $student->name }}
+                                    @if($student->cluster) ({{ $student->cluster }})@endif
+                                    @if($student->research_title) - {{ $student->research_title }}@endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('research_title_student_id')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="research_title">
+                            <i class="fas fa-book"></i> Research Title
+                        </label>
+                        <input
+                            type="text"
+                            name="research_title"
+                            id="research_title"
+                            class="form-control @error('research_title') is-invalid @enderror"
+                            value="{{ old('research_title') }}"
+                            placeholder="e.g., Predictive analytics for postgraduate milestones"
+                        >
+                        @error('research_title')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit purple">
+                    <i class="fas fa-save"></i> Update Research Title
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- 4. Registration date --}}
+    <div class="accordion-item">
+        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+                <div class="accordion-icon purple">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="accordion-header-text">
+                    <span class="acc-title">Update Registration Date</span>
+                    <span class="acc-desc">Update a student's candidature start date</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-down accordion-chevron"></i>
+        </button>
+        <div class="accordion-body">
+            <form action="{{ route('students.registration-date.update') }}" method="POST">
+                @csrf
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="registration_student">
+                            <i class="fas fa-user-graduate"></i> Student
+                        </label>
+                        <select name="registration_student_id" id="registration_student" class="form-select" required>
+                            <option value="">-- Choose a Student --</option>
+                            @foreach(($allStudents ?? collect()) as $student)
+                                <option value="{{ $student->id }}" {{ (string)old('registration_student_id') === (string)$student->id ? 'selected' : '' }}>
+                                    {{ $student->name }}
+                                    @if($student->cluster) ({{ $student->cluster }})@endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('registration_student_id')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="candidature_start_date">
+                            <i class="fas fa-calendar-day"></i> Registration Date
+                        </label>
+                        <input
+                            type="date"
+                            name="start_date"
+                            id="candidature_start_date"
+                            class="form-control @error('start_date') is-invalid @enderror"
+                            value="{{ old('start_date') }}"
+                            required
+                        >
+                        @error('start_date')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit purple">
+                    <i class="fas fa-save"></i> Update Registration Date
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- 5. Unassign --}}
+    <div class="accordion-item">
+        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+                <div class="accordion-icon amber">
+                    <i class="fas fa-unlink"></i>
+                </div>
+                <div class="accordion-header-text">
+                    <span class="acc-title">Unassign Student from Supervisor</span>
+                    <span class="acc-desc">Remove a supervisor link for a graduated student</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-down accordion-chevron"></i>
+        </button>
+        <div class="accordion-body">
+            <form action="{{ route('supervisors.unassign') }}" method="POST">
+                @csrf
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="unassign_student">
+                            <i class="fas fa-user-graduate"></i> Assigned Student
+                        </label>
+                        <select name="unassign_student_id" id="unassign_student" class="form-select" required>
+                            <option value="">-- Choose a Student --</option>
+                            @foreach(($assignedStudents ?? collect()) as $student)
+                                <option value="{{ $student->id }}" {{ (string)old('unassign_student_id') === (string)$student->id ? 'selected' : '' }}>
+                                    {{ $student->name }}
+                                    @if($student->supervisor) (Supervisor: {{ $student->supervisor->name }})@endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('unassign_student_id')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-info-circle"></i> Note</label>
+                        <div class="note-box">
+                            Use this to unassign a student who has graduated.
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit purple">
+                    <i class="fas fa-unlink"></i> Unassign Student
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- 6. Delete student --}}
+    <div class="accordion-item">
+        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+                <div class="accordion-icon red">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                <div class="accordion-header-text">
+                    <span class="acc-title">Delete Student Account</span>
+                    <span class="acc-desc">Permanently remove a student and all their records</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-down accordion-chevron"></i>
+        </button>
+        <div class="accordion-body">
+            <form action="{{ route('students.delete') }}" method="POST" onsubmit="return confirm('Delete this student account? This cannot be undone.');">
+                @csrf
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="delete_student">
+                            <i class="fas fa-user-graduate"></i> Student
+                        </label>
+                        <select name="delete_student_id" id="delete_student" class="form-select" required>
+                            <option value="">-- Choose a Student --</option>
+                            @foreach(($allStudents ?? collect()) as $student)
+                                <option value="{{ $student->id }}" {{ (string)old('delete_student_id') === (string)$student->id ? 'selected' : '' }}>
+                                    {{ $student->name }}
+                                    @if($student->cluster) ({{ $student->cluster }})@endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('delete_student_id')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-exclamation-triangle"></i> Warning</label>
+                        <div class="warning-box">
+                            Deleting a student removes all their related records and cannot be undone.
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit red">
+                    <i class="fas fa-trash"></i> Delete Student
+                </button>
+            </form>
+        </div>
+    </div>
+
 </div>
 
-<!-- Cluster Update Form (Admin Only) -->
-<div class="assignment-form-section">
-    <h4 class="mb-3"><i class="fas fa-layer-group"></i> Update Student Cluster</h4>
+<script>
+function toggleAccordion(header) {
+    const isOpen = header.classList.contains('open');
 
-    <form action="{{ route('students.cluster.update') }}" method="POST">
-        @csrf
+    // Close all
+    document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('open'));
+    document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="cluster_student">
-                    <i class="fas fa-user-graduate"></i> Select Student
-                </label>
-                <select name="student_id" id="cluster_student" class="form-select" required>
-                    <option value="">-- Choose a Student --</option>
-                    @foreach(($allStudents ?? collect()) as $student)
-                        <option value="{{ $student->id }}" {{ (string)old('student_id') === (string)$student->id ? 'selected' : '' }}>
-                            {{ $student->name }}@if($student->cluster) ({{ $student->cluster }})@endif
-                        </option>
-                    @endforeach
-                </select>
-                @error('student_id')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="cluster_select">
-                    <i class="fas fa-layer-group"></i> Cluster
-                </label>
-                <select name="cluster" id="cluster_select" class="form-select">
-                    <option value="">-- Clear Cluster --</option>
-                    @foreach(($clusters ?? []) as $cluster)
-                        <option value="{{ $cluster }}" {{ old('cluster') === $cluster ? 'selected' : '' }}>
-                            {{ $cluster }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('cluster')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
-        </div>
-
-        <button type="submit" class="btn-assign">
-            <i class="fas fa-save"></i> Update Cluster
-        </button>
-    </form>
-</div>
-
-<div class="assignment-form-section">
-    <h4 class="mb-3"><i class="fas fa-book"></i> Update Student Research Title</h4>
-
-    <form action="{{ route('students.research-title.update') }}" method="POST">
-        @csrf
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="research_title_student">
-                    <i class="fas fa-user-graduate"></i> Select Student
-                </label>
-                <select name="research_title_student_id" id="research_title_student" class="form-select" required>
-                    <option value="">-- Choose a Student --</option>
-                    @foreach(($allStudents ?? collect()) as $student)
-                        <option value="{{ $student->id }}" {{ (string)old('research_title_student_id') === (string)$student->id ? 'selected' : '' }}>
-                            {{ $student->name }}
-                            @if($student->cluster)
-                                ({{ $student->cluster }})
-                            @endif
-                            @if($student->research_title)
-                                - {{ $student->research_title }}
-                            @endif
-                        </option>
-                    @endforeach
-                </select>
-                @error('research_title_student_id')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="research_title">
-                    <i class="fas fa-book"></i> Research Title
-                </label>
-                <input
-                    type="text"
-                    name="research_title"
-                    id="research_title"
-                    class="form-control @error('research_title') is-invalid @enderror"
-                    value="{{ old('research_title') }}"
-                    placeholder="e.g., Predictive analytics for postgraduate milestones"
-                >
-                @error('research_title')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
-        </div>
-
-        <button type="submit" class="btn-assign">
-            <i class="fas fa-save"></i> Update Research Title
-        </button>
-    </form>
-</div>
-
-<div class="assignment-form-section">
-    <h4 class="mb-3"><i class="fas fa-calendar-day"></i> Update Registration Date</h4>
-
-    <form action="{{ route('students.registration-date.update') }}" method="POST">
-        @csrf
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="registration_student">
-                    <i class="fas fa-user-graduate"></i> Select Student
-                </label>
-                <select name="registration_student_id" id="registration_student" class="form-select" required>
-                    <option value="">-- Choose a Student --</option>
-                    @foreach(($allStudents ?? collect()) as $student)
-                        <option value="{{ $student->id }}" {{ (string)old('registration_student_id') === (string)$student->id ? 'selected' : '' }}>
-                            {{ $student->name }}
-                            @if($student->cluster)
-                                ({{ $student->cluster }})
-                            @endif
-                        </option>
-                    @endforeach
-                </select>
-                @error('registration_student_id')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="candidature_start_date">
-                    <i class="fas fa-calendar-day"></i> Registration Date
-                </label>
-                <input
-                    type="date"
-                    name="start_date"
-                    id="candidature_start_date"
-                    class="form-control @error('start_date') is-invalid @enderror"
-                    value="{{ old('start_date') }}"
-                    required
-                >
-                @error('start_date')
-                    <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-                @enderror
-            </div>
-        </div>
-
-        <button type="submit" class="btn-assign">
-            <i class="fas fa-save"></i> Update Registration Date
-        </button>
-    </form>
-</div>
+    // Open clicked one if it was closed
+    if (!isOpen) {
+        header.classList.add('open');
+        header.nextElementSibling.classList.add('open');
+    }
+}
+</script>
 
 @endsection

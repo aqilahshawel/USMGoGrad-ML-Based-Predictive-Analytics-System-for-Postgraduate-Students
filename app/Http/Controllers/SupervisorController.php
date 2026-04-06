@@ -27,11 +27,18 @@ class SupervisorController extends Controller
         $students = User::role('student')->whereNull('supervisor_id')->get(); // Fetch students without a supervisor
 
         $allStudents = User::role('student')->orderBy('name')->get();
+
+        $assignedStudents = User::role('student')
+            ->whereNotNull('supervisor_id')
+            ->with('supervisor')
+            ->orderBy('name')
+            ->get();
     
         return view('supervisors.index', [
             'supervisors' => $supervisors,
             'students' => $students,
             'allStudents' => $allStudents,
+            'assignedStudents' => $assignedStudents,
             'clusters' => self::CLUSTERS,
             'studyModes' => self::STUDY_MODES,
         ]);
@@ -50,6 +57,35 @@ class SupervisorController extends Controller
         $student->save();
 
         return redirect()->back()->with('success', 'Supervisor assigned successfully.');
+    }
+
+    public function unassign(Request $request)
+    {
+        $validated = $request->validate([
+            'unassign_student_id' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $student = User::role('student')->findOrFail($validated['unassign_student_id']);
+        $student->supervisor_id = null;
+        $student->save();
+
+        return redirect()->back()->with('success', 'Student unassigned from supervisor successfully.');
+    }
+
+    public function deleteStudent(Request $request)
+    {
+        $validated = $request->validate([
+            'delete_student_id' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        if ($request->user() && (int) $request->user()->id === (int) $validated['delete_student_id']) {
+            return redirect()->back()->with('error', 'You cannot delete the currently logged-in user.');
+        }
+
+        $student = User::role('student')->findOrFail($validated['delete_student_id']);
+        $student->delete();
+
+        return redirect()->back()->with('success', 'Student account deleted successfully.');
     }
 
     public function updateCluster(Request $request)
