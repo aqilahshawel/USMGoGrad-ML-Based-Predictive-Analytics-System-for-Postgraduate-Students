@@ -1,3 +1,17 @@
+"""GoT inference entrypoint.
+
+I call this script from Laravel (via a subprocess) to predict a single student's
+GoT probability.
+
+How I use it:
+- Laravel passes `--model` and `--meta` (paths to the trained bundle + metadata)
+- Laravel writes a JSON payload to stdin (one student)
+- This script prints a JSON result to stdout
+
+Note: I intentionally keep this file small. The real ML logic lives in
+`got_model.py`.
+"""
+
 from __future__ import annotations
 
 from argparse import ArgumentParser
@@ -16,6 +30,11 @@ def build_parser() -> ArgumentParser:
 
 
 def resolve_decision_threshold(metadata: dict) -> float:
+    """Pick the decision threshold (probability cutoff) from metadata.
+
+    I default to 0.5. During training, I may run a threshold sweep on validation
+    and store the chosen threshold inside the metadata JSON.
+    """
     default_threshold = 0.5
     training_report = metadata.get("training_report", {})
     evaluation = training_report.get("evaluation", {})
@@ -39,10 +58,15 @@ def resolve_decision_threshold(metadata: dict) -> float:
 
 def main() -> None:
     args = build_parser().parse_args()
+
+    # Load the trained model bundle + metadata report (version, thresholds, features, etc.).
     bundle, metadata = load_model_bundle(Path(args.model), Path(args.meta))
     decision_threshold = resolve_decision_threshold(metadata)
 
+    # Laravel (or CLI) writes the payload JSON to stdin.
     payload = json.loads(sys.stdin.read())
+
+    # The prediction function returns both: (1) probability and (2) recommended checkpoints.
     prediction = predict_student_payload(payload, bundle, decision_threshold=decision_threshold)
 
     result = {
@@ -56,6 +80,8 @@ def main() -> None:
         "model_version": metadata.get("model_version", "unknown"),
         "feature_columns": metadata.get("classifier_feature_columns", []),
     }
+
+    # I keep the output JSON stable so the Laravel side can reliably parse it.
     sys.stdout.write(json.dumps(result))
 
 

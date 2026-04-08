@@ -14,6 +14,10 @@ if (PHP_OS_FAMILY === 'Windows' && is_file($windowsVenvPython)) {
 
 return [
     'python_binary' => env('ML_PYTHON_BINARY', $defaultPythonBinary),
+    // Allow separate Python environments for different ML tasks.
+    // (Useful on Windows: GoT predictor should not load scikit-learn/joblib if it triggers WinError 10106.)
+    'got_python_binary' => env('ML_GOT_PYTHON_BINARY', env('ML_PYTHON_BINARY', $defaultPythonBinary)),
+    'paper_python_binary' => env('ML_PAPER_PYTHON_BINARY', env('ML_PYTHON_BINARY', $defaultPythonBinary)),
     'predict_script' => base_path('ml/predict_got.py'),
     'model_path' => base_path('ml/artifacts/got_xgb_model.pkl'),
     'meta_path' => base_path('ml/artifacts/got_model_meta.json'),

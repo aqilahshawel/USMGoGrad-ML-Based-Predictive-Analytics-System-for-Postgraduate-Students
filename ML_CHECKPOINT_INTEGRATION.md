@@ -30,6 +30,35 @@ The Python scripts and Laravel semester service must stay aligned.
 
 Install the Python packages:
 
+### Option A (recommended when both GoT + paper recommender are enabled)
+
+Use **two virtual environments** so the GoT predictor can run without importing `scikit-learn`/`joblib` on Windows, while the paper recommender still uses `scikit-learn`.
+
+- GoT predictor env (no scikit-learn):
+
+```bash
+python -m venv .venv_got
+.venv_got\Scripts\pip install -r ml/requirements_got.txt
+```
+
+- Paper recommender env (requires scikit-learn):
+
+```bash
+python -m venv .venv
+.venv\Scripts\pip install -r ml/requirements.txt
+```
+
+Then set environment variables:
+
+```text
+ML_GOT_PYTHON_BINARY=...\.venv_got\Scripts\python.exe
+ML_PAPER_PYTHON_BINARY=...\.venv\Scripts\python.exe
+```
+
+If you only set `ML_PYTHON_BINARY`, both tasks will use the same interpreter.
+
+### Option B (single environment)
+
 ```bash
 pip install -r ml/requirements.txt
 ```

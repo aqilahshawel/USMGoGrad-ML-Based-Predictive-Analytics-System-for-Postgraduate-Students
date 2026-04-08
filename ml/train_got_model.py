@@ -1,3 +1,14 @@
+"""Training script for my GoT model bundle.
+
+I use this file to produce two artifacts:
+- a pickled bundle (checkpoint gap regressors + GoT classifier)
+- a metadata JSON (feature columns, evaluation report, chosen threshold, version)
+
+Why I wrote it this way:
+- I evaluate in chronological order (or walk-forward) to reduce leakage.
+- I optionally tune the decision threshold on validation to balance precision/recall.
+"""
+
 from __future__ import annotations
 
 from argparse import ArgumentParser
@@ -68,6 +79,8 @@ def split_chronological(
     train_ratio: float,
     val_ratio: float,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    # I split by registration date to mimic real deployment:
+    # train on earlier cohorts, validate/test on later cohorts.
     ordered = frame.sort_values("Registration Date").reset_index(drop=True)
     total = len(ordered)
     if total < 3:
@@ -97,6 +110,8 @@ def build_walk_forward_splits(
     windows: int,
     min_train_ratio: float,
 ) -> tuple[list[tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]], dict[str, Any]]:
+    # Walk-forward evaluation = expanding training set over time.
+    # Each window trains on earlier rows and evaluates on later rows.
     ordered = frame.sort_values("Registration Date").reset_index(drop=True)
     total = len(ordered)
     if total < 5:
@@ -166,6 +181,7 @@ def build_walk_forward_splits(
 
 
 def positive_class_probability(model: Any, features: pd.DataFrame) -> np.ndarray:
+    # I normalize how I read probabilities across model types.
     probabilities = np.asarray(model.predict_proba(features), dtype=float)
 
     if probabilities.ndim == 1:
@@ -197,6 +213,7 @@ def classification_metrics(
     y_score: np.ndarray,
     threshold: float,
 ) -> dict[str, float | int | bool | str]:
+    # I compute the usual confusion-matrix metrics at a chosen threshold.
     y_pred = (y_score >= threshold).astype(int)
 
     tp = int(((y_pred == 1) & (y_true == 1)).sum())
@@ -237,6 +254,7 @@ def threshold_search(
     y_score: np.ndarray,
     default_threshold: float,
 ) -> dict[str, Any]:
+    # I sweep thresholds and pick the one that maximizes F1, then recall, then precision.
     distribution = class_distribution(y_true)
     if len(y_true) == 0:
         return {
@@ -417,6 +435,9 @@ def aggregate_threshold_selection(
     min_positive: int,
     min_negative: int,
 ) -> dict[str, Any]:
+    # In walk-forward mode, each window can produce its own tuned threshold.
+    # Here I decide whether a window gets to "vote" (enough positives/negatives),
+    # then I take the median of eligible window thresholds.
     tuned_values: list[float] = []
     reviewed_windows: list[dict[str, Any]] = []
 
@@ -494,6 +515,7 @@ def aggregate_threshold_selection(
 
 
 def with_gap_targets(frame: pd.DataFrame) -> pd.DataFrame:
+    # I rebuild gap targets (for evaluation) the same way as in `got_model.train_model_bundle`.
     result = frame.copy()
 
     for semester_column, _, _ in CHECKPOINT_SEQUENCE:
@@ -519,6 +541,7 @@ def regression_mae(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 
 def checkpoint_gap_metrics(bundle: dict[str, Any], frame: pd.DataFrame) -> dict[str, dict[str, float | int]]:
+    # This evaluates how good my gap regressors are (MAE per checkpoint).
     frame_with_gaps = with_gap_targets(frame)
     checkpoint_models = bundle["checkpoint_models"]
     results: dict[str, dict[str, float | int]] = {}
@@ -549,6 +572,7 @@ def evaluate_classifier(
     frame: pd.DataFrame,
     threshold: float,
 ) -> dict[str, float | int | bool | str]:
+    # This evaluates my GoT classifier on rows that have viva_sem (i.e., a label exists).
     got_frame = frame.dropna(subset=["viva_sem"]).copy()
     if got_frame.empty:
         return {
@@ -597,6 +621,7 @@ def evaluation_class_distribution(frame: pd.DataFrame) -> dict[str, int | bool]:
 
 
 def calibrate_threshold(bundle: dict[str, Any], val_frame: pd.DataFrame, default_threshold: float) -> dict[str, Any]:
+    # Threshold tuning happens on validation only.
     got_frame = val_frame.dropna(subset=["viva_sem"]).copy()
     if got_frame.empty:
         return threshold_search(np.array([], dtype=int), np.array([], dtype=float), default_threshold)
@@ -629,11 +654,13 @@ def main() -> None:
     if args.eval_mode == "walk_forward" and args.wf_threshold_min_negative < 0:
         raise ValueError("--wf-threshold-min-negative must be >= 0 when walk-forward mode is used.")
 
+    # Load CSV and build model-ready numeric features.
     raw_frame = pd.read_csv(dataset_path)
     frame = prepare_training_frame(raw_frame)
     if args.eval_mode == "chronological":
         train_frame, val_frame, test_frame = split_chronological(frame, args.train_ratio, args.val_ratio)
 
+        # For evaluation I train only on the training split.
         eval_bundle, _ = train_model_bundle(train_frame)
         threshold_tuning = calibrate_threshold(eval_bundle, val_frame, args.threshold)
         selected_threshold = float(threshold_tuning["selected"])
@@ -689,6 +716,7 @@ def main() -> None:
         windows_report: list[dict[str, Any]] = []
 
         for index, (train_window, val_window, test_window) in enumerate(splits, start=1):
+            # Each window simulates a point-in-time model trained on history.
             eval_bundle, _ = train_model_bundle(train_window)
             window_threshold = calibrate_threshold(eval_bundle, val_window, args.threshold)
             window_selected_threshold = float(window_threshold["selected"])
@@ -777,6 +805,7 @@ def main() -> None:
         }
 
     # Final production artifact is trained on the full historical dataset.
+    # (I still keep the evaluation report from the chronological/walk-forward run.)
     bundle, training_report = train_model_bundle(frame)
     training_report["evaluation"] = eval_report
 

@@ -15,7 +15,7 @@ class PaperRecommendationService
     {
         $limit = max(1, min(10, $limit));
 
-        $pythonBinary = (string) config('ml.python_binary');
+        $pythonBinary = (string) config('ml.paper_python_binary', config('ml.python_binary'));
         $scriptPath = (string) config('ml.paper_recommender_script');
         $catalogPath = (string) config('ml.paper_catalog_path');
 

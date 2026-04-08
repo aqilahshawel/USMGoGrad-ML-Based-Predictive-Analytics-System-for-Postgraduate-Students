@@ -1,3 +1,20 @@
+"""GoT model bundle + feature engineering.
+
+This file is the heart of my "intelligent" logic for the system.
+
+What I do here (high level):
+1) Convert raw dates into *relative semester indices* from Registration Date.
+2) Train per-checkpoint *gap regressors* to recommend a realistic timeline.
+3) Train a binary classifier (XGBoost) to estimate GoT probability.
+4) At inference time, if a checkpoint is missing, I predict its gap and fill it
+    forward while enforcing monotonic semesters.
+
+Notes I keep in mind:
+- My models are tabular (XGBoost), not neural.
+- My time axis is discretized as semesters (2 per year).
+- I include fallback models for tiny datasets so the system still runs.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -82,7 +99,8 @@ CLASSIFIER_FEATURE_COLUMNS = [
 MIN_MODEL_ROWS = 8
 FULL_TIME_MAX_SEMESTERS = 10
 
-##fallback models for small datasets or single-class targets
+# Fallback models for small datasets or single-class targets.
+# (This prevents training from crashing and keeps inference stable.)
 class MedianRegressor:
     def __init__(self) -> None:
         self.value = 1.0
@@ -215,6 +233,11 @@ class SemesterToken:
 
 
 def parse_dates(frame: pd.DataFrame) -> pd.DataFrame:
+    """Parse date columns robustly.
+
+    My dataset can contain mixed date formats, so I try ISO-first, then a
+    day-first fallback.
+    """
     result = frame.copy()
     for column in DATE_COLUMNS:
         if column in result.columns:
@@ -227,6 +250,12 @@ def parse_dates(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def semester_token(date_value: pd.Timestamp) -> SemesterToken:
+    """Map a calendar date to my academic-semester token.
+
+    Semester definition (USM-like):
+    - Semester 1: Sep–Feb
+    - Semester 2: Mar–Aug
+    """
     month = int(date_value.month)
     year = int(date_value.year)
 
@@ -244,6 +273,7 @@ def semester_token_from_index(index_value: int) -> SemesterToken:
 
 
 def semester_end(token: SemesterToken) -> pd.Timestamp:
+    # I return the *end date* of the semester to make recommendations concrete.
     if token.number == 1:
         return pd.Timestamp(year=token.year + 1, month=2, day=1) + pd.offsets.MonthEnd(0)
 
@@ -251,6 +281,10 @@ def semester_end(token: SemesterToken) -> pd.Timestamp:
 
 
 def get_semester_index(registration_date: pd.Timestamp, target_date: pd.Timestamp) -> float:
+    """Convert a date into a relative semester index from registration.
+
+    Example: registration semester itself is index 1.
+    """
     if pd.isna(registration_date) or pd.isna(target_date):
         return np.nan
 
@@ -266,12 +300,14 @@ def semester_gap(previous_semester: float, current_semester: float) -> float:
 
 
 def encode_cluster(value: str) -> int:
+    # I encode clusters as integers so XGBoost can consume them as features.
     if value not in CLUSTER_MAPPING:
         raise ValueError(f"Unsupported cluster: {value}")
     return CLUSTER_MAPPING[value]
 
 
 def add_semester_features(frame: pd.DataFrame) -> pd.DataFrame:
+    """Add semester-index columns + derived gap features."""
     result = parse_dates(frame)
 
     for semester_column, date_column, _ in CHECKPOINT_SEQUENCE:
@@ -294,6 +330,7 @@ def add_semester_features(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_context_features(frame: pd.DataFrame) -> pd.DataFrame:
+    # Lightweight context features from registration date.
     result = frame.copy()
     registration = pd.to_datetime(result["Registration Date"], errors="coerce")
     result["registration_year"] = registration.dt.year.astype(float)
@@ -302,6 +339,7 @@ def add_context_features(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def prepare_training_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    """Training preprocessing: dates -> semesters -> numeric features."""
     result = add_semester_features(frame)
     result = add_context_features(result)
     result["Cluster"] = result["Cluster"].map(encode_cluster)
@@ -309,6 +347,7 @@ def prepare_training_frame(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def prepare_prediction_frame(payload: dict[str, Any]) -> pd.DataFrame:
+    """Inference preprocessing for a single student JSON payload."""
     frame = pd.DataFrame([payload])
     frame = add_semester_features(frame)
     frame = add_context_features(frame)
@@ -317,6 +356,7 @@ def prepare_prediction_frame(payload: dict[str, Any]) -> pd.DataFrame:
 
 
 def calculate_got(row: pd.Series) -> int:
+    # My label: GoT = 1 if viva_sem <= max allowed semesters, else 0.
     duration = row["viva_sem"]
     if pd.isna(duration):
         return 0
@@ -325,6 +365,7 @@ def calculate_got(row: pd.Series) -> int:
 
 
 def _build_regressor(train_rows: int, target: pd.Series) -> Any:
+    # If I don't have enough data (or it's degenerate), I fall back to MedianRegressor.
     if train_rows < MIN_MODEL_ROWS or target.nunique(dropna=True) <= 1:
         return MedianRegressor()
     else:
@@ -332,6 +373,7 @@ def _build_regressor(train_rows: int, target: pd.Series) -> Any:
 
 
 def _build_classifier(train_rows: int, target: pd.Series) -> Any:
+    # Same idea: if data is too small or single-class, I fall back to a constant baseline.
     if train_rows < MIN_MODEL_ROWS or target.nunique(dropna=True) <= 1:
         return ConstantClassifier()
     else:
@@ -345,9 +387,11 @@ def _build_classifier(train_rows: int, target: pd.Series) -> Any:
 
 
 def train_model_bundle(frame: pd.DataFrame) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Train the full bundle: checkpoint gap regressors + GoT classifier."""
     checkpoint_models: dict[str, Any] = {}
     row_counts: dict[str, int] = {}
 
+    # Step 1: create gap targets, e.g. gap_to_nos_sem = nos_sem - research_review_sem.
     frame_with_gaps = frame.copy()
     for semester_column, _, _ in CHECKPOINT_SEQUENCE:
         previous_column = PREVIOUS_SEMESTER_COLUMN[semester_column]
@@ -362,6 +406,7 @@ def train_model_bundle(frame: pd.DataFrame) -> tuple[dict[str, Any], dict[str, A
             lower=float(GAP_MINIMUMS[semester_column])
         )
 
+    # Step 2: train one regressor per checkpoint gap.
     for semester_column, _, _ in CHECKPOINT_SEQUENCE:
         feature_columns = GAP_RECOMMENDATION_FEATURES[semester_column]
         gap_column = GAP_TARGET_COLUMNS[semester_column]
@@ -376,6 +421,7 @@ def train_model_bundle(frame: pd.DataFrame) -> tuple[dict[str, Any], dict[str, A
         checkpoint_models[semester_column] = regressor
         row_counts[f"{semester_column}_gap_model"] = int(len(train_frame))
 
+    # Step 3: train the GoT classifier (only on rows where viva_sem exists).
     got_frame = frame.dropna(subset=["viva_sem"]).copy()
     got_frame["GOT"] = got_frame.apply(calculate_got, axis=1)
 
@@ -425,6 +471,9 @@ def _build_recommendation_feature_payload(
 ) -> dict[str, float]:
     payload: dict[str, float] = {}
     for column in feature_columns:
+        # I allow features to come from either:
+        # - already-filled semester_values (predicted checkpoints), or
+        # - raw base_row columns (Cluster/registration_year/month).
         if column in semester_values:
             payload[column] = float(semester_values[column])
             continue
@@ -439,6 +488,7 @@ def _build_recommendation_feature_payload(
 
 
 def _build_classifier_row(base_row: pd.Series, semester_values: dict[str, int]) -> dict[str, float]:
+    # I explicitly compute the gap features to match CLASSIFIER_FEATURE_COLUMNS.
     row = {
         "Cluster": float(base_row["Cluster"]),
         "proposal_review_sem": float(semester_values["proposal_review_sem"]),
@@ -453,6 +503,7 @@ def _build_classifier_row(base_row: pd.Series, semester_values: dict[str, int]) 
 
 
 def _extract_positive_probability(model: Any, feature_frame: pd.DataFrame) -> float:
+    # This handles both sklearn-style classifiers and my custom wrappers.
     probabilities = model.predict_proba(feature_frame)[0]
     classes = getattr(model, "classes_", None)
 
@@ -467,6 +518,7 @@ def _extract_positive_probability(model: Any, feature_frame: pd.DataFrame) -> fl
 
 
 def _semester_end_for_relative_index(registration_date: pd.Timestamp, relative_index: int) -> pd.Timestamp | None:
+    # Convert a relative semester number (1..N) into an actual calendar date.
     if pd.isna(registration_date):
         return None
 
@@ -483,6 +535,7 @@ def predict_student_payload(
     bundle: dict[str, Any],
     decision_threshold: float = 0.5,
 ) -> dict[str, Any]:
+    """Predict GoT probability + recommend checkpoint dates for one student."""
     frame = prepare_prediction_frame(payload)
     row = frame.iloc[0]
 
@@ -494,20 +547,25 @@ def predict_student_payload(
     for semester_column, _, _ in CHECKPOINT_SEQUENCE:
         observed = row[semester_column]
         if pd.isna(observed):
+            # If the student hasn't reached this checkpoint yet, I *predict the gap*.
             feature_columns = GAP_RECOMMENDATION_FEATURES[semester_column]
             feature_payload = _build_recommendation_feature_payload(row, feature_columns, semester_values)
 
             feature_frame = pd.DataFrame([feature_payload])
             predicted_gap = float(checkpoint_models[semester_column].predict(feature_frame)[0])
             gap = _coerce_gap_value(predicted_gap, GAP_MINIMUMS[semester_column])
+
+            # I enforce monotonicity: each checkpoint semester must be >= previous.
             semester_values[semester_column] = max(minimum, minimum + gap)
         else:
+            # If the student already has an observed date, I trust it (after coercion).
             semester_values[semester_column] = _coerce_semester_value(float(observed), minimum)
 
         minimum = semester_values[semester_column]
 
     classifier_row = _build_classifier_row(row, semester_values)
     classifier_frame = pd.DataFrame([classifier_row])[CLASSIFIER_FEATURE_COLUMNS]
+    # Probability is model output; predicted_got is a thresholded decision.
     got_probability = _extract_positive_probability(bundle["got_model"], classifier_frame)
 
     registration_date = row["Registration Date"]

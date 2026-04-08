@@ -1,3 +1,14 @@
+"""TF-IDF paper recommender (baseline).
+
+I use this as a simple, explainable recommender:
+- Input: student's cluster + a query (usually the student's research title)
+- Data: a CSV catalog of papers (title/abstract/keywords/url)
+- Output: top-K papers ranked by cosine similarity in TF-IDF space
+
+This is not a neural model and there's no fine-tuning — it's classic IR:
+vectorize text with TF-IDF, then rank by cosine similarity.
+"""
+
 import argparse
 import csv
 import json
@@ -20,11 +31,13 @@ class Paper:
 
     @property
     def text(self) -> str:
+        # I build a single text field per paper so TF-IDF has one corpus to fit on.
         parts = [self.title, self.abstract, self.keywords]
         return " ".join([p for p in parts if p])
 
 
 def read_catalog(path: str) -> List[Paper]:
+    """Load the CSV catalog into a list of Paper objects."""
     papers: List[Paper] = []
     with open(path, "r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
@@ -49,6 +62,7 @@ def read_catalog(path: str) -> List[Paper]:
 
 
 def pick_candidates(papers: List[Paper], cluster: str) -> List[Paper]:
+    """Prefer same-cluster papers; fall back to everything if none match."""
     cluster = (cluster or "general").strip() or "general"
     exact = [p for p in papers if (p.cluster or "general").lower() == cluster.lower()]
     if exact:
@@ -57,6 +71,7 @@ def pick_candidates(papers: List[Paper], cluster: str) -> List[Paper]:
 
 
 def recommend(papers: List[Paper], query: str, limit: int) -> List[Dict]:
+    """Return top-K papers using TF-IDF + cosine similarity."""
     limit = max(1, min(10, int(limit)))
     query = (query or "").strip()
     if not papers or query == "":
@@ -64,6 +79,10 @@ def recommend(papers: List[Paper], query: str, limit: int) -> List[Dict]:
 
     corpus = [p.text for p in papers]
 
+    # I choose a lightweight TF-IDF configuration:
+    # - English stop words
+    # - unigrams + bigrams
+    # - max_df to reduce very common terms
     vectorizer = TfidfVectorizer(
         stop_words="english",
         ngram_range=(1, 2),
@@ -78,6 +97,7 @@ def recommend(papers: List[Paper], query: str, limit: int) -> List[Dict]:
 
     scored: List[Tuple[float, Paper]] = []
     for idx, score in enumerate(sims):
+        # Defensive: skip any weird numerical values.
         s = float(score)
         if math.isnan(s) or math.isinf(s):
             continue
@@ -87,12 +107,14 @@ def recommend(papers: List[Paper], query: str, limit: int) -> List[Dict]:
 
     results: List[Dict] = []
     for score, paper in scored[:limit]:
+        # I round the score just to keep JSON small + readable.
         results.append({"title": paper.title, "url": paper.url, "score": round(score, 6)})
 
     return results
 
 
 def main(argv: Optional[List[str]] = None) -> int:
+    # CLI wrapper: Laravel calls this script with flags and reads the JSON output.
     parser = argparse.ArgumentParser(description="TF-IDF paper recommender (baseline)")
     parser.add_argument("--catalog", required=True, help="Path to papers catalog CSV")
     parser.add_argument("--cluster", default="general", help="Student cluster")

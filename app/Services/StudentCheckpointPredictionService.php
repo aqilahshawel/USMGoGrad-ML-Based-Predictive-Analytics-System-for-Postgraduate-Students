@@ -142,7 +142,7 @@ class StudentCheckpointPredictionService
     private function runPredictionProcess(array $payload, int $studentId): array
     {
         $process = new Process([
-            (string) config('ml.python_binary'),
+            (string) config('ml.got_python_binary', config('ml.python_binary')),
             (string) config('ml.predict_script'),
             '--model',
             (string) config('ml.model_path'),
