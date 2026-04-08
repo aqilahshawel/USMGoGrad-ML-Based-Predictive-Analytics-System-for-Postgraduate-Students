@@ -48,8 +48,17 @@ class ChatbotController extends Controller
 
         $projectId = env('DIALOGFLOW_PROJECT_ID');
         $sessionId = session()->getId();
+        
+        // Load credentials from file path
+        $credentialsPath = config('services.dialogflow.credentials');
+        $credentials = null;
+        if ($credentialsPath && file_exists($credentialsPath)) {
+            $credentialsJson = file_get_contents($credentialsPath);
+            $credentials = json_decode($credentialsJson, true);
+        }
+        
         $sessionClient = new SessionsClient([
-            'credentials' => config('services.dialogflow.credentials'),
+            'credentials' => $credentials,
         ]);
         $session = $sessionClient->sessionName($projectId, $sessionId);
 

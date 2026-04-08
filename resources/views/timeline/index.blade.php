@@ -511,6 +511,24 @@
         border: 1px solid var(--lav-200);
     }
 
+    .checkpoint-note.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+    }
+
+    .checkpoint-note.secondary {
+        background: #f5f5f5;
+        color: #666666;
+        border: 1px solid #e0e0e0;
+    }
+
+    .checkpoint-note.forecast {
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #bbdefb;
+    }
+
     .timeline-form-grid {
         display: grid;
         grid-template-columns: 1.5fr 1fr auto;
@@ -746,17 +764,17 @@
                                                     {{ ucfirst($checkpoint->risk_level ?? 'unknown') }} Risk
                                                 </div>
                                                 <p class="mb-0 mt-2 text-muted">
-                                                    Prediction: {{ $checkpoint->predicted_got ? 'Graduate on Time' : 'Potential Delay' }}
+                                                    Prediction: {{ $checkpoint->predicted_got ? 'Graduate on Time' : 'Low Probability To Graduate on Time' }}
                                                 </p>
                                             </div>
 
-                                            <div class="checkpoint-note info mt-3">
-                                                Last predicted: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
+                                            <div class="checkpoint-note success mt-3">
+                                                <i class="fas fa-check-circle"></i> Last predicted: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
                                                 Model version: {{ $checkpoint->model_version ?? 'Unknown' }}
                                             </div>
 
-                                            <div class="checkpoint-note info mt-3">
-                                                <strong>Historical Baseline Plan (Frozen)</strong><br>
+                                            <div class="checkpoint-note secondary mt-3">
+                                                <strong><i class="fas fa-rocket"></i> Baseline Target</strong><br>
                                                 Proposal Review: {{ $baselineCheckpointDates['proposal_review_date'] ?? 'Not available' }}<br>
                                                 Research Review: {{ $baselineCheckpointDates['research_review_date'] ?? 'Not available' }}<br>
                                                 NOS: {{ $baselineCheckpointDates['nos_date'] ?? 'Not available' }}<br>
@@ -764,8 +782,8 @@
                                                 Viva: {{ $baselineCheckpointDates['viva_date'] ?? 'Not available' }}
                                             </div>
 
-                                            <div class="checkpoint-note info mt-3">
-                                                <strong>Live Forecast (Updates With Progress)</strong><br>
+                                            <div class="checkpoint-note forecast mt-3">
+                                                <strong><i class="fas fa-chart-line"></i> Live Forecast (Updates With Progress)</strong><br>
                                                 Proposal Review: {{ $actualCheckpointDates['proposal_review_date'] ? 'Completed on ' . $actualCheckpointDates['proposal_review_date'] : ($liveForecastCheckpointDates['proposal_review_date'] ?? 'Not available') }}<br>
                                                 Research Review: {{ $actualCheckpointDates['research_review_date'] ? 'Completed on ' . $actualCheckpointDates['research_review_date'] : ($liveForecastCheckpointDates['research_review_date'] ?? 'Not available') }}<br>
                                                 NOS: {{ $actualCheckpointDates['nos_date'] ? 'Completed on ' . $actualCheckpointDates['nos_date'] : ($liveForecastCheckpointDates['nos_date'] ?? 'Not available') }}<br>
@@ -773,19 +791,6 @@
                                                 Viva: {{ $actualCheckpointDates['viva_date'] ? 'Completed on ' . $actualCheckpointDates['viva_date'] : ($liveForecastCheckpointDates['viva_date'] ?? 'Not available') }}
                                             </div>
 
-                                            @if($compressedByMaxSemester || $sameSemesterGroups->isNotEmpty())
-                                                <div class="checkpoint-note warning mt-3">
-                                                    <strong>Forecast Notes</strong><br>
-                                                    @if($compressedByMaxSemester)
-                                                        Forecast checkpoints were compressed to fit the candidature maximum semester window.<br>
-                                                    @endif
-                                                    @if($sameSemesterGroups->isNotEmpty())
-                                                        @foreach($sameSemesterGroups as $group)
-                                                            Semester {{ $group['semester'] ?? '?' }} contains multiple checkpoints: {{ implode(', ', (array) ($group['checkpoints'] ?? [])) }}.<br>
-                                                        @endforeach
-                                                    @endif
-                                                </div>
-                                            @endif
                                         @elseif($panelPredictionState === 'not_started')
                                             <div class="prediction-hero">
                                                 <div class="text-uppercase small fw-semibold text-muted">Prediction Status</div>
@@ -797,7 +802,7 @@
                                             </div>
 
                                             <div class="checkpoint-note info mt-3">
-                                                Last predicted: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
+                                                <i class="fas fa-hourglass-start"></i> Last predicted: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
                                                 Model version: {{ $checkpoint->model_version ?? 'Not started' }}
                                             </div>
                                         @elseif($panelPredictionState === 'refresh_failed')
@@ -810,17 +815,17 @@
                                                 </p>
                                             </div>
 
-                                            <div class="checkpoint-note info mt-3">
-                                                Last checked: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
+                                            <div class="checkpoint-note warning mt-3">
+                                                <i class="fas fa-exclamation-triangle"></i> Last checked: {{ optional($checkpoint->last_predicted_at)->timezone(config('app.display_timezone'))->format('d M Y H:i') ?? 'Not available' }}<br>
                                                 Model version: {{ $checkpoint->model_version ?? 'Unknown' }}
                                             </div>
                                         @elseif($panelPredictionState === 'unavailable_prerequisites')
-                                            <div class="checkpoint-note info">
-                                                Prediction is waiting for required student profile details: {{ implode(', ', $missingPrerequisites) }}.
+                                            <div class="checkpoint-note warning">
+                                                <i class="fas fa-circle-exclamation"></i> Prediction is waiting for required student profile details: {{ implode(', ', $missingPrerequisites) }}.
                                             </div>
                                         @else
                                             <div class="checkpoint-note info">
-                                                Prediction is not available yet. Save checkpoint updates and refresh this page.
+                                                <i class="fas fa-circle-info"></i> Prediction is not available yet. Save checkpoint updates and refresh this page.
                                             </div>
                                         @endif
                                     </div>

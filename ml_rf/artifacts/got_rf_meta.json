@@ -1,0 +1,473 @@
+{
+  "classifier_feature_columns": [
+    "Cluster",
+    "proposal_review_sem",
+    "research_review_sem",
+    "nos_sem",
+    "final_draft_sem",
+    "gap_proposal_to_research",
+    "gap_research_to_nos",
+    "gap_nos_to_final_draft"
+  ],
+  "recommendation_sequence": [
+    "proposal_review_date",
+    "research_review_date",
+    "nos_date",
+    "final_draft_submission_date",
+    "viva_date"
+  ],
+  "recommendation_gap_features": {
+    "proposal_review_sem": [
+      "Cluster",
+      "registration_year",
+      "registration_month"
+    ],
+    "research_review_sem": [
+      "Cluster",
+      "proposal_review_sem",
+      "registration_year"
+    ],
+    "nos_sem": [
+      "Cluster",
+      "proposal_review_sem",
+      "research_review_sem"
+    ],
+    "final_draft_sem": [
+      "Cluster",
+      "research_review_sem",
+      "nos_sem"
+    ],
+    "viva_sem": [
+      "Cluster",
+      "nos_sem",
+      "final_draft_sem"
+    ]
+  },
+  "recommendation_gap_targets": {
+    "proposal_review_sem": "gap_to_proposal_sem",
+    "research_review_sem": "gap_to_research_sem",
+    "nos_sem": "gap_to_nos_sem",
+    "final_draft_sem": "gap_to_final_draft_sem",
+    "viva_sem": "gap_to_viva_sem"
+  },
+  "clusters": {
+    "Data to Knowledge": 0,
+    "Service Computing": 1,
+    "Enabling Technologies & Infrastructures": 2
+  },
+  "study_mode": "full_time",
+  "semester_definition": {
+    "semester_1": "September-February",
+    "semester_2": "March-August"
+  },
+  "candidature_constraints": {
+    "min_semesters": 4,
+    "max_semesters": 10
+  },
+  "model_family": "sklearn_random_forest",
+  "model_version": "20260408004917",
+  "training_report": {
+    "total_rows": 900,
+    "row_counts": {
+      "proposal_review_sem_gap_model": 900,
+      "research_review_sem_gap_model": 900,
+      "nos_sem_gap_model": 900,
+      "final_draft_sem_gap_model": 900,
+      "viva_sem_gap_model": 900,
+      "got_classifier": 900
+    },
+    "mode": "full_time",
+    "family": "sklearn_random_forest",
+    "constraints": {
+      "min_semesters": 4,
+      "max_semesters": 10
+    },
+    "evaluation": {
+      "split": {
+        "strategy": "walk_forward_expanding",
+        "windows_requested": 4,
+        "windows_used": 4,
+        "window_sizes": {
+          "validation": 135,
+          "test": 135
+        },
+        "min_train_ratio": 0.5,
+        "mode": "walk_forward",
+        "train_ratio": 0.7,
+        "val_ratio": 0.15,
+        "test_ratio": 0.15000000000000005
+      },
+      "threshold": {
+        "strategy": "window_median_tuned_eligible",
+        "selected": 0.1,
+        "default": 0.5,
+        "reason": "Median selected from 2/4 eligible walk-forward windows.",
+        "eligibility": {
+          "min_positive": 5,
+          "min_negative": 5,
+          "total_windows": 4,
+          "eligible_windows": 2,
+          "ineligible_windows": 2
+        },
+        "windows": [
+          {
+            "window": 1,
+            "eligible": false,
+            "selected_for_vote": 0.5,
+            "threshold": {
+              "strategy": "fallback_default",
+              "selected": 0.5,
+              "default": 0.5,
+              "reason": "Validation has only one class; threshold tuning skipped.",
+              "grid": []
+            },
+            "validation_distribution": {
+              "samples": 135,
+              "negative": 0,
+              "positive": 135,
+              "has_both_classes": false
+            }
+          },
+          {
+            "window": 2,
+            "eligible": true,
+            "selected_for_vote": 0.1,
+            "threshold": {
+              "strategy": "maximize_f1_then_recall",
+              "selected": 0.1,
+              "default": 0.5,
+              "reason": "Selected from validation threshold sweep.",
+              "grid": [
+                {
+                  "threshold": 0.1,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.15,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.2,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.25,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.3,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.35,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.4,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.45,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.5,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.55,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.6,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.65,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.7,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.75,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.8,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.85,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.9,
+                  "f1": 0.0488,
+                  "recall": 0.025,
+                  "precision": 1.0
+                }
+              ]
+            },
+            "validation_distribution": {
+              "samples": 135,
+              "negative": 15,
+              "positive": 120,
+              "has_both_classes": true
+            }
+          },
+          {
+            "window": 3,
+            "eligible": true,
+            "selected_for_vote": 0.1,
+            "threshold": {
+              "strategy": "maximize_f1_then_recall",
+              "selected": 0.1,
+              "default": 0.5,
+              "reason": "Selected from validation threshold sweep.",
+              "grid": [
+                {
+                  "threshold": 0.1,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.15,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.2,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.25,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.3,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.35,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.4,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.45,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.5,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.55,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.6,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.65,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.7,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.75,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.8,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.85,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                },
+                {
+                  "threshold": 0.9,
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
+                }
+              ]
+            },
+            "validation_distribution": {
+              "samples": 135,
+              "negative": 75,
+              "positive": 60,
+              "has_both_classes": true
+            }
+          },
+          {
+            "window": 4,
+            "eligible": false,
+            "selected_for_vote": 0.5,
+            "threshold": {
+              "strategy": "fallback_default",
+              "selected": 0.5,
+              "default": 0.5,
+              "reason": "Validation has only one class; threshold tuning skipped.",
+              "grid": []
+            },
+            "validation_distribution": {
+              "samples": 135,
+              "negative": 135,
+              "positive": 0,
+              "has_both_classes": false
+            }
+          }
+        ]
+      },
+      "classification": {
+        "validation": {
+          "samples": 540,
+          "threshold": "window_specific",
+          "negative": 225,
+          "positive": 315,
+          "has_both_classes": true,
+          "accuracy": 0.75,
+          "precision": 1.0,
+          "recall": 0.5714,
+          "f1": 0.7273,
+          "tp": 180,
+          "tn": 225,
+          "fp": 0,
+          "fn": 135
+        },
+        "test": {
+          "samples": 540,
+          "threshold": "window_specific",
+          "negative": 495,
+          "positive": 45,
+          "has_both_classes": true,
+          "accuracy": 0.9167,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "tp": 0,
+          "tn": 495,
+          "fp": 0,
+          "fn": 45
+        }
+      },
+      "checkpoint_gap_mae": {
+        "validation": {
+          "proposal_review_sem": {
+            "samples": 540,
+            "mae": 1.0056
+          },
+          "research_review_sem": {
+            "samples": 540,
+            "mae": 2.534
+          },
+          "nos_sem": {
+            "samples": 540,
+            "mae": 0.0333
+          },
+          "final_draft_sem": {
+            "samples": 540,
+            "mae": 0.1213
+          },
+          "viva_sem": {
+            "samples": 540,
+            "mae": 0.5381
+          }
+        },
+        "test": {
+          "proposal_review_sem": {
+            "samples": 540,
+            "mae": 1.6278
+          },
+          "research_review_sem": {
+            "samples": 540,
+            "mae": 2.8016
+          },
+          "nos_sem": {
+            "samples": 540,
+            "mae": 0.0333
+          },
+          "final_draft_sem": {
+            "samples": 540,
+            "mae": 0.1211
+          },
+          "viva_sem": {
+            "samples": 540,
+            "mae": 0.3804
+          }
+        }
+      }
+    }
+  }
+}
