@@ -262,12 +262,27 @@ class CandidatureTimelineService
 
         $stage = $currentSemester > 0 ? $this->stageForSemester($currentSemester, $mode) : null;
 
+        $hasCompletedStudies = $this->hasCompletedStudies($mode, $checkpoint);
+        $displayRiskLabel = str_replace('_', ' ', ucwords($finalRiskStatus, '_'));
+
+        if ($hasCompletedStudies) {
+            $finalRiskStatus = self::RISK_ON_TRACK;
+            $displayRiskLabel = 'Completed';
+            $stage = ['key' => 'completed', 'title' => 'Studies completed', 'from' => 0, 'to' => 0];
+
+            $riskMeta['show_ml_pending_badge'] = false;
+            $riskMeta['has_checkpoint_delay'] = false;
+            $riskMeta['overdue_checkpoint_count'] = 0;
+            $riskMeta['late_completed_count'] = 0;
+            $riskMeta['risk_reasons'] = [];
+        }
+
         return [
             'current_semester' => $currentSemester,
             'stage_key' => $stage['key'] ?? null,
             'stage_title' => $stage['title'] ?? null,
             'risk_status' => $finalRiskStatus,
-            'display_risk_label' => str_replace('_', ' ', ucwords($finalRiskStatus, '_')),
+            'display_risk_label' => $displayRiskLabel,
             'base_risk_status' => $risk->value,
             'ml_state' => $riskMeta['ml_state'],
             'show_ml_pending_badge' => $riskMeta['show_ml_pending_badge'],
@@ -279,6 +294,33 @@ class CandidatureTimelineService
             'expected_semesters' => $rules['expected_semesters'],
             'max_semesters' => $rules['max_semesters'],
         ];
+    }
+
+    private function hasCompletedStudies(StudyMode|string $studyMode, ?StudentCheckpoint $checkpoint): bool
+    {
+        if (! $checkpoint) {
+            return false;
+        }
+
+        $targets = $this->checkpointTargets($studyMode);
+        $fields = collect($targets)
+            ->pluck('field')
+            ->filter(fn ($field) => is_string($field) && $field !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($fields === []) {
+            return false;
+        }
+
+        foreach ($fields as $field) {
+            if (! $this->isCheckpointCompleted($checkpoint, $field)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

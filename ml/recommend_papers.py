@@ -5,7 +5,7 @@ I use this as a simple, explainable recommender:
 - Data: a CSV catalog of papers (title/abstract/keywords/url)
 - Output: top-K papers ranked by cosine similarity in TF-IDF space
 
-This is not a neural model and there's no fine-tuning — it's classic IR:
+This is not a neural model and there's no fine-tuning — it's classic Information retrieval:
 vectorize text with TF-IDF, then rank by cosine similarity.
 """
 

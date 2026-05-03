@@ -8,7 +8,7 @@ How I use it:
 - Laravel writes a JSON payload to stdin (one student)
 - This script prints a JSON result to stdout
 
-Note: I intentionally keep this file small. The real ML logic lives in
+ intentionally keep this file small. The real ML logic lives in
 `got_model.py`.
 """
 
@@ -32,7 +32,7 @@ def build_parser() -> ArgumentParser:
 def resolve_decision_threshold(metadata: dict) -> float:
     """Pick the decision threshold (probability cutoff) from metadata.
 
-    I default to 0.5. During training, I may run a threshold sweep on validation
+    default to 0.5. During training, I may run a threshold sweep on validation
     and store the chosen threshold inside the metadata JSON.
     """
     default_threshold = 0.5

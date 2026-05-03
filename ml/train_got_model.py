@@ -347,6 +347,7 @@ def aggregate_classification(metrics_list: list[dict[str, Any]], split_name: str
     fp = int(sum(int(metric.get("fp", 0)) for metric in metrics_list))
     fn = int(sum(int(metric.get("fn", 0)) for metric in metrics_list))
 
+    #Calculation
     accuracy = (tp + tn) / max(1, samples)
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0

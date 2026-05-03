@@ -112,4 +112,31 @@ class CandidatureTimelineServiceTest extends TestCase
         $this->assertSame('overdue', $snapshot['risk_status']);
         $this->assertTrue($snapshot['show_ml_pending_badge']);
     }
+
+    public function test_progress_snapshot_marks_completed_when_all_checkpoints_are_fulfilled(): void
+    {
+        $service = new CandidatureTimelineService();
+
+        $checkpoint = new StudentCheckpoint([
+            'ekc500_admin_approved' => true,
+            'proposal_review_date' => CarbonImmutable::parse('2025-10-01'),
+            'research_review_date' => CarbonImmutable::parse('2026-04-01'),
+            'nos_date' => CarbonImmutable::parse('2027-04-01'),
+            'final_draft_submission_date' => CarbonImmutable::parse('2027-04-15'),
+            'viva_date' => CarbonImmutable::parse('2027-07-01'),
+        ]);
+
+        $snapshot = $service->progressSnapshot(
+            CarbonImmutable::parse('2019-10-23'),
+            StudyMode::FullTime,
+            CarbonImmutable::parse('2031-01-10'),
+            $checkpoint
+        );
+
+        $this->assertSame('on_track', $snapshot['risk_status']);
+        $this->assertSame('Completed', $snapshot['display_risk_label']);
+        $this->assertSame('Studies completed', $snapshot['stage_title']);
+        $this->assertFalse($snapshot['show_ml_pending_badge']);
+        $this->assertFalse($snapshot['has_checkpoint_delay']);
+    }
 }

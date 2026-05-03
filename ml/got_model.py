@@ -9,10 +9,10 @@ What I do here (high level):
 4) At inference time, if a checkpoint is missing, I predict its gap and fill it
     forward while enforcing monotonic semesters.
 
-Notes I keep in mind:
-- My models are tabular (XGBoost), not neural.
-- My time axis is discretized as semesters (2 per year).
-- I include fallback models for tiny datasets so the system still runs.
+Notes to keep in mind:
+- models are tabular (XGBoost), not neural.
+- time axis is discretized as semesters (2 per year).
+- included fallback models for tiny datasets so the system still runs.
 """
 
 from __future__ import annotations
@@ -100,7 +100,7 @@ MIN_MODEL_ROWS = 8
 FULL_TIME_MAX_SEMESTERS = 10
 
 # Fallback models for small datasets or single-class targets.
-# (This prevents training from crashing and keeps inference stable.)
+# (prevents training from crashing and keeps inference stable.)
 class MedianRegressor:
     def __init__(self) -> None:
         self.value = 1.0
@@ -273,7 +273,7 @@ def semester_token_from_index(index_value: int) -> SemesterToken:
 
 
 def semester_end(token: SemesterToken) -> pd.Timestamp:
-    # I return the *end date* of the semester to make recommendations concrete.
+    # return the *end date* of the semester to make recommendations concrete.
     if token.number == 1:
         return pd.Timestamp(year=token.year + 1, month=2, day=1) + pd.offsets.MonthEnd(0)
 
@@ -300,7 +300,7 @@ def semester_gap(previous_semester: float, current_semester: float) -> float:
 
 
 def encode_cluster(value: str) -> int:
-    # I encode clusters as integers so XGBoost can consume them as features.
+    # encode clusters as integers so XGBoost can consume them as features.
     if value not in CLUSTER_MAPPING:
         raise ValueError(f"Unsupported cluster: {value}")
     return CLUSTER_MAPPING[value]
@@ -356,7 +356,7 @@ def prepare_prediction_frame(payload: dict[str, Any]) -> pd.DataFrame:
 
 
 def calculate_got(row: pd.Series) -> int:
-    # My label: GoT = 1 if viva_sem <= max allowed semesters, else 0.
+    # label: GoT = 1 if viva_sem <= max allowed semesters, else 0.
     duration = row["viva_sem"]
     if pd.isna(duration):
         return 0
@@ -365,7 +365,7 @@ def calculate_got(row: pd.Series) -> int:
 
 
 def _build_regressor(train_rows: int, target: pd.Series) -> Any:
-    # If I don't have enough data (or it's degenerate), I fall back to MedianRegressor.
+    # If don't have enough data (or it's degenerate), fall back to MedianRegressor.
     if train_rows < MIN_MODEL_ROWS or target.nunique(dropna=True) <= 1:
         return MedianRegressor()
     else:
@@ -373,7 +373,7 @@ def _build_regressor(train_rows: int, target: pd.Series) -> Any:
 
 
 def _build_classifier(train_rows: int, target: pd.Series) -> Any:
-    # Same idea: if data is too small or single-class, I fall back to a constant baseline.
+    # Same idea: if data is too small or single-class, will fall back to a constant baseline.
     if train_rows < MIN_MODEL_ROWS or target.nunique(dropna=True) <= 1:
         return ConstantClassifier()
     else:
@@ -488,7 +488,7 @@ def _build_recommendation_feature_payload(
 
 
 def _build_classifier_row(base_row: pd.Series, semester_values: dict[str, int]) -> dict[str, float]:
-    # I explicitly compute the gap features to match CLASSIFIER_FEATURE_COLUMNS.
+    # explicitly compute the gap features to match CLASSIFIER_FEATURE_COLUMNS.
     row = {
         "Cluster": float(base_row["Cluster"]),
         "proposal_review_sem": float(semester_values["proposal_review_sem"]),
@@ -503,7 +503,7 @@ def _build_classifier_row(base_row: pd.Series, semester_values: dict[str, int]) 
 
 
 def _extract_positive_probability(model: Any, feature_frame: pd.DataFrame) -> float:
-    # This handles both sklearn-style classifiers and my custom wrappers.
+    # This handles both sklearn-style classifiers and my custom wrappers. (wrapper method = feature selection technique)
     probabilities = model.predict_proba(feature_frame)[0]
     classes = getattr(model, "classes_", None)
 
@@ -547,7 +547,7 @@ def predict_student_payload(
     for semester_column, _, _ in CHECKPOINT_SEQUENCE:
         observed = row[semester_column]
         if pd.isna(observed):
-            # If the student hasn't reached this checkpoint yet, I *predict the gap*.
+            # If the student hasn't reached this checkpoint yet, it *predicts the gap*.
             feature_columns = GAP_RECOMMENDATION_FEATURES[semester_column]
             feature_payload = _build_recommendation_feature_payload(row, feature_columns, semester_values)
 

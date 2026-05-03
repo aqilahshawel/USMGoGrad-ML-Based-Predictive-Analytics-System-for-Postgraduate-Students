@@ -935,6 +935,126 @@
             </div>
         @endif
     </div>
+
+    <!-- Analytics Dashboard Section -->
+    @if($analyticsData)
+    <div class="analytics-section" style="margin-top: 2.5rem;">
+        <h3 style="font-family: var(--font-display); color: var(--lav-500); margin-bottom: 1.5rem; font-weight: 700; font-size: 1.5rem;">
+            <i class="fas fa-chart-line"></i> Historical Analytics (Past 3 Years)
+        </h3>
+
+        <div class="analytics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <!-- Cluster Success Rates -->
+            @if(!empty($analyticsData['cluster_statistics']))
+            <div class="analytics-card" style="background: var(--surface); border: 1px solid var(--lav-200); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);">
+                <h5 style="font-family: var(--font-display); margin-bottom: 1rem; color: var(--n-900); font-weight: 700;">
+                    <i class="fas fa-layer-group" style="color: var(--lav-400); margin-right: 0.5rem;"></i>
+                    Graduation Success Rates by Cluster
+                </h5>
+                <canvas id="clusterChart" style="max-height: 300px;"></canvas>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--n-100);">
+                    <small style="color: var(--muted); display: block; margin-bottom: 0.75rem;">
+                        <strong>Overview:</strong> Students enrolled 3+ years ago and their graduation outcomes by research cluster.
+                    </small>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        @foreach($analyticsData['cluster_statistics'] as $cluster)
+                            <div style="padding: 0.5rem; background: var(--n-50); border-radius: 8px; border-left: 3px solid var(--lav-400);">
+                                <div style="font-weight: 600; color: var(--n-900); font-size: 0.9rem;">{{ $cluster['cluster'] }}</div>
+                                <div style="color: var(--muted); font-size: 0.8rem;">{{ $cluster['success_rate'] }}% ({{ $cluster['graduated_students'] }}/{{ $cluster['total_students'] }})</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Time to Graduation Trends -->
+            @if(!empty($analyticsData['time_to_graduation_trends']))
+            <div class="analytics-card" style="background: var(--surface); border: 1px solid var(--lav-200); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);">
+                <h5 style="font-family: var(--font-display); margin-bottom: 1rem; color: var(--n-900); font-weight: 700;">
+                    <i class="fas fa-hourglass-end" style="color: var(--peach-400); margin-right: 0.5rem;"></i>
+                    Time to Graduation Trends
+                </h5>
+                <canvas id="trendChart" style="max-height: 300px;"></canvas>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--n-100);">
+                    <small style="color: var(--muted); display: block; margin-bottom: 0.75rem;">
+                        <strong>Insight:</strong> Average months to complete candidature by enrollment year, based on graduated students.
+                    </small>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        @foreach($analyticsData['time_to_graduation_trends'] as $trend)
+                            <div style="padding: 0.5rem; background: var(--n-50); border-radius: 8px; border-left: 3px solid var(--peach-300);">
+                                <div style="font-weight: 600; color: var(--n-900); font-size: 0.9rem;">{{ $trend['cohort_label'] }}</div>
+                                <div style="color: var(--muted); font-size: 0.8rem;">{{ $trend['avg_years'] }} years avg ({{ $trend['graduated_count'] }} graduates)</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
+
+        <!-- Milestone Completion Rates (Full Width) -->
+        @if(!empty($analyticsData['milestone_completion']))
+        <div class="analytics-card" style="background: var(--surface); border: 1px solid var(--lav-200); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04); margin-bottom: 1.5rem;">
+            <h5 style="font-family: var(--font-display); margin-bottom: 1.5rem; color: var(--n-900); font-weight: 700;">
+                <i class="fas fa-tasks" style="color: var(--gold-400); margin-right: 0.5rem;"></i>
+                Milestone Completion Rates
+            </h5>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                @foreach($analyticsData['milestone_completion'] as $key => $milestone)
+                    @if(!empty($milestone['label']))
+                    <div style="padding: 1rem; background: linear-gradient(135deg, var(--n-50) 0%, white 100%); border-radius: 12px; border: 1px solid var(--lav-200); text-align: center;">
+                        <div style="font-size: 1.75rem; font-weight: 700; color: var(--lav-500); font-family: var(--font-display);">
+                            {{ $milestone['percentage_label'] }}
+                        </div>
+                        <div style="color: var(--muted); font-size: 0.85rem; margin-top: 0.5rem; font-weight: 500;">
+                            {{ $milestone['label'] }}
+                        </div>
+                        <div style="color: var(--n-700); font-size: 0.8rem; margin-top: 0.25rem;">
+                            {{ $milestone['completed'] }}/{{ $milestone['total'] }} students
+                        </div>
+                    </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        <!-- Risk Distribution Pie Chart -->
+        @if(!empty($analyticsData['risk_distribution']))
+        <div class="analytics-card" style="background: var(--surface); border: 1px solid var(--lav-200); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04); max-width: 500px;">
+            <h5 style="font-family: var(--font-display); margin-bottom: 1rem; color: var(--n-900); font-weight: 700;">
+                <i class="fas fa-exclamation-circle" style="color: #d97706; margin-right: 0.5rem;"></i>
+                Current Risk Distribution (All Students)
+            </h5>
+            <canvas id="riskChart" style="max-height: 250px;"></canvas>
+            <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div style="padding: 0.75rem; background: rgba(46, 125, 50, 0.1); border-left: 3px solid #2e7d32; border-radius: 8px;">
+                    <div style="font-weight: 600; color: #2e7d32;">Low Risk</div>
+                    <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['low']['count'] }} students ({{ $analyticsData['risk_distribution']['low']['percentage'] }}%)</div>
+                </div>
+                <div style="padding: 0.75rem; background: rgba(217, 119, 6, 0.1); border-left: 3px solid #d97706; border-radius: 8px;">
+                    <div style="font-weight: 600; color: #d97706;">Medium Risk</div>
+                    <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['medium']['count'] }} students ({{ $analyticsData['risk_distribution']['medium']['percentage'] }}%)</div>
+                </div>
+                <div style="padding: 0.75rem; background: rgba(194, 65, 12, 0.1); border-left: 3px solid #c2410c; border-radius: 8px;">
+                    <div style="font-weight: 600; color: #c2410c;">High Risk</div>
+                    <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['high']['count'] }} students ({{ $analyticsData['risk_distribution']['high']['percentage'] }}%)</div>
+                </div>
+                <div style="padding: 0.75rem; background: rgba(124, 111, 179, 0.1); border-left: 3px solid var(--lav-400); border-radius: 8px;">
+                    <div style="font-weight: 600; color: var(--lav-500);">Unassessed</div>
+                    <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['unknown']['count'] }} ({{ $analyticsData['risk_distribution']['unknown']['percentage'] }}%)</div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <p style="color: var(--muted); font-size: 0.8rem; margin-top: 2rem; text-align: center;">
+            Analytics generated at {{ \Carbon\Carbon::parse($analyticsData['generated_at'])->format('d M Y H:i A') }}
+        </p>
+    </div>
+    @endif
+
 @elseif(Auth::user()->hasRole('student') || Auth::user()->hasRole('lecturer'))
     @php
         $predictionState = $dashboardPredictionState ?? 'unavailable';
@@ -1262,4 +1382,203 @@
 </div>
 @endauth
 
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cluster Statistics Chart
+    const clusterCtx = document.getElementById('clusterChart');
+    if (clusterCtx) {
+        const clusterData = @json($analyticsData['cluster_statistics'] ?? []);
+        
+        if (clusterData.length > 0) {
+            new Chart(clusterCtx, {
+                type: 'bar',
+                data: {
+                    labels: clusterData.map(c => c.cluster),
+                    datasets: [{
+                        label: 'Success Rate (%)',
+                        data: clusterData.map(c => c.success_rate),
+                        backgroundColor: [
+                            'rgba(124, 111, 179, 0.7)',
+                            'rgba(224, 125, 69, 0.7)',
+                            'rgba(61, 153, 112, 0.7)',
+                            'rgba(217, 119, 6, 0.7)',
+                            'rgba(194, 65, 12, 0.7)',
+                        ],
+                        borderColor: [
+                            'var(--lav-500)',
+                            'var(--peach-500)',
+                            '#3d9970',
+                            '#d97706',
+                            '#c2410c',
+                        ],
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.x.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Time to Graduation Trends Chart
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        const trendData = @json($analyticsData['time_to_graduation_trends'] ?? []);
+        
+        if (trendData.length > 0) {
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: trendData.map(t => t.cohort_label),
+                    datasets: [{
+                        label: 'Average Years to Graduation',
+                        data: trendData.map(t => t.avg_years),
+                        borderColor: 'var(--peach-500)',
+                        backgroundColor: 'rgba(224, 125, 69, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        pointBackgroundColor: 'var(--peach-500)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { size: 12 },
+                                color: 'var(--muted)'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 10,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toFixed(2) + ' years';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + 'y';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Risk Distribution Pie Chart
+    const riskCtx = document.getElementById('riskChart');
+    if (riskCtx) {
+        const riskData = @json($analyticsData['risk_distribution'] ?? null);
+        
+        if (riskData) {
+            new Chart(riskCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Low Risk', 'Medium Risk', 'High Risk', 'Unassessed'],
+                    datasets: [{
+                        data: [
+                            riskData.low.percentage,
+                            riskData.medium.percentage,
+                            riskData.high.percentage,
+                            riskData.unknown.percentage
+                        ],
+                        backgroundColor: [
+                            'rgba(46, 125, 50, 0.7)',
+                            'rgba(217, 119, 6, 0.7)',
+                            'rgba(194, 65, 12, 0.7)',
+                            'rgba(124, 111, 179, 0.4)',
+                        ],
+                        borderColor: [
+                            '#2e7d32',
+                            '#d97706',
+                            '#c2410c',
+                            'var(--lav-500)',
+                        ],
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 11 },
+                                color: 'var(--muted)',
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    return data.labels.map((label, index) => ({
+                                        text: label + ' (' + data.datasets[0].data[index].toFixed(1) + '%)',
+                                        fillStyle: data.datasets[0].backgroundColor[index],
+                                        hidden: false,
+                                        index: index
+                                    }));
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 10,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
 @endsection

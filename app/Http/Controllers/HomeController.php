@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\CandidatureTimelineService;
 use App\Services\OverdueCheckpointNotificationService;
 use App\Services\StudentCheckpointPredictionService;
+use App\Services\DashboardAnalyticsService;
 
 class HomeController extends Controller
 {
@@ -19,6 +20,7 @@ class HomeController extends Controller
         $timelineService = app(CandidatureTimelineService::class);
         $overdueNotificationService = app(OverdueCheckpointNotificationService::class);
         $predictionService = app(StudentCheckpointPredictionService::class);
+        $analyticsService = app(DashboardAnalyticsService::class);
     
         $students = collect();
         $timelines = collect();
@@ -38,6 +40,7 @@ class HomeController extends Controller
         $dashboardPredictionState = 'unavailable';
         $dashboardMissingPrerequisites = [];
         $predictionWarning = null;
+        $analyticsData = null;
     
         if ($user) {
             if ($user->hasRole('student')) {
@@ -102,6 +105,11 @@ class HomeController extends Controller
                     'unassigned_students' => $unassignedStudents->count(),
                     'incomplete_candidature' => $studentsMissingCandidature->count(),
                 ];
+
+                // Fetch analytics data
+                try {
+                    $analyticsData = $analyticsService->getAllAnalytics();
+                } catch (\Throwable $e) {}
             }
         }
 
@@ -150,7 +158,8 @@ class HomeController extends Controller
             'dashboardCheckpoint',
             'dashboardPredictionState',
             'dashboardMissingPrerequisites',
-            'predictionWarning'
+            'predictionWarning',
+            'analyticsData'
         ));
     }
 
