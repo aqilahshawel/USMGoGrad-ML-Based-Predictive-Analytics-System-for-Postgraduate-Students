@@ -12,20 +12,14 @@ return [
             'max_semesters' => 10,
             'stages' => [
                 [
-                    'key' => 'ekc500_and_proposal',
-                    'title' => 'EKC500 approval and proposal preparation',
+                    'key' => 'stage_1',
+                    'title' => 'Stage 1 — Proposal & Research Review',
                     'from' => 1,
-                    'to' => 3,
-                ],
-                [
-                    'key' => 'research_review_window',
-                    'title' => 'Research review progression',
-                    'from' => 4,
                     'to' => 5,
                 ],
                 [
-                    'key' => 'submission_window',
-                    'title' => 'Submission and viva preparation',
+                    'key' => 'stage_2',
+                    'title' => 'Stage 2 — Submission',
                     'from' => 6,
                     'to' => 8,
                 ],

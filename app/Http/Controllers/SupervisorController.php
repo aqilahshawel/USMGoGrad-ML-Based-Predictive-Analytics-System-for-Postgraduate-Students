@@ -126,6 +126,21 @@ class SupervisorController extends Controller
         return redirect()->back()->with('success', 'Student research title updated successfully.');
     }
 
+    public function updateResearchObjective(Request $request)
+    {
+        $validated = $request->validate([
+            'research_objective_student_id' => ['required', 'integer', 'exists:users,id'],
+            'research_objective' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $student = User::role('student')->findOrFail($validated['research_objective_student_id']);
+
+        $student->research_objective = trim((string) ($validated['research_objective'] ?? '')) ?: null;
+        $student->save();
+
+        return redirect()->back()->with('success', 'Student research objective updated successfully.');
+    }
+
     public function updateRegistrationDate(Request $request)
     {
         $validated = $request->validate([

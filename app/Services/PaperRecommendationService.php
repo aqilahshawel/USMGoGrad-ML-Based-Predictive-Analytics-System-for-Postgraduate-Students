@@ -21,10 +21,17 @@ class PaperRecommendationService
 
         $cluster = (string) ($student->cluster ?? 'general');
         $researchTitle = trim((string) ($student->research_title ?? ''));
+        $researchObjective = trim((string) ($student->research_objective ?? ''));
 
-        $queryText = $researchTitle !== ''
-            ? $researchTitle
-            : sprintf('Postgraduate research topics for cluster %s', $cluster);
+        if ($researchTitle !== '' && $researchObjective !== '') {
+            $queryText = $researchTitle . "\nObjective: " . $researchObjective;
+        } elseif ($researchTitle !== '') {
+            $queryText = $researchTitle;
+        } elseif ($researchObjective !== '') {
+            $queryText = $researchObjective;
+        } else {
+            $queryText = sprintf('Postgraduate research topics for cluster %s', $cluster);
+        }
 
         $process = new Process([
             $pythonBinary,

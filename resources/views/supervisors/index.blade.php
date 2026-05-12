@@ -413,7 +413,67 @@
         </div>
     </div>
 
-    {{-- 4. Registration date --}}
+    {{-- 4. Research objective --}}
+    <div class="accordion-item">
+        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+                <div class="accordion-icon purple">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="accordion-header-text">
+                    <span class="acc-title">Update Research Objective</span>
+                    <span class="acc-desc">Set or update a student's research objective</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-down accordion-chevron"></i>
+        </button>
+        <div class="accordion-body">
+            <form action="{{ route('students.research-objective.update') }}" method="POST">
+                @csrf
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="research_objective_student">
+                            <i class="fas fa-user-graduate"></i> Student
+                        </label>
+                        <select name="research_objective_student_id" id="research_objective_student" class="form-select" required>
+                            <option value="">-- Choose a Student --</option>
+                            @foreach(($allStudents ?? collect()) as $student)
+                                <option value="{{ $student->id }}" {{ (string)old('research_objective_student_id') === (string)$student->id ? 'selected' : '' }}>
+                                    {{ $student->name }}
+                                    @if($student->cluster) ({{ $student->cluster }})@endif
+                                    @if($student->research_objective) - objective set @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('research_objective_student_id')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="research_objective">
+                            <i class="fas fa-bullseye"></i> Research Objective
+                        </label>
+                        <textarea
+                            name="research_objective"
+                            id="research_objective"
+                            class="form-control @error('research_objective') is-invalid @enderror"
+                            rows="4"
+                            placeholder="e.g., Develop a machine-learning model to forecast postgraduate milestone risks and recommend actionable interventions"
+                        >{{ old('research_objective') }}</textarea>
+                        @error('research_objective')
+                            <span class="invalid-feedback d-block">{{ $message }}</span>
+                        @enderror
+                        <small class="text-muted d-block mt-2">Max 2000 characters. Leave blank to clear.</small>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit purple">
+                    <i class="fas fa-save"></i> Update Research Objective
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- 5. Registration date --}}
     <div class="accordion-item">
         <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
             <div class="accordion-header-left">
@@ -472,7 +532,7 @@
         </div>
     </div>
 
-    {{-- 5. Unassign --}}
+    {{-- 6. Unassign --}}
     <div class="accordion-item">
         <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
             <div class="accordion-header-left">
