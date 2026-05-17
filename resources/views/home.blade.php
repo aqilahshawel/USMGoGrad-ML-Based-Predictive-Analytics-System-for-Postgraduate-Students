@@ -1278,23 +1278,27 @@
             <section class="timeline-panel mb-3">
                 <div class="timeline-panel-header">
                     <h5>Add New Event</h5>
+                    <p class="mb-0">Create an extra timeline event for your candidature (will require supervisor review).</p>
                 </div>
                 <div class="timeline-panel-body timeline-form">
                     <form action="{{ route('timeline.store') }}" method="POST">
                         @csrf
-                        <div class="timeline-form-grid">
-                            <div>
-                                <label for="home_timeline_title" class="form-label fw-semibold">Title</label>
-                                <input type="text" id="home_timeline_title" name="title" value="{{ old('title') }}" class="@error('title') is-invalid @enderror" placeholder="e.g. Internal mock presentation" required>
-                                @error('title') <span class="invalid-feedback d-block mt-2">{{ $message }}</span> @enderror
+
+                        <div class="checkpoint-item">
+                            <div class="checkpoint-info">
+                                <label for="home_timeline_title">Title</label>
+                                <input type="text" id="home_timeline_title" name="title" value="{{ old('title') }}" placeholder="e.g. Internal mock presentation" required>
+                                @error('title') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
                             </div>
-                            <div>
-                                <label for="home_timeline_event_date" class="form-label fw-semibold">Target Date</label>
-                                <input type="date" id="home_timeline_event_date" name="event_date" value="{{ old('event_date') }}" class="@error('event_date') is-invalid @enderror" required>
-                                @error('event_date') <span class="invalid-feedback d-block mt-2">{{ $message }}</span> @enderror
+
+                            <div class="checkpoint-action">
+                                <label for="home_timeline_event_date">Target Date</label>
+                                <input type="date" id="home_timeline_event_date" name="event_date" value="{{ old('event_date') }}" required>
+                                @error('event_date') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
                             </div>
-                            <div>
-                                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-paper-plane"></i> Submit</button>
+
+                            <div style="width:140px; flex-shrink:0; display:flex; align-items:flex-end;">
+                                <button type="submit" class="btn-save" style="width:100%;"><i class="fas fa-paper-plane me-1"></i> Submit</button>
                             </div>
                         </div>
                     </form>
