@@ -77,7 +77,6 @@
             display: flex;
             flex-direction: row;
             min-height: 100vh;
-            position: relative;
         }
 
         /* ── Sidebar ───────────────────────────────── */
@@ -92,122 +91,17 @@
             top: 0;
             height: 100vh;
             overflow-y: auto;
-            overflow-x: visible;
             flex-shrink: 0;
-            transition: width 0.2s ease, min-width 0.2s ease, border-color 0.2s ease;
-            z-index: 1050;
-        }
-
-        /* ── Desktop Sidebar Collapse ────────────── */
-        @media (min-width: 577px) {
-            .sidebar.is-collapsed {
-                width: 72px;
-                min-width: 72px;
-            }
-
-            .sidebar-desktop-toggle-btn {
-                display: none;
-            }
-
-            .sidebar-desktop-handle {
-                position: fixed;
-                top: 14px;
-                left: 12px;
-                z-index: 2000;
-                width: 28px;
-                height: 28px;
-                padding: 0;
-                border-radius: 999px;
-                border: 1.5px solid var(--lav-200);
-                background: var(--surface);
-                color: var(--lav-500);
-                font-weight: 900;
-                line-height: 1;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 10px 18px rgba(46, 41, 36, 0.12);
-                user-select: none;
-            }
-
-            .sidebar-desktop-handle:hover,
-            .sidebar-desktop-handle:focus {
-                background: var(--lav-100);
-                border-color: var(--lav-300);
-                color: var(--lav-500);
-            }
-
-            /* Collapsed = icon-only rail */
-            .sidebar.is-collapsed .sidebar-brand {
-                padding: 1.1rem 0.75rem 0.75rem;
-                display: flex;
-                justify-content: center;
-            }
-
-            .sidebar.is-collapsed .sidebar-brand a {
-                justify-content: center;
-                gap: 0;
-            }
-
-            .sidebar.is-collapsed .sidebar-brand span {
-                display: none;
-            }
-
-            .sidebar.is-collapsed .sidebar-user-toggle {
-                padding: 0.75rem 0.75rem;
-                justify-content: center;
-            }
-
-            .sidebar.is-collapsed .sidebar-user-toggle-left {
-                justify-content: center;
-            }
-
-            .sidebar.is-collapsed .sidebar-user-toggle-left span,
-            .sidebar.is-collapsed .sidebar-user-toggle .caret,
-            .sidebar.is-collapsed .sidebar-user-dropdown {
-                display: none !important;
-            }
-
-            .sidebar.is-collapsed .sidebar-nav {
-                padding: 0.85rem 0.55rem;
-            }
-
-            .sidebar.is-collapsed .sidebar-nav-link {
-                justify-content: center;
-                gap: 0;
-                padding: 0.6rem 0.6rem;
-                font-size: 0;
-            }
-
-            .sidebar.is-collapsed .sidebar-nav-link i {
-                width: auto;
-                font-size: 0.95rem;
-            }
-
-            .sidebar.is-collapsed .sidebar-divider {
-                margin: 0.25rem 0.55rem;
-            }
-
-            .sidebar.is-collapsed .sidebar-logout {
-                padding: 0.6rem 0.55rem;
-            }
-
-            .sidebar.is-collapsed .sidebar-logout button {
-                justify-content: center;
-                gap: 0;
-                padding: 0.65rem 0.6rem;
-                font-size: 0;
-            }
-
-            .sidebar.is-collapsed .sidebar-logout button i {
-                width: auto;
-                font-size: 0.95rem;
-            }
         }
 
         .sidebar-brand {
             padding: 1.4rem 1.25rem 1rem;
             border-bottom: 1px solid var(--lav-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: nowrap;
         }
 
         .sidebar-brand a {
@@ -219,10 +113,85 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            min-width: 0;
         }
 
         .sidebar-brand i {
             color: var(--gold-500);
+        }
+
+        .sidebar-collapse-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1.5px solid var(--lav-200);
+            background: var(--surface);
+            color: var(--lav-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .sidebar-collapse-btn:hover {
+            background: var(--lav-100);
+        }
+
+        /* ── Desktop Sidebar Collapse ────────────── */
+        .sidebar.sidebar-collapsed {
+            width: 72px;
+            min-width: 72px;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-brand {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.1rem 0.75rem 0.9rem;
+            gap: 0.6rem;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-brand a {
+            justify-content: center;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-brand span {
+            display: none;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-user-toggle-left span {
+            display: none;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-user-toggle .caret {
+            display: none;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-nav-link {
+            justify-content: center;
+            font-size: 0;
+            padding-left: 0;
+            padding-right: 0;
+            gap: 0;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-nav-link i {
+            font-size: 1rem;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-logout button {
+            justify-content: center;
+            font-size: 0;
+            padding-left: 0;
+            padding-right: 0;
+            gap: 0;
+        }
+
+        .sidebar.sidebar-collapsed .sidebar-logout button i {
+            font-size: 1rem;
         }
 
         .sidebar-nav {
@@ -373,8 +342,6 @@
             flex-direction: column;
             overflow-y: auto;
             min-width: 0;
-            position: relative;
-            z-index: 1;
         }
 
         /* ── Main Content ──────────────────────────── */
@@ -873,6 +840,16 @@
 
             .sidebar-toggle-btn {
                 display: flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .sidebar-toggle-btn i {
+                line-height: 1;
+            }
+
+            .sidebar-collapse-btn {
+                display: none;
             }
         }
     </style>
@@ -892,6 +869,13 @@
                     <i class="fas fa-graduation-cap"></i>
                     <span>USMGoGrad</span>
                 </a>
+                <button
+                    type="button"
+                    class="sidebar-collapse-btn"
+                    id="sidebarCollapseBtn"
+                    aria-label="Collapse sidebar"
+                    aria-expanded="true"
+                >&lt;</button>
             </div>
 
             @auth
@@ -942,7 +926,7 @@
             <div class="sidebar-logout">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    <button type="submit" aria-label="Logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 </form>
             </div>
             @endauth
@@ -1068,6 +1052,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <script>
+        // Desktop sidebar collapse toggle
+        (function () {
+            var sidebar = document.getElementById('appSidebar');
+            var btn = document.getElementById('sidebarCollapseBtn');
+            if (!sidebar || !btn) return;
+
+            function syncButton() {
+                var isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                btn.innerHTML = isCollapsed ? '&gt;' : '&lt;';
+                btn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+                btn.setAttribute('aria-label', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            }
+
+            btn.addEventListener('click', function () {
+                sidebar.classList.toggle('sidebar-collapsed');
+                syncButton();
+            });
+
+            syncButton();
+        })();
+
         // Sidebar user dropdown toggle
         (function () {
             var toggle = document.getElementById('sidebarUserToggle');
@@ -1089,8 +1094,8 @@
 
             var toggleBtn = document.createElement('button');
             toggleBtn.className = 'sidebar-toggle-btn btn btn-light';
-            toggleBtn.style.cssText = 'display:none;position:fixed;top:12px;left:12px;z-index:1060;width:38px;height:38px;padding:0;border-radius:8px;border:1.5px solid var(--lav-200);';
-            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleBtn.style.cssText = 'display:none;position:fixed;top:12px;left:12px;z-index:1060;width:38px;height:38px;padding:0;border-radius:8px;border:1.5px solid var(--lav-200);align-items:center;justify-content:center;line-height:1;';
+            toggleBtn.innerHTML = '<i class="fas fa-bars" style="line-height:1;"></i>';
             document.body.appendChild(toggleBtn);
 
             toggleBtn.addEventListener('click', function () {
@@ -1101,77 +1106,6 @@
                 sidebar.classList.remove('sidebar-open');
                 overlay.classList.remove('active');
             });
-        })();
-
-        // Desktop sidebar collapse/expand toggle
-        (function () {
-            var sidebar = document.getElementById('appSidebar');
-            if (!sidebar) return;
-
-            function isDesktop() {
-                return window.matchMedia('(min-width: 577px)').matches;
-            }
-
-            var toggleBtn = document.createElement('button');
-            toggleBtn.type = 'button';
-            toggleBtn.className = 'sidebar-desktop-handle';
-            document.body.appendChild(toggleBtn);
-
-            function setButtonState() {
-                if (!isDesktop()) {
-                    toggleBtn.style.display = 'none';
-                    return;
-                }
-
-                toggleBtn.style.display = 'inline-flex';
-
-                var collapsed = sidebar.classList.contains('is-collapsed');
-                toggleBtn.textContent = collapsed ? '>' : '<';
-                toggleBtn.setAttribute('aria-label', collapsed ? 'Open sidebar' : 'Close sidebar');
-
-                // Keep the handle pinned to the sidebar edge (half-overlapping).
-                var rect = sidebar.getBoundingClientRect();
-                var left = Math.round(rect.left + rect.width - (toggleBtn.offsetWidth / 2));
-                toggleBtn.style.left = left + 'px';
-            }
-
-            function loadState() {
-                try {
-                    var collapsed = window.localStorage.getItem('usm_sidebar_collapsed') === '1';
-                    sidebar.classList.toggle('is-collapsed', collapsed);
-                } catch (e) {
-                    // ignore
-                }
-            }
-
-            function saveState() {
-                try {
-                    window.localStorage.setItem(
-                        'usm_sidebar_collapsed',
-                        sidebar.classList.contains('is-collapsed') ? '1' : '0'
-                    );
-                } catch (e) {
-                    // ignore
-                }
-            }
-
-            toggleBtn.addEventListener('click', function () {
-                if (!isDesktop()) return;
-                sidebar.classList.toggle('is-collapsed');
-                saveState();
-                setButtonState();
-            });
-
-            sidebar.addEventListener('transitionend', function () {
-                setButtonState();
-            });
-
-            window.addEventListener('resize', function () {
-                setButtonState();
-            });
-
-            loadState();
-            setButtonState();
         })();
 
         // Global notification popover toggle

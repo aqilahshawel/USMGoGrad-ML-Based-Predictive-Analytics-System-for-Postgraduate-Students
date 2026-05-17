@@ -18,6 +18,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from imblearn.over_sampling import RandomOverSampler
 
 from got_model import (
     CHECKPOINT_SEQUENCE,
@@ -31,6 +32,61 @@ from got_model import (
     save_metadata,
     train_model_bundle,
 )
+
+
+MIN_CLASS_POS = 2
+MIN_CLASS_NEG = 2
+MIN_RECALL_FOR_THRESHOLD = 0.60
+
+
+def class_counts_for_frame(frame: pd.DataFrame) -> tuple[int, int]:
+    got_frame = frame.dropna(subset=["viva_sem"]).copy()
+    if got_frame.empty:
+        return 0, 0
+
+    got_frame["GOT"] = got_frame.apply(calculate_got, axis=1)
+    y_true = got_frame["GOT"].to_numpy(dtype=int)
+    positives = int((y_true == 1).sum())
+    negatives = int((y_true == 0).sum())
+    return positives, negatives
+
+
+def has_min_class_counts(frame: pd.DataFrame, min_pos: int, min_neg: int) -> bool:
+    positives, negatives = class_counts_for_frame(frame)
+    return positives >= min_pos and negatives >= min_neg
+
+
+def balance_got_training_frame(
+    frame: pd.DataFrame,
+    random_state: int = 42,
+    use_random_oversampler: bool = False,
+) -> pd.DataFrame:
+    got_frame = frame.dropna(subset=["viva_sem"]).copy()
+    if got_frame.empty:
+        return frame
+
+    got_frame["GOT"] = got_frame.apply(calculate_got, axis=1)
+    class_counts = got_frame["GOT"].value_counts()
+    if len(class_counts) < 2:
+        return frame
+
+    if use_random_oversampler:
+        features = got_frame.drop(columns=["GOT"]).copy()
+        target = got_frame["GOT"].copy()
+        sampler = RandomOverSampler(random_state=random_state)
+        resampled_x, resampled_y = sampler.fit_resample(features, target)
+        balanced_got = resampled_x.copy()
+        balanced_got["GOT"] = resampled_y
+        balanced_got = balanced_got.drop(columns=["GOT"])
+    else:
+        target_size = int(class_counts.max())
+        balanced_parts = []
+        for label, group in got_frame.groupby("GOT"):
+            balanced_parts.append(group.sample(n=target_size, replace=True, random_state=random_state))
+
+        balanced_got = pd.concat(balanced_parts, ignore_index=True).drop(columns=["GOT"])
+    non_got = frame[frame["viva_sem"].isna()].copy()
+    return pd.concat([non_got, balanced_got], ignore_index=True)
 
 
 def build_parser() -> ArgumentParser:
@@ -71,6 +127,17 @@ def build_parser() -> ArgumentParser:
         default=5,
         help="Minimum negative validation samples required for a walk-forward window to vote on threshold.",
     )
+    parser.add_argument(
+        "--scale-pos-weight",
+        type=float,
+        default=None,
+        help="Override scale_pos_weight for GoT classifier (default uses neg/pos ratio).",
+    )
+    parser.add_argument(
+        "--use-ros",
+        action="store_true",
+        help="Use RandomOverSampler to balance GoT classes for classifier training.",
+    )
     return parser
 
 
@@ -86,21 +153,34 @@ def split_chronological(
     if total < 3:
         raise ValueError("Dataset must have at least 3 rows for train/validation/test split.")
 
-    train_size = int(round(total * train_ratio))
+    base_train_size = int(round(total * train_ratio))
     val_size = int(round(total * val_ratio))
 
-    train_size = max(1, min(train_size, total - 2))
-    val_size = max(1, min(val_size, total - train_size - 1))
-    test_size = total - train_size - val_size
+    base_train_size = max(1, min(base_train_size, total - 2))
+    val_size = max(1, min(val_size, total - base_train_size - 1))
+    max_train_size = total - val_size - 1
+    max_train_size = max(1, max_train_size)
 
-    if test_size < 1:
-        val_size = max(1, val_size - 1)
+    candidates = list(range(1, max_train_size + 1))
+    candidates.sort(key=lambda value: abs(value - base_train_size))
+
+    for train_size in candidates:
         test_size = total - train_size - val_size
+        if test_size < 1:
+            continue
 
-    train = ordered.iloc[:train_size].copy()
-    val = ordered.iloc[train_size:train_size + val_size].copy()
-    test = ordered.iloc[train_size + val_size:].copy()
-    return train, val, test
+        train = ordered.iloc[:train_size].copy()
+        val = ordered.iloc[train_size:train_size + val_size].copy()
+        test = ordered.iloc[train_size + val_size:].copy()
+
+        # GoT class balance can be extremely skewed (especially with the stricter 42-month definition).
+        # Evaluation helpers already handle single-class windows, so we only require non-empty splits here.
+        if train.empty or val.empty or test.empty:
+            continue
+
+        return train, val, test
+
+    raise ValueError("Unable to create a chronological split with current split ratios.")
 
 
 def build_walk_forward_splits(
@@ -148,6 +228,7 @@ def build_walk_forward_splits(
         train_end_points = sorted({int(round(point)) for point in points})
 
     splits: list[tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]] = []
+    skipped_windows = 0
     for train_end in train_end_points:
         train_end = max(1, min(train_end, max_train_size))
         val_end = train_end + val_size
@@ -160,12 +241,14 @@ def build_walk_forward_splits(
         if train.empty or val.empty or test.empty:
             continue
 
+        # Allow single-class windows; the evaluation layer annotates them and threshold voting can skip them.
         splits.append((train, val, test))
 
     metadata = {
         "strategy": "walk_forward_expanding",
         "windows_requested": requested_windows,
         "windows_used": int(len(splits)),
+        "windows_skipped_min_class": int(skipped_windows),
         "window_sizes": {
             "validation": int(val_size),
             "test": int(test_size),
@@ -175,6 +258,10 @@ def build_walk_forward_splits(
             "max": int(max_train_size),
         },
         "min_train_ratio": float(min_train_ratio),
+        "min_class_counts": {
+            "positive": int(MIN_CLASS_POS),
+            "negative": int(MIN_CLASS_NEG),
+        },
     }
 
     return splits, metadata
@@ -254,7 +341,8 @@ def threshold_search(
     y_score: np.ndarray,
     default_threshold: float,
 ) -> dict[str, Any]:
-    # I sweep thresholds and pick the one that maximizes F1, then recall, then precision.
+    # I sweep thresholds and pick the one that maximizes F1,
+    # but only if recall meets a minimum floor.
     distribution = class_distribution(y_true)
     if len(y_true) == 0:
         return {
@@ -281,6 +369,8 @@ def threshold_search(
     best_f1 = -1.0
     best_recall = -1.0
     best_precision = -1.0
+    recall_floor = float(MIN_RECALL_FOR_THRESHOLD)
+    floor_met = False
 
     for threshold in candidate_thresholds:
         metrics = classification_metrics(y_true, y_score, float(threshold))
@@ -295,6 +385,11 @@ def threshold_search(
                 "precision": round(precision, 4),
             }
         )
+
+        if recall < recall_floor:
+            continue
+
+        floor_met = True
 
         better = False
         if f1 > best_f1:
@@ -311,11 +406,16 @@ def threshold_search(
             best_threshold = float(threshold)
 
     return {
-        "strategy": "maximize_f1_then_recall",
+        "strategy": "maximize_f1_with_recall_floor",
         "selected": round(best_threshold, 4),
         "default": round(float(default_threshold), 4),
-        "reason": "Selected from validation threshold sweep.",
+        "reason": (
+            f"Selected from validation threshold sweep with recall >= {recall_floor}."
+            if floor_met
+            else "No thresholds met recall floor; used fallback maximize_f1_then_recall."
+        ),
         "grid": grid,
+        "recall_floor": round(recall_floor, 4),
     }
 
 
@@ -378,6 +478,45 @@ def aggregate_classification(metrics_list: list[dict[str, Any]], split_name: str
         "fp": fp,
         "fn": fn,
         "note": note,
+    }
+
+
+def classification_report_from_metrics(metrics: dict[str, Any]) -> dict[str, Any]:
+    tn = int(metrics.get("tn", 0))
+    fp = int(metrics.get("fp", 0))
+    fn = int(metrics.get("fn", 0))
+    tp = int(metrics.get("tp", 0))
+    negatives = int(metrics.get("negative", 0))
+    positives = int(metrics.get("positive", 0))
+
+    precision_neg = tn / (tn + fn) if (tn + fn) > 0 else 0.0
+    recall_neg = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+    f1_neg = (2.0 * precision_neg * recall_neg / (precision_neg + recall_neg)) if (precision_neg + recall_neg) > 0 else 0.0
+
+    precision_pos = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall_pos = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1_pos = (2.0 * precision_pos * recall_pos / (precision_pos + recall_pos)) if (precision_pos + recall_pos) > 0 else 0.0
+
+    samples = max(1, negatives + positives)
+    accuracy = (tp + tn) / samples
+
+    macro_precision = (precision_neg + precision_pos) / 2.0
+    macro_recall = (recall_neg + recall_pos) / 2.0
+    macro_f1 = (f1_neg + f1_pos) / 2.0
+
+    weighted_precision = ((precision_neg * negatives) + (precision_pos * positives)) / samples
+    weighted_recall = ((recall_neg * negatives) + (recall_pos * positives)) / samples
+    weighted_f1 = ((f1_neg * negatives) + (f1_pos * positives)) / samples
+
+    return {
+        "confusion_matrix": [[tn, fp], [fn, tp]],
+        "rows": [
+            {"label": "0", "precision": precision_neg, "recall": recall_neg, "f1": f1_neg, "support": negatives},
+            {"label": "1", "precision": precision_pos, "recall": recall_pos, "f1": f1_pos, "support": positives},
+        ],
+        "accuracy": accuracy,
+        "macro_avg": {"precision": macro_precision, "recall": macro_recall, "f1": macro_f1, "support": samples},
+        "weighted_avg": {"precision": weighted_precision, "recall": weighted_recall, "f1": weighted_f1, "support": samples},
     }
 
 
@@ -661,8 +800,9 @@ def main() -> None:
     if args.eval_mode == "chronological":
         train_frame, val_frame, test_frame = split_chronological(frame, args.train_ratio, args.val_ratio)
 
-        # For evaluation I train only on the training split.
-        eval_bundle, _ = train_model_bundle(train_frame)
+        # For evaluation I train only on the training split (balanced per window).
+        balanced_train = balance_got_training_frame(train_frame, use_random_oversampler=args.use_ros)
+        eval_bundle, _ = train_model_bundle(balanced_train, scale_pos_weight_override=args.scale_pos_weight)
         threshold_tuning = calibrate_threshold(eval_bundle, val_frame, args.threshold)
         selected_threshold = float(threshold_tuning["selected"])
 
@@ -718,7 +858,8 @@ def main() -> None:
 
         for index, (train_window, val_window, test_window) in enumerate(splits, start=1):
             # Each window simulates a point-in-time model trained on history.
-            eval_bundle, _ = train_model_bundle(train_window)
+            balanced_train = balance_got_training_frame(train_window, use_random_oversampler=args.use_ros)
+            eval_bundle, _ = train_model_bundle(balanced_train, scale_pos_weight_override=args.scale_pos_weight)
             window_threshold = calibrate_threshold(eval_bundle, val_window, args.threshold)
             window_selected_threshold = float(window_threshold["selected"])
 
@@ -805,9 +946,10 @@ def main() -> None:
             "windows": windows_report,
         }
 
-    # Final production artifact is trained on the full historical dataset.
+    # Final production artifact is trained on the full historical dataset (balanced).
     # (I still keep the evaluation report from the chronological/walk-forward run.)
-    bundle, training_report = train_model_bundle(frame)
+    balanced_full = balance_got_training_frame(frame, use_random_oversampler=args.use_ros)
+    bundle, training_report = train_model_bundle(balanced_full, scale_pos_weight_override=args.scale_pos_weight)
     training_report["evaluation"] = eval_report
 
     print("Training rows:", training_report["total_rows"])
@@ -831,6 +973,34 @@ def main() -> None:
         print(f"  - {model_name}: {row_count} rows")
     print("\nValidation classification:", eval_report["classification"]["validation"])
     print("Test classification:", eval_report["classification"]["test"])
+
+    test_report = classification_report_from_metrics(eval_report["classification"]["test"])
+    cm = test_report["confusion_matrix"]
+    print("\nTest confusion matrix:")
+    print(f"[[{cm[0][0]} {cm[0][1]}]\n [{cm[1][0]} {cm[1][1]}]]")
+    print("Test classification report:")
+    print("precision  recall  f1-score  support")
+    for row in test_report["rows"]:
+        print(
+            f"{row['label']:>5}"
+            f"     {row['precision']:.2f}"
+            f"   {row['recall']:.2f}"
+            f"     {row['f1']:.2f}"
+            f"     {row['support']:>6}"
+        )
+    print(f"\naccuracy  {test_report['accuracy']:.2f}     {test_report['macro_avg']['support']:>6}")
+    print(
+        f"macro avg {test_report['macro_avg']['precision']:.2f}"
+        f"   {test_report['macro_avg']['recall']:.2f}"
+        f"     {test_report['macro_avg']['f1']:.2f}"
+        f"     {test_report['macro_avg']['support']:>6}"
+    )
+    print(
+        f"weighted avg {test_report['weighted_avg']['precision']:.2f}"
+        f" {test_report['weighted_avg']['recall']:.2f}"
+        f"     {test_report['weighted_avg']['f1']:.2f}"
+        f"     {test_report['weighted_avg']['support']:>6}"
+    )
 
     print("\nValidation checkpoint MAE:")
     for key, value in eval_report["checkpoint_gap_mae"]["validation"].items():

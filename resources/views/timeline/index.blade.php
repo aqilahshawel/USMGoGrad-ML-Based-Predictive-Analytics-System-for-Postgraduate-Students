@@ -88,6 +88,11 @@
         ['key' => 'nos_date', 'label' => 'NOS', 'stage' => 2],
         ['key' => 'final_draft_submission_date', 'label' => 'Final Draft', 'stage' => 2],
     ];
+
+    $customRows = $timelines
+        ->filter(fn($timeline) => ! $timeline->is_system_generated)
+        ->sortBy('event_date')
+        ->values();
 @endphp
 
 <style>
@@ -797,6 +802,79 @@
                 </div>
 
             </section>
+
+            @if($customRows->isNotEmpty())
+                <section class="col-12">
+                    <section class="timeline-panel">
+                        <div class="timeline-panel-header">
+                            <h5>Additional Timeline Events</h5>
+                            <p>Student-created checkpoint requests and their approval status.</p>
+                        </div>
+                        <div class="timeline-panel-body">
+                            @foreach($customRows as $row)
+                                <div class="checkpoint-item">
+                                    <div class="checkpoint-info">
+                                        <label>{{ $row->title }}</label>
+                                        <div class="checkpoint-compact-meta">
+                                            <strong>{{ optional($row->event_date)->format('d M Y') }}</strong>
+                                            &middot; {{ ucfirst($row->status ?? 'approved') }}
+                                            @if($row->status === 'approved')
+                                                &middot; {{ $row->completed ? 'Completed' : 'Not yet completed' }}
+                                            @endif
+                                        </div>
+
+                                        @if($row->status === 'rejected' && $row->review_note)
+                                            <div class="checkpoint-note warning mb-0 mt-2">
+                                                <strong>Supervisor reason:</strong> {{ $row->review_note }}
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <div class="checkpoint-action" style="width: auto; min-width: 240px;">
+                                        @if(auth()->user()->hasRole('lecturer') && $row->status === 'pending')
+                                            <div class="d-flex flex-column gap-2">
+                                                <form action="{{ route('timeline.approve', $row->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-check-circle"></i> Approve</button>
+                                                </form>
+                                                <form action="{{ route('timeline.reject', $row->id) }}" method="POST" class="d-flex flex-column gap-2">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <textarea name="review_note" class="form-control form-control-sm" rows="2" maxlength="1000" placeholder="Reason for rejection" required></textarea>
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100"><i class="fas fa-ban"></i> Reject</button>
+                                                </form>
+                                            </div>
+                                        @elseif(auth()->user()->hasRole('student') && (int) $row->proposed_by_user_id === (int) auth()->id() && $row->status === 'approved')
+                                            <div class="d-flex flex-column gap-2">
+                                                <form action="{{ route('timeline.completion.update', $row->id) }}" method="POST" class="d-flex align-items-center gap-2 flex-wrap">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="hidden" name="completed" value="0">
+                                                    <div class="form-check mb-0">
+                                                        <input class="form-check-input" type="checkbox" id="timeline-completed-{{ $row->id }}" name="completed" value="1" {{ $row->completed ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="timeline-completed-{{ $row->id }}">Mark as completed</label>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-floppy-disk"></i> Save</button>
+                                                </form>
+                                                <form action="{{ route('timeline.destroy', $row->id) }}" method="POST" onsubmit="return confirm('Delete this approved checkpoint?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100"><i class="fas fa-trash"></i> Delete</button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <span class="status-pill {{ $row->status === 'approved' ? 'pill-done' : ($row->status === 'rejected' ? 'pill-locked' : 'pill-progress') }}">
+                                                {{ $row->status === 'approved' ? 'Approved' : ($row->status === 'rejected' ? 'Rejected' : 'Pending') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+                </section>
+            @endif
         </div>
     @endif
 </div>

@@ -78,6 +78,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($randomPassword),
+            'force_password_change' => true,
             'cluster' => $isStudent ? $request->cluster : null,
             'study_mode' => $isStudent ? 'full_time' : null,
             'start_date' => $isStudent ? $request->start_date : null,
@@ -116,15 +117,22 @@ class AuthController extends Controller
         } elseif (str_ends_with($request->email, '@admin.usm.my')) {
             $role = 'admin';
         } else {
-            return back()->with('error', 'Invalid email domain');
+            return back()
+                ->withErrors(['email' => 'You have entered the wrong email or password.'])
+                ->withInput($request->only('email', 'remember'));
         }
 
         // Authenticate user
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        if (Auth::attempt(
+            ['email' => $request->email, 'password' => $request->password],
+            $request->boolean('remember')
+        )) {
             return redirect()->route($role . '.dashboard'); // Redirect based on role
         }
 
-        return back()->with('error', 'Invalid credentials');
+        return back()
+            ->withErrors(['email' => 'You have entered the wrong email or password.'])
+            ->withInput($request->only('email', 'remember'));
     }
 
     public function logout()

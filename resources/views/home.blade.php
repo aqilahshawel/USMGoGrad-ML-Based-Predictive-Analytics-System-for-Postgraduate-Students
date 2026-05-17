@@ -381,6 +381,55 @@
         margin-top: 1.5rem;
     }
 
+    .assignments-dropdown {
+        border-radius: 14px;
+        border: 1px solid var(--lav-200);
+        background: var(--surface);
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        overflow: hidden;
+    }
+
+    .assignments-dropdown summary {
+        list-style: none;
+        cursor: pointer;
+        user-select: none;
+        padding: 1.05rem 1.25rem;
+        background: linear-gradient(135deg, rgba(243,240,255,0.95) 0%, rgba(255,245,239,0.92) 100%);
+    }
+
+    .assignments-dropdown summary:hover {
+        background: linear-gradient(135deg, rgba(226,218,255,0.92) 0%, rgba(253,229,210,0.92) 100%);
+    }
+
+    .assignments-dropdown summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .assignments-dropdown summary h3 {
+        margin-bottom: 0;
+        width: 100%;
+    }
+
+    .assignments-dropdown[open] summary {
+        border-bottom: 1px solid var(--lav-200);
+    }
+
+    .assignments-dropdown-body {
+        padding: 1rem 1.25rem 0.25rem;
+        background: var(--surface);
+    }
+
+    .assignments-caret {
+        margin-left: auto;
+        font-size: 0.95rem;
+        color: var(--lav-400);
+        transition: transform 0.2s ease;
+    }
+
+    .assignments-dropdown[open] .assignments-caret {
+        transform: rotate(180deg);
+    }
+
     .assignments-section h3 {
         color: var(--lav-500);
         font-weight: 700;
@@ -710,75 +759,6 @@
         margin-bottom: 0.4rem;
     }
 
-    .profile-card {
-        border: 1px solid var(--lav-200);
-        border-radius: 14px;
-        background: var(--surface);
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
-        padding: 0.6rem 0.9rem;
-        margin: 0.65rem 0 1rem;
-    }
-
-    .profile-card > summary {
-        list-style: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        font-weight: 700;
-        color: var(--n-900);
-    }
-
-    .profile-card > summary::-webkit-details-marker { display: none; }
-
-    .profile-card > summary::after {
-        content: '\25BC';
-        font-size: 0.7rem;
-        margin-left: auto;
-        color: var(--lav-500);
-        transition: transform 0.2s ease;
-    }
-
-    .profile-card[open] > summary::after {
-        transform: rotate(180deg);
-    }
-
-    .profile-body {
-        margin-top: 0.65rem;
-        padding-top: 0.6rem;
-        border-top: 1px solid var(--lav-100);
-        display: grid;
-        gap: 0.5rem;
-    }
-
-    .profile-row {
-        display: grid;
-        grid-template-columns: 140px 1fr;
-        gap: 0.5rem;
-        font-size: 0.86rem;
-    }
-
-    .profile-label {
-        color: var(--muted);
-        font-weight: 600;
-    }
-
-    .profile-value {
-        color: var(--n-900);
-        font-weight: 600;
-        word-break: break-word;
-    }
-
-    .profile-compact {
-        padding: 0.5rem 0.75rem;
-        margin: 0.45rem 0;
-    }
-
-    .profile-compact .profile-row {
-        grid-template-columns: 120px 1fr;
-        font-size: 0.82rem;
-    }
-
     .status-pill {
         display: inline-flex;
         align-items: center;
@@ -960,63 +940,60 @@
     </div>
 
     <div class="assignments-section">
-        <h3><i class="fas fa-list"></i> Current Assignments</h3>
+        <details class="assignments-dropdown">
+            <summary>
+                <h3>
+                    <i class="fas fa-list"></i> Current Assignments
+                    <i class="fas fa-chevron-down assignments-caret"></i>
+                </h3>
+            </summary>
 
-        @if($supervisors->count() > 0)
-            @foreach($supervisors as $supervisor)
-                <div class="supervisor-card">
-                    <div class="supervisor-name">
-                        <i class="fas fa-user-tie"></i> {{ $supervisor->name }}
-                    </div>
+            <div class="assignments-dropdown-body">
 
-                    @if($supervisor->students->count() > 0)
-                        <ul class="students-list">
-                            @foreach($supervisor->students as $student)
-                                <li>
-                                    <details class="profile-card profile-compact">
-                                        <summary>
-                                            <i class="fas fa-user-graduate"></i>
-                                            {{ $student->name }}
-                                            @if($student->cluster)
-                                                ({{ $student->cluster }})
-                                            @endif
-                                        </summary>
-                                        <div class="profile-body">
-                                            <div class="profile-row">
-                                                <div class="profile-label">Cluster</div>
-                                                <div class="profile-value">{{ $student->cluster ?? 'Missing' }}</div>
-                                            </div>
-                                            <div class="profile-row">
-                                                <div class="profile-label">Research Title</div>
-                                                <div class="profile-value">{{ $student->research_title ?? 'Missing' }}</div>
-                                            </div>
-                                            <div class="profile-row">
-                                                <div class="profile-label">Research Objective</div>
-                                                <div class="profile-value">{{ $student->research_objective ?? 'Missing' }}</div>
-                                            </div>
-                                            <div class="profile-row">
-                                                <div class="profile-label">Registration Date</div>
-                                                <div class="profile-value">{{ optional($student->start_date)->format('d M Y') ?? 'Missing' }}</div>
-                                            </div>
-                                        </div>
-                                    </details>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @else
-                        <div class="no-students">
-                            <i class="fas fa-inbox"></i> No students assigned yet
+            @if($supervisors->count() > 0)
+                @foreach($supervisors as $supervisor)
+                    <div class="supervisor-card">
+                        <div class="supervisor-name">
+                            <i class="fas fa-user-tie"></i> {{ $supervisor->name }}
                         </div>
-                    @endif
+
+                        @if($supervisor->students->count() > 0)
+                            <ul class="students-list">
+                                @foreach($supervisor->students as $student)
+                                    <li>
+                                        <i class="fas fa-user-graduate"></i>
+                                        {{ $student->name }}
+                                        @if($student->cluster)
+                                            ({{ $student->cluster }})
+                                        @endif
+                                        @if($student->start_date)
+                                            -
+                                            @if($student->start_date)
+                                                {{ $student->start_date->format('d M Y') }}
+                                            @else
+                                                Missing registration date
+                                            @endif
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div class="no-students">
+                                <i class="fas fa-inbox"></i> No students assigned yet
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h5>No Supervisors Available</h5>
+                    <p class="text-muted">There are no supervisors in the system yet.</p>
                 </div>
-            @endforeach
-        @else
-            <div class="empty-state">
-                <i class="fas fa-inbox"></i>
-                <h5>No Supervisors Available</h5>
-                <p class="text-muted">There are no supervisors in the system yet.</p>
+            @endif
+
             </div>
-        @endif
+        </details>
     </div>
 
     <!-- Analytics Dashboard Section -->
@@ -1203,6 +1180,7 @@
             'research_review' => ['icon' => 'fa-magnifying-glass-chart', 'color' => '#3d9970', 'bg' => '#e8f5e9'],
             'nos'             => ['icon' => 'fa-envelope-open-text', 'color' => '#d97706', 'bg' => '#fff5ef'],
             'final_draft_submission' => ['icon' => 'fa-file-arrow-up', 'color' => '#b7791f', 'bg' => '#fffbf0'],
+            'viva'            => ['icon' => 'fa-user-graduate', 'color' => '#c2410c', 'bg' => '#fdecea'],
             'extension'       => ['icon' => 'fa-hourglass-half', 'color' => '#cc4b4b', 'bg' => '#fdecea'],
             'overdue'         => ['icon' => 'fa-exclamation-triangle','color' => '#cc4b4b', 'bg' => '#fdecea'],
             'max_duration'    => ['icon' => 'fa-flag-checkered', 'color' => '#cc4b4b', 'bg' => '#fdecea'],
@@ -1215,6 +1193,7 @@
             'checkpoint:research_review' => 'research_review_date',
             'checkpoint:nos' => 'nos_date',
             'checkpoint:final_draft_submission' => 'final_draft_submission_date',
+            'checkpoint:viva' => 'viva_date',
         ];
 
         $checkpoint = $dashboardCheckpoint;
@@ -1222,8 +1201,10 @@
         $customRows = collect();
         if (!Auth::user()->hasRole('lecturer') || request('student_id')) {
             $systemStops = $timelines
-                ->filter(fn($t) => $t->system_key && (str_starts_with($t->system_key, 'checkpoint:') || $t->system_key === 'max_duration'))
-                ->reject(fn($t) => $t->system_key === 'checkpoint:viva')
+                ->filter(fn($t) => $t->system_key
+                    && (str_starts_with($t->system_key, 'checkpoint:') || $t->system_key === 'max_duration')
+                    && $t->system_key !== 'checkpoint:viva'
+                )
                 ->sortBy('event_date')
                 ->values();
 
@@ -1237,19 +1218,6 @@
         $totalStops = $systemStops->count();
         $completedStops = $systemStops->where('completed', true)->count();
         $currentStopId = optional($systemStops->firstWhere('completed', false))->id;
-
-        $stage1Complete = (bool) ($checkpoint
-            && $checkpoint->ekc500_admin_approved
-            && $checkpoint->proposal_review_date
-            && $checkpoint->research_review_date);
-        $stage2Locked = ! $stage1Complete;
-
-        $roadmapUser = null;
-        if (Auth::user()->hasRole('lecturer')) {
-            $roadmapUser = $dashboardTargetUser ?? null;
-        } elseif (Auth::user()->hasRole('student')) {
-            $roadmapUser = Auth::user();
-        }
     @endphp
 
     <section class="tab-content-section mt-3">
@@ -1278,33 +1246,6 @@
                 <h5 style="font-family:var(--font-display); margin-bottom: 0.1rem;"><i class="fas fa-map"></i> Timeline Roadmap</h5>
                 <p class="text-muted mb-0" style="font-size:0.82rem;">Your candidature progress at a glance</p>
             </div>
-        @endif
-
-        @if($roadmapUser)
-            <details class="profile-card">
-                <summary>
-                    <i class="fas fa-user-circle"></i>
-                    {{ Auth::user()->hasRole('lecturer') ? ($roadmapUser->name . "'s") : 'Your' }} Profile Details
-                </summary>
-                <div class="profile-body">
-                    <div class="profile-row">
-                        <div class="profile-label">Cluster</div>
-                        <div class="profile-value">{{ $roadmapUser->cluster ?? 'Missing' }}</div>
-                    </div>
-                    <div class="profile-row">
-                        <div class="profile-label">Research Title</div>
-                        <div class="profile-value">{{ $roadmapUser->research_title ?? 'Missing' }}</div>
-                    </div>
-                    <div class="profile-row">
-                        <div class="profile-label">Research Objective</div>
-                        <div class="profile-value">{{ $roadmapUser->research_objective ?? 'Missing' }}</div>
-                    </div>
-                    <div class="profile-row">
-                        <div class="profile-label">Registration Date</div>
-                        <div class="profile-value">{{ optional($roadmapUser->start_date)->format('d M Y') ?? 'Missing' }}</div>
-                    </div>
-                </div>
-            </details>
         @endif
 
         @if($progressSnapshot)
@@ -1370,34 +1311,21 @@
 
                 @foreach($systemStops as $stop)
                     @php
-                        $stageNumber = match ($stop->system_key) {
-                            'checkpoint:ekc500_admin_approval',
-                            'checkpoint:proposal_review',
-                            'checkpoint:research_review' => 1,
-                            'checkpoint:nos',
-                            'checkpoint:final_draft_submission' => 2,
-                            default => null,
-                        };
-
                         $key = str_replace('checkpoint:', '', $stop->system_key);
                         $style = $checkpointStyles[$key] ?? $defaultStyle;
                         $actualField = $checkpointFieldMap[$stop->system_key] ?? null;
                         $actualValue = $actualField && $checkpoint ? $checkpoint->{$actualField} : null;
-                        $isLocked = $stageNumber === 2 && $stage2Locked;
-
-                        $isCompleted = ! $isLocked && (bool) $stop->completed;
-                        $isCurrent = ! $isLocked && ! $isCompleted && $currentStopId === $stop->id;
-                        $isOverdue = ! $isLocked && ! $isCompleted && $progressSnapshot && $stop->semester_number && $progressSnapshot['current_semester'] > $stop->semester_number;
+                        $isCompleted = (bool) $stop->completed;
+                        $isCurrent = ! $isCompleted && $currentStopId === $stop->id;
+                        $isOverdue = ! $isCompleted && $progressSnapshot && $stop->semester_number && $progressSnapshot['current_semester'] > $stop->semester_number;
                         $cardClass = $isCompleted ? 'completed' : ($isOverdue ? 'warning' : ($isCurrent ? 'current' : ''));
                     @endphp
 
-                    <div class="road-stop" @if($isLocked) style="opacity: 0.55;" @endif>
+                    <div class="road-stop">
                         <div class="road-node {{ $isCompleted ? 'node-completed' : ($isCurrent ? 'node-current' : '') }}"
                              @if(! $isCompleted && ! $isCurrent) style="background: {{ $style['bg'] }}; color: {{ $style['color'] }}; border-color: {{ $style['bg'] }};" @endif>
                             @if($isCompleted)
                                 <i class="fas fa-check"></i>
-                            @elseif($isLocked)
-                                <i class="fas fa-lock"></i>
                             @elseif($isCurrent)
                                 <i class="fas fa-location-dot" style="color: {{ $style['color'] }};"></i>
                             @else
@@ -1411,9 +1339,7 @@
                                     <i class="fas {{ $style['icon'] }}" style="color: {{ $style['color'] }};"></i>
                                     {{ $stop->title }}
                                 </div>
-                                @if($isLocked)
-                                    <span class="status-pill pill-upcoming"><i class="fas fa-lock"></i> Locked</span>
-                                @elseif($isCompleted)
+                                @if($isCompleted)
                                     <span class="status-pill pill-completed"><i class="fas fa-check-circle"></i> Completed</span>
                                 @elseif($isOverdue)
                                     <span class="status-pill pill-warning"><i class="fas fa-bell"></i> Reminder Needed</span>
@@ -1425,18 +1351,13 @@
                             </div>
 
                             <div class="road-card-meta">
-                                @if($stageNumber)
-                                    Stage {{ $stageNumber }} &middot;
-                                @endif
                                 Target by {{ optional($stop->event_date)->format('d M Y') }}
                                 @if($stop->semester_number)
                                     &middot; Semester {{ $stop->semester_number }}
                                 @endif
                             </div>
 
-                            @if($isLocked)
-                                {{-- Stage 2 locked until Stage 1 complete --}}
-                            @elseif($actualField === 'ekc500_admin_approved' && $actualValue)
+                            @if($actualField === 'ekc500_admin_approved' && $actualValue)
                                 <div class="checkpoint-pill">Passed</div>
                             @elseif($actualValue)
                                 <div class="checkpoint-pill">Completed on {{ $actualValue->format('d M Y') }}</div>
@@ -1486,6 +1407,37 @@
                                         @endif
                                     </div>
 
+                                    @if($row->status === 'rejected' && $row->review_note)
+                                        <div class="checkpoint-note warning mb-0 mt-3">
+                                            <strong>Supervisor reason:</strong> {{ $row->review_note }}
+                                        </div>
+                                    @endif
+
+                                    @if(auth()->user()->hasRole('student') && (int) $row->proposed_by_user_id === (int) auth()->id() && $row->status === 'approved')
+                                        <div class="checkpoint-note info mb-0 mt-3">
+                                            <strong>Completion:</strong> {{ $row->completed ? 'Completed' : 'Not yet completed' }}
+                                        </div>
+
+                                        <div class="additional-event-actions">
+                                            <form action="{{ route('timeline.completion.update', $row->id) }}" method="POST" class="d-flex align-items-center gap-2 flex-wrap">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="hidden" name="completed" value="0">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input" type="checkbox" id="completed-{{ $row->id }}" name="completed" value="1" {{ $row->completed ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="completed-{{ $row->id }}">Mark as completed</label>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-floppy-disk"></i> Save</button>
+                                            </form>
+
+                                            <form action="{{ route('timeline.destroy', $row->id) }}" method="POST" onsubmit="return confirm('Delete this approved checkpoint?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Delete</button>
+                                            </form>
+                                        </div>
+                                    @endif
+
                                     @if(auth()->user()->hasRole('lecturer') && $row->status === 'pending')
                                         <div class="additional-event-actions">
                                             <form action="{{ route('timeline.approve', $row->id) }}" method="POST">
@@ -1493,9 +1445,10 @@
                                                 @method('PUT')
                                                 <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check-circle"></i> Approve</button>
                                             </form>
-                                            <form action="{{ route('timeline.reject', $row->id) }}" method="POST">
+                                            <form action="{{ route('timeline.reject', $row->id) }}" method="POST" class="d-flex flex-column gap-2" style="min-width: 260px;">
                                                 @csrf
                                                 @method('PUT')
+                                                <textarea name="review_note" class="form-control form-control-sm" rows="2" maxlength="1000" placeholder="Reason for rejection" required></textarea>
                                                 <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-ban"></i> Reject</button>
                                             </form>
                                         </div>

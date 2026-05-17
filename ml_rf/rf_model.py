@@ -83,6 +83,10 @@ CLASSIFIER_FEATURE_COLUMNS = [
 ]
 
 MIN_MODEL_ROWS = 8
+# Business rule: Graduation on Time (GoT) = graduate within 42 months from registration.
+GOT_MAX_MONTHS = 42
+
+# Keep candidature duration constraints (used for reporting/metadata only).
 FULL_TIME_MAX_SEMESTERS = 10
 
 
@@ -326,11 +330,25 @@ def prepare_prediction_frame(payload: dict[str, Any]) -> pd.DataFrame:
 
 
 def calculate_got(row: pd.Series) -> int:
-    duration = row["viva_sem"]
-    if pd.isna(duration):
+    """Binary GoT label.
+
+    Rule: GoT = 1 if the student completes within GOT_MAX_MONTHS months
+    from registration. The official definition uses senate endorsement date;
+    this dataset currently uses Viva Date as the completion proxy.
+    """
+    registration = row.get("Registration Date")
+    completion = row.get("Viva Date")
+
+    if pd.isna(registration) or pd.isna(completion):
         return 0
 
-    return 1 if duration <= FULL_TIME_MAX_SEMESTERS else 0
+    registration_ts = pd.to_datetime(registration, errors="coerce")
+    completion_ts = pd.to_datetime(completion, errors="coerce")
+    if pd.isna(registration_ts) or pd.isna(completion_ts):
+        return 0
+
+    cutoff = registration_ts + pd.DateOffset(months=GOT_MAX_MONTHS)
+    return 1 if completion_ts <= cutoff else 0
 
 
 def _build_regressor(train_rows: int, target: pd.Series, *, n_estimators: int, max_depth: int | None) -> Any:

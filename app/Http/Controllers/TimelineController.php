@@ -186,6 +186,7 @@ class TimelineController extends Controller
             'proposed_by_user_id' => $user->id,
             'reviewed_by_user_id' => $reviewedBy,
             'reviewed_at' => $reviewedAt,
+            'review_note' => null,
             'system_key' => $user->hasRole('student') ? ('proposal:' . Str::uuid()) : null,
             'is_system_generated' => false,
         ]);
@@ -321,12 +322,16 @@ class TimelineController extends Controller
     {
         $user = Auth::user();
 
-        // Students should not delete professional timeline items directly.
         if ($user->hasRole('student')) {
-            abort(403, 'Timeline deletions require supervisor approval.');
-        }
-
-        if ($user->hasRole('lecturer')) {
+            if (
+                (int) $timeline->user_id !== (int) $user->id
+                || $timeline->is_system_generated
+                || $timeline->status !== 'approved'
+                || (int) $timeline->proposed_by_user_id !== (int) $user->id
+            ) {
+                abort(403, 'Only your approved checkpoints can be deleted.');
+            }
+        } elseif ($user->hasRole('lecturer')) {
             $student = User::find($timeline->user_id);
             if (! $student || (int) $student->supervisor_id !== (int) $user->id) {
                 abort(403);
@@ -363,6 +368,7 @@ class TimelineController extends Controller
                 $original->status = 'approved';
                 $original->reviewed_by_user_id = $lecturer->id;
                 $original->reviewed_at = now();
+                $original->review_note = null;
 
                 // Prevent generator sync from overwriting supervisor-approved edits
                 if ($original->system_key && $original->is_system_generated) {
@@ -386,6 +392,7 @@ class TimelineController extends Controller
         $timeline->status = 'approved';
         $timeline->reviewed_by_user_id = $lecturer->id;
         $timeline->reviewed_at = now();
+        $timeline->review_note = null;
         $timeline->save();
 
         return redirect()->route('timeline.index')->with('success', 'Timeline event approved.');
@@ -407,12 +414,47 @@ class TimelineController extends Controller
             return redirect()->route('timeline.index')->with('success', 'Nothing to reject.');
         }
 
+        $validated = $request->validate([
+            'review_note' => ['required', 'string', 'max:1000'],
+        ]);
+
         $timeline->status = 'rejected';
         $timeline->reviewed_by_user_id = $lecturer->id;
         $timeline->reviewed_at = now();
+        $timeline->review_note = $validated['review_note'];
         $timeline->save();
 
         return redirect()->route('timeline.index')->with('success', 'Timeline request rejected.');
+    }
+
+    public function updateCompletion(Request $request, Timeline $timeline)
+    {
+        $student = Auth::user();
+
+        if (! $student || ! $student->hasRole('student')) {
+            abort(403);
+        }
+
+        if (
+            (int) $timeline->user_id !== (int) $student->id
+            || $timeline->is_system_generated
+            || $timeline->status !== 'approved'
+            || (int) $timeline->proposed_by_user_id !== (int) $student->id
+        ) {
+            abort(403, 'Only your approved checkpoints can be updated.');
+        }
+
+        $validated = $request->validate([
+            'completed' => ['nullable', 'boolean'],
+        ]);
+
+        $timeline->completed = (bool) ($validated['completed'] ?? false);
+        $timeline->save();
+
+        return redirect()->route('timeline.index')->with(
+            'success',
+            $timeline->completed ? 'Checkpoint marked as completed.' : 'Checkpoint marked as not yet completed.'
+        );
     }
 
     private function validateCheckpointSequence(array $data): void

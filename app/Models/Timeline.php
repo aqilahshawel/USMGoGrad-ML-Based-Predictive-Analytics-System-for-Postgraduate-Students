@@ -14,6 +14,7 @@ class Timeline extends Model
         'event_date',
         'completed',
         'user_id',
+        'review_note',
         'is_system_generated',
         'is_generator_locked',
         'system_key',

@@ -1,0 +1,914 @@
+{
+  "classifier_feature_columns": [
+    "Cluster",
+    "proposal_review_sem",
+    "research_review_sem",
+    "nos_sem",
+    "final_draft_sem",
+    "gap_proposal_to_research",
+    "gap_research_to_nos",
+    "gap_nos_to_final_draft"
+  ],
+  "recommendation_sequence": [
+    "proposal_review_date",
+    "research_review_date",
+    "nos_date",
+    "final_draft_submission_date",
+    "viva_date"
+  ],
+  "recommendation_gap_features": {
+    "proposal_review_sem": [
+      "Cluster",
+      "registration_year",
+      "registration_month"
+    ],
+    "research_review_sem": [
+      "Cluster",
+      "proposal_review_sem",
+      "registration_year"
+    ],
+    "nos_sem": [
+      "Cluster",
+      "proposal_review_sem",
+      "research_review_sem"
+    ],
+    "final_draft_sem": [
+      "Cluster",
+      "research_review_sem",
+      "nos_sem"
+    ],
+    "viva_sem": [
+      "Cluster",
+      "nos_sem",
+      "final_draft_sem"
+    ]
+  },
+  "recommendation_gap_targets": {
+    "proposal_review_sem": "gap_to_proposal_sem",
+    "research_review_sem": "gap_to_research_sem",
+    "nos_sem": "gap_to_nos_sem",
+    "final_draft_sem": "gap_to_final_draft_sem",
+    "viva_sem": "gap_to_viva_sem"
+  },
+  "clusters": {
+    "Data to Knowledge": 0,
+    "Service Computing": 1,
+    "Enabling Technologies & Infrastructures": 2
+  },
+  "study_mode": "full_time",
+  "semester_definition": {
+    "semester_1": "September-February",
+    "semester_2": "March-August"
+  },
+  "candidature_constraints": {
+    "min_semesters": 4,
+    "max_semesters": 10
+  },
+  "model_version": "20260515171014",
+  "training_report": {
+    "total_rows": 2068,
+    "row_counts": {
+      "proposal_review_sem_gap_model": 2068,
+      "research_review_sem_gap_model": 1810,
+      "nos_sem_gap_model": 1779,
+      "final_draft_sem_gap_model": 1779,
+      "viva_sem_gap_model": 1800,
+      "got_classifier": 2068
+    },
+    "mode": "full_time",
+    "constraints": {
+      "min_semesters": 4,
+      "max_semesters": 10
+    },
+    "evaluation": {
+      "split": {
+        "strategy": "walk_forward_expanding",
+        "windows_requested": 4,
+        "windows_used": 2,
+        "windows_skipped_min_class": 2,
+        "window_sizes": {
+          "validation": 186,
+          "test": 186
+        },
+        "train_end_range": {
+          "min": 621,
+          "max": 870
+        },
+        "min_train_ratio": 0.5,
+        "min_class_counts": {
+          "positive": 2,
+          "negative": 2
+        },
+        "mode": "walk_forward",
+        "train_ratio": 0.7,
+        "val_ratio": 0.15,
+        "test_ratio": 0.15
+      },
+      "threshold": {
+        "strategy": "fallback_default_eligible_filter",
+        "selected": 0.2,
+        "default": 0.2,
+        "reason": "No eligible walk-forward windows met threshold voting criteria (min positive=1, min negative=1); using default threshold.",
+        "eligibility": {
+          "min_positive": 1,
+          "min_negative": 1,
+          "total_windows": 2,
+          "eligible_windows": 0,
+          "ineligible_windows": 2
+        },
+        "windows": [
+          {
+            "window": 1,
+            "eligible": false,
+            "reasons": [
+              "strategy_not_tuned"
+            ],
+            "selected_for_vote": 0.2,
+            "threshold": {
+              "strategy": "maximize_f1_with_recall_floor",
+              "selected": 0.2,
+              "default": 0.2,
+              "reason": "No thresholds met recall floor; used fallback maximize_f1_then_recall.",
+              "grid": [
+                {
+                  "threshold": 0.1,
+                  "f1": 0.5431,
+                  "recall": 0.3889,
+                  "precision": 0.9
+                },
+                {
+                  "threshold": 0.15,
+                  "f1": 0.5431,
+                  "recall": 0.3889,
+                  "precision": 0.9
+                },
+                {
+                  "threshold": 0.2,
+                  "f1": 0.5431,
+                  "recall": 0.3889,
+                  "precision": 0.9
+                },
+                {
+                  "threshold": 0.25,
+                  "f1": 0.5431,
+                  "recall": 0.3889,
+                  "precision": 0.9
+                },
+                {
+                  "threshold": 0.3,
+                  "f1": 0.5431,
+                  "recall": 0.3889,
+                  "precision": 0.9
+                },
+                {
+                  "threshold": 0.35,
+                  "f1": 0.5431,
+                  "recall": 0.3889,
+                  "precision": 0.9
+                },
+                {
+                  "threshold": 0.4,
+                  "f1": 0.5431,
+                  "recall": 0.3889,
+                  "precision": 0.9
+                },
+                {
+                  "threshold": 0.45,
+                  "f1": 0.3981,
+                  "recall": 0.2593,
+                  "precision": 0.8571
+                },
+                {
+                  "threshold": 0.5,
+                  "f1": 0.3981,
+                  "recall": 0.2593,
+                  "precision": 0.8571
+                },
+                {
+                  "threshold": 0.55,
+                  "f1": 0.3981,
+                  "recall": 0.2593,
+                  "precision": 0.8571
+                },
+                {
+                  "threshold": 0.6,
+                  "f1": 0.2211,
+                  "recall": 0.1296,
+                  "precision": 0.75
+                },
+                {
+                  "threshold": 0.65,
+                  "f1": 0.2211,
+                  "recall": 0.1296,
+                  "precision": 0.75
+                },
+                {
+                  "threshold": 0.7,
+                  "f1": 0.2211,
+                  "recall": 0.1296,
+                  "precision": 0.75
+                },
+                {
+                  "threshold": 0.75,
+                  "f1": 0.0,
+                  "recall": 0.0,
+                  "precision": 0.0
+                },
+                {
+                  "threshold": 0.8,
+                  "f1": 0.0,
+                  "recall": 0.0,
+                  "precision": 0.0
+                },
+                {
+                  "threshold": 0.85,
+                  "f1": 0.0,
+                  "recall": 0.0,
+                  "precision": 0.0
+                },
+                {
+                  "threshold": 0.9,
+                  "f1": 0.0,
+                  "recall": 0.0,
+                  "precision": 0.0
+                }
+              ],
+              "recall_floor": 0.6
+            },
+            "validation_distribution": {
+              "samples": 186,
+              "negative": 24,
+              "positive": 162,
+              "has_both_classes": true
+            }
+          },
+          {
+            "window": 2,
+            "eligible": false,
+            "reasons": [
+              "strategy_not_tuned"
+            ],
+            "selected_for_vote": 0.9,
+            "threshold": {
+              "strategy": "maximize_f1_with_recall_floor",
+              "selected": 0.9,
+              "default": 0.2,
+              "reason": "Selected from validation threshold sweep with recall >= 0.6.",
+              "grid": [
+                {
+                  "threshold": 0.1,
+                  "f1": 0.5325,
+                  "recall": 1.0,
+                  "precision": 0.3628
+                },
+                {
+                  "threshold": 0.15,
+                  "f1": 0.543,
+                  "recall": 1.0,
+                  "precision": 0.3727
+                },
+                {
+                  "threshold": 0.2,
+                  "f1": 0.5541,
+                  "recall": 1.0,
+                  "precision": 0.3832
+                },
+                {
+                  "threshold": 0.25,
+                  "f1": 0.5541,
+                  "recall": 1.0,
+                  "precision": 0.3832
+                },
+                {
+                  "threshold": 0.3,
+                  "f1": 0.5541,
+                  "recall": 1.0,
+                  "precision": 0.3832
+                },
+                {
+                  "threshold": 0.35,
+                  "f1": 0.6074,
+                  "recall": 1.0,
+                  "precision": 0.4362
+                },
+                {
+                  "threshold": 0.4,
+                  "f1": 0.7009,
+                  "recall": 1.0,
+                  "precision": 0.5395
+                },
+                {
+                  "threshold": 0.45,
+                  "f1": 0.7009,
+                  "recall": 1.0,
+                  "precision": 0.5395
+                },
+                {
+                  "threshold": 0.5,
+                  "f1": 0.7009,
+                  "recall": 1.0,
+                  "precision": 0.5395
+                },
+                {
+                  "threshold": 0.55,
+                  "f1": 0.708,
+                  "recall": 0.9756,
+                  "precision": 0.5556
+                },
+                {
+                  "threshold": 0.6,
+                  "f1": 0.708,
+                  "recall": 0.9756,
+                  "precision": 0.5556
+                },
+                {
+                  "threshold": 0.65,
+                  "f1": 0.7143,
+                  "recall": 0.9756,
+                  "precision": 0.5634
+                },
+                {
+                  "threshold": 0.7,
+                  "f1": 0.7143,
+                  "recall": 0.9756,
+                  "precision": 0.5634
+                },
+                {
+                  "threshold": 0.75,
+                  "f1": 0.7143,
+                  "recall": 0.9756,
+                  "precision": 0.5634
+                },
+                {
+                  "threshold": 0.8,
+                  "f1": 0.7339,
+                  "recall": 0.9756,
+                  "precision": 0.5882
+                },
+                {
+                  "threshold": 0.85,
+                  "f1": 0.8989,
+                  "recall": 0.9756,
+                  "precision": 0.8333
+                },
+                {
+                  "threshold": 0.9,
+                  "f1": 0.9302,
+                  "recall": 0.9756,
+                  "precision": 0.8889
+                }
+              ],
+              "recall_floor": 0.6
+            },
+            "validation_distribution": {
+              "samples": 186,
+              "negative": 145,
+              "positive": 41,
+              "has_both_classes": true
+            }
+          }
+        ]
+      },
+      "class_distribution": {
+        "train": {
+          "samples": 1408,
+          "negative": 1230,
+          "positive": 178,
+          "has_both_classes": true
+        },
+        "validation": {
+          "samples": 372,
+          "negative": 169,
+          "positive": 203,
+          "has_both_classes": true
+        },
+        "test": {
+          "samples": 372,
+          "negative": 347,
+          "positive": 25,
+          "has_both_classes": true
+        }
+      },
+      "classification": {
+        "validation": {
+          "samples": 372,
+          "threshold": "window_specific",
+          "negative": 169,
+          "positive": 203,
+          "has_both_classes": true,
+          "accuracy": 0.6989,
+          "precision": 0.8957,
+          "recall": 0.5074,
+          "f1": 0.6478,
+          "tp": 103,
+          "tn": 157,
+          "fp": 12,
+          "fn": 100,
+          "note": ""
+        },
+        "test": {
+          "samples": 372,
+          "threshold": "window_specific",
+          "negative": 347,
+          "positive": 25,
+          "has_both_classes": true,
+          "accuracy": 0.7285,
+          "precision": 0.0476,
+          "recall": 0.16,
+          "f1": 0.0734,
+          "tp": 4,
+          "tn": 267,
+          "fp": 80,
+          "fn": 21,
+          "note": ""
+        }
+      },
+      "checkpoint_gap_mae": {
+        "validation": {
+          "proposal_review_sem": {
+            "samples": 372,
+            "mae": 1.0176
+          },
+          "research_review_sem": {
+            "samples": 319,
+            "mae": 1.809
+          },
+          "nos_sem": {
+            "samples": 313,
+            "mae": 0.2801
+          },
+          "final_draft_sem": {
+            "samples": 313,
+            "mae": 0.3383
+          },
+          "viva_sem": {
+            "samples": 316,
+            "mae": 0.447
+          }
+        },
+        "test": {
+          "proposal_review_sem": {
+            "samples": 372,
+            "mae": 1.6848
+          },
+          "research_review_sem": {
+            "samples": 304,
+            "mae": 2.6117
+          },
+          "nos_sem": {
+            "samples": 295,
+            "mae": 0.1215
+          },
+          "final_draft_sem": {
+            "samples": 295,
+            "mae": 0.0927
+          },
+          "viva_sem": {
+            "samples": 299,
+            "mae": 0.5005
+          }
+        }
+      },
+      "windows": [
+        {
+          "window": 1,
+          "rows": {
+            "train": 621,
+            "validation": 186,
+            "test": 186
+          },
+          "threshold": {
+            "strategy": "maximize_f1_with_recall_floor",
+            "selected": 0.2,
+            "default": 0.2,
+            "reason": "No thresholds met recall floor; used fallback maximize_f1_then_recall.",
+            "grid": [
+              {
+                "threshold": 0.1,
+                "f1": 0.5431,
+                "recall": 0.3889,
+                "precision": 0.9
+              },
+              {
+                "threshold": 0.15,
+                "f1": 0.5431,
+                "recall": 0.3889,
+                "precision": 0.9
+              },
+              {
+                "threshold": 0.2,
+                "f1": 0.5431,
+                "recall": 0.3889,
+                "precision": 0.9
+              },
+              {
+                "threshold": 0.25,
+                "f1": 0.5431,
+                "recall": 0.3889,
+                "precision": 0.9
+              },
+              {
+                "threshold": 0.3,
+                "f1": 0.5431,
+                "recall": 0.3889,
+                "precision": 0.9
+              },
+              {
+                "threshold": 0.35,
+                "f1": 0.5431,
+                "recall": 0.3889,
+                "precision": 0.9
+              },
+              {
+                "threshold": 0.4,
+                "f1": 0.5431,
+                "recall": 0.3889,
+                "precision": 0.9
+              },
+              {
+                "threshold": 0.45,
+                "f1": 0.3981,
+                "recall": 0.2593,
+                "precision": 0.8571
+              },
+              {
+                "threshold": 0.5,
+                "f1": 0.3981,
+                "recall": 0.2593,
+                "precision": 0.8571
+              },
+              {
+                "threshold": 0.55,
+                "f1": 0.3981,
+                "recall": 0.2593,
+                "precision": 0.8571
+              },
+              {
+                "threshold": 0.6,
+                "f1": 0.2211,
+                "recall": 0.1296,
+                "precision": 0.75
+              },
+              {
+                "threshold": 0.65,
+                "f1": 0.2211,
+                "recall": 0.1296,
+                "precision": 0.75
+              },
+              {
+                "threshold": 0.7,
+                "f1": 0.2211,
+                "recall": 0.1296,
+                "precision": 0.75
+              },
+              {
+                "threshold": 0.75,
+                "f1": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
+              },
+              {
+                "threshold": 0.8,
+                "f1": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
+              },
+              {
+                "threshold": 0.85,
+                "f1": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
+              },
+              {
+                "threshold": 0.9,
+                "f1": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
+              }
+            ],
+            "recall_floor": 0.6
+          },
+          "class_distribution": {
+            "train": {
+              "samples": 621,
+              "negative": 603,
+              "positive": 18,
+              "has_both_classes": true
+            },
+            "validation": {
+              "samples": 186,
+              "negative": 24,
+              "positive": 162,
+              "has_both_classes": true
+            },
+            "test": {
+              "samples": 186,
+              "negative": 165,
+              "positive": 21,
+              "has_both_classes": true
+            }
+          },
+          "classification": {
+            "validation": {
+              "samples": 186,
+              "threshold": 0.2,
+              "negative": 24,
+              "positive": 162,
+              "has_both_classes": true,
+              "accuracy": 0.4301,
+              "precision": 0.9,
+              "recall": 0.3889,
+              "f1": 0.5431,
+              "tp": 63,
+              "tn": 17,
+              "fp": 7,
+              "fn": 99,
+              "note": ""
+            },
+            "test": {
+              "samples": 186,
+              "threshold": 0.2,
+              "negative": 165,
+              "positive": 21,
+              "has_both_classes": true,
+              "accuracy": 0.4785,
+              "precision": 0.0366,
+              "recall": 0.1429,
+              "f1": 0.0583,
+              "tp": 3,
+              "tn": 86,
+              "fp": 79,
+              "fn": 18,
+              "note": ""
+            }
+          },
+          "checkpoint_gap_mae": {
+            "validation": {
+              "proposal_review_sem": {
+                "samples": 186,
+                "mae": 0.5184
+              },
+              "research_review_sem": {
+                "samples": 173,
+                "mae": 1.5846
+              },
+              "nos_sem": {
+                "samples": 172,
+                "mae": 0.3486
+              },
+              "final_draft_sem": {
+                "samples": 172,
+                "mae": 0.5749
+              },
+              "viva_sem": {
+                "samples": 172,
+                "mae": 0.4995
+              }
+            },
+            "test": {
+              "proposal_review_sem": {
+                "samples": 186,
+                "mae": 1.9479
+              },
+              "research_review_sem": {
+                "samples": 146,
+                "mae": 2.4246
+              },
+              "nos_sem": {
+                "samples": 141,
+                "mae": 0.1474
+              },
+              "final_draft_sem": {
+                "samples": 141,
+                "mae": 0.0479
+              },
+              "viva_sem": {
+                "samples": 144,
+                "mae": 0.6214
+              }
+            }
+          }
+        },
+        {
+          "window": 2,
+          "rows": {
+            "train": 787,
+            "validation": 186,
+            "test": 186
+          },
+          "threshold": {
+            "strategy": "maximize_f1_with_recall_floor",
+            "selected": 0.9,
+            "default": 0.2,
+            "reason": "Selected from validation threshold sweep with recall >= 0.6.",
+            "grid": [
+              {
+                "threshold": 0.1,
+                "f1": 0.5325,
+                "recall": 1.0,
+                "precision": 0.3628
+              },
+              {
+                "threshold": 0.15,
+                "f1": 0.543,
+                "recall": 1.0,
+                "precision": 0.3727
+              },
+              {
+                "threshold": 0.2,
+                "f1": 0.5541,
+                "recall": 1.0,
+                "precision": 0.3832
+              },
+              {
+                "threshold": 0.25,
+                "f1": 0.5541,
+                "recall": 1.0,
+                "precision": 0.3832
+              },
+              {
+                "threshold": 0.3,
+                "f1": 0.5541,
+                "recall": 1.0,
+                "precision": 0.3832
+              },
+              {
+                "threshold": 0.35,
+                "f1": 0.6074,
+                "recall": 1.0,
+                "precision": 0.4362
+              },
+              {
+                "threshold": 0.4,
+                "f1": 0.7009,
+                "recall": 1.0,
+                "precision": 0.5395
+              },
+              {
+                "threshold": 0.45,
+                "f1": 0.7009,
+                "recall": 1.0,
+                "precision": 0.5395
+              },
+              {
+                "threshold": 0.5,
+                "f1": 0.7009,
+                "recall": 1.0,
+                "precision": 0.5395
+              },
+              {
+                "threshold": 0.55,
+                "f1": 0.708,
+                "recall": 0.9756,
+                "precision": 0.5556
+              },
+              {
+                "threshold": 0.6,
+                "f1": 0.708,
+                "recall": 0.9756,
+                "precision": 0.5556
+              },
+              {
+                "threshold": 0.65,
+                "f1": 0.7143,
+                "recall": 0.9756,
+                "precision": 0.5634
+              },
+              {
+                "threshold": 0.7,
+                "f1": 0.7143,
+                "recall": 0.9756,
+                "precision": 0.5634
+              },
+              {
+                "threshold": 0.75,
+                "f1": 0.7143,
+                "recall": 0.9756,
+                "precision": 0.5634
+              },
+              {
+                "threshold": 0.8,
+                "f1": 0.7339,
+                "recall": 0.9756,
+                "precision": 0.5882
+              },
+              {
+                "threshold": 0.85,
+                "f1": 0.8989,
+                "recall": 0.9756,
+                "precision": 0.8333
+              },
+              {
+                "threshold": 0.9,
+                "f1": 0.9302,
+                "recall": 0.9756,
+                "precision": 0.8889
+              }
+            ],
+            "recall_floor": 0.6
+          },
+          "class_distribution": {
+            "train": {
+              "samples": 787,
+              "negative": 627,
+              "positive": 160,
+              "has_both_classes": true
+            },
+            "validation": {
+              "samples": 186,
+              "negative": 145,
+              "positive": 41,
+              "has_both_classes": true
+            },
+            "test": {
+              "samples": 186,
+              "negative": 182,
+              "positive": 4,
+              "has_both_classes": true
+            }
+          },
+          "classification": {
+            "validation": {
+              "samples": 186,
+              "threshold": 0.9,
+              "negative": 145,
+              "positive": 41,
+              "has_both_classes": true,
+              "accuracy": 0.9677,
+              "precision": 0.8889,
+              "recall": 0.9756,
+              "f1": 0.9302,
+              "tp": 40,
+              "tn": 140,
+              "fp": 5,
+              "fn": 1,
+              "note": ""
+            },
+            "test": {
+              "samples": 186,
+              "threshold": 0.9,
+              "negative": 182,
+              "positive": 4,
+              "has_both_classes": true,
+              "accuracy": 0.9785,
+              "precision": 0.5,
+              "recall": 0.25,
+              "f1": 0.3333,
+              "tp": 1,
+              "tn": 181,
+              "fp": 1,
+              "fn": 3,
+              "note": ""
+            }
+          },
+          "checkpoint_gap_mae": {
+            "validation": {
+              "proposal_review_sem": {
+                "samples": 186,
+                "mae": 1.5168
+              },
+              "research_review_sem": {
+                "samples": 146,
+                "mae": 2.075
+              },
+              "nos_sem": {
+                "samples": 141,
+                "mae": 0.1966
+              },
+              "final_draft_sem": {
+                "samples": 141,
+                "mae": 0.0496
+              },
+              "viva_sem": {
+                "samples": 144,
+                "mae": 0.3843
+              }
+            },
+            "test": {
+              "proposal_review_sem": {
+                "samples": 186,
+                "mae": 1.4217
+              },
+              "research_review_sem": {
+                "samples": 158,
+                "mae": 2.7846
+              },
+              "nos_sem": {
+                "samples": 154,
+                "mae": 0.0977
+              },
+              "final_draft_sem": {
+                "samples": 154,
+                "mae": 0.1337
+              },
+              "viva_sem": {
+                "samples": 155,
+                "mae": 0.3882
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

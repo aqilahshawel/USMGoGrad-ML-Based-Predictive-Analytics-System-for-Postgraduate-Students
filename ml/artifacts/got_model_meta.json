@@ -62,29 +62,32 @@
   },
   "candidature_constraints": {
     "min_semesters": 4,
-    "max_semesters": 10
+    "max_semesters": 10,
+    "got_max_months": 42
   },
-  "model_version": "20260504095241",
+  "model_version": "20260516153458",
   "training_report": {
-    "total_rows": 1242,
+    "total_rows": 2358,
     "row_counts": {
-      "proposal_review_sem_gap_model": 1242,
-      "research_review_sem_gap_model": 1043,
-      "nos_sem_gap_model": 1030,
-      "final_draft_sem_gap_model": 1030,
-      "viva_sem_gap_model": 1043,
-      "got_classifier": 1242
+      "proposal_review_sem_gap_model": 2358,
+      "research_review_sem_gap_model": 2160,
+      "nos_sem_gap_model": 2141,
+      "final_draft_sem_gap_model": 2141,
+      "viva_sem_gap_model": 2163,
+      "got_classifier": 2358
     },
     "mode": "full_time",
     "constraints": {
       "min_semesters": 4,
-      "max_semesters": 10
+      "max_semesters": 10,
+      "got_max_months": 42
     },
     "evaluation": {
       "split": {
         "strategy": "walk_forward_expanding",
         "windows_requested": 4,
         "windows_used": 4,
+        "windows_skipped_min_class": 0,
         "window_sizes": {
           "validation": 186,
           "test": 186
@@ -94,58 +97,64 @@
           "max": 870
         },
         "min_train_ratio": 0.5,
+        "min_class_counts": {
+          "positive": 2,
+          "negative": 2
+        },
         "mode": "walk_forward",
         "train_ratio": 0.7,
         "val_ratio": 0.15,
         "test_ratio": 0.15
       },
       "threshold": {
-        "strategy": "window_median_tuned_eligible",
-        "selected": 0.1,
+        "strategy": "fallback_default_eligible_filter",
+        "selected": 0.5,
         "default": 0.5,
-        "reason": "Median selected from 3/4 eligible walk-forward windows.",
+        "reason": "No eligible walk-forward windows met threshold voting criteria (min positive=5, min negative=5); using default threshold.",
         "eligibility": {
           "min_positive": 5,
           "min_negative": 5,
           "total_windows": 4,
-          "eligible_windows": 3,
-          "ineligible_windows": 1
+          "eligible_windows": 0,
+          "ineligible_windows": 4
         },
         "windows": [
           {
             "window": 1,
-            "eligible": true,
-            "reasons": [],
-            "selected_for_vote": 0.1,
+            "eligible": false,
+            "reasons": [
+              "strategy_not_tuned"
+            ],
+            "selected_for_vote": 0.5,
             "threshold": {
-              "strategy": "maximize_f1_then_recall",
-              "selected": 0.1,
+              "strategy": "maximize_f1_with_recall_floor",
+              "selected": 0.5,
               "default": 0.5,
-              "reason": "Selected from validation threshold sweep.",
+              "reason": "No thresholds met recall floor; used fallback maximize_f1_then_recall.",
               "grid": [
                 {
                   "threshold": 0.1,
-                  "f1": 0.2211,
-                  "recall": 0.1296,
-                  "precision": 0.75
+                  "f1": 0.0,
+                  "recall": 0.0,
+                  "precision": 0.0
                 },
                 {
                   "threshold": 0.15,
-                  "f1": 0.2211,
-                  "recall": 0.1296,
-                  "precision": 0.75
+                  "f1": 0.0,
+                  "recall": 0.0,
+                  "precision": 0.0
                 },
                 {
                   "threshold": 0.2,
-                  "f1": 0.2211,
-                  "recall": 0.1296,
-                  "precision": 0.75
+                  "f1": 0.0,
+                  "recall": 0.0,
+                  "precision": 0.0
                 },
                 {
                   "threshold": 0.25,
-                  "f1": 0.2211,
-                  "recall": 0.1296,
-                  "precision": 0.75
+                  "f1": 0.0,
+                  "recall": 0.0,
+                  "precision": 0.0
                 },
                 {
                   "threshold": 0.3,
@@ -225,257 +234,162 @@
                   "recall": 0.0,
                   "precision": 0.0
                 }
-              ]
+              ],
+              "recall_floor": 0.6
             },
             "validation_distribution": {
               "samples": 186,
-              "negative": 24,
-              "positive": 162,
+              "negative": 123,
+              "positive": 63,
               "has_both_classes": true
             }
           },
           {
             "window": 2,
-            "eligible": true,
-            "reasons": [],
+            "eligible": false,
+            "reasons": [
+              "strategy_not_tuned",
+              "positive_below_min_5"
+            ],
             "selected_for_vote": 0.1,
             "threshold": {
-              "strategy": "maximize_f1_then_recall",
+              "strategy": "maximize_f1_with_recall_floor",
               "selected": 0.1,
               "default": 0.5,
-              "reason": "Selected from validation threshold sweep.",
+              "reason": "Selected from validation threshold sweep with recall >= 0.6.",
               "grid": [
                 {
                   "threshold": 0.1,
-                  "f1": 0.7304,
-                  "recall": 0.6829,
-                  "precision": 0.785
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.15,
-                  "f1": 0.4712,
-                  "recall": 0.3659,
-                  "precision": 0.6618
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.2,
-                  "f1": 0.4731,
-                  "recall": 0.3577,
-                  "precision": 0.6984
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.25,
-                  "f1": 0.4809,
-                  "recall": 0.3577,
-                  "precision": 0.7333
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.3,
-                  "f1": 0.0699,
-                  "recall": 0.0407,
-                  "precision": 0.25
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.35,
-                  "f1": 0.0704,
-                  "recall": 0.0407,
-                  "precision": 0.2632
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.4,
-                  "f1": 0.0704,
-                  "recall": 0.0407,
-                  "precision": 0.2632
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.45,
-                  "f1": 0.0704,
-                  "recall": 0.0407,
-                  "precision": 0.2632
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.5,
-                  "f1": 0.0704,
-                  "recall": 0.0407,
-                  "precision": 0.2632
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.55,
-                  "f1": 0.0704,
-                  "recall": 0.0407,
-                  "precision": 0.2632
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.6,
-                  "f1": 0.0709,
-                  "recall": 0.0407,
-                  "precision": 0.2778
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.65,
-                  "f1": 0.0741,
-                  "recall": 0.0407,
-                  "precision": 0.4167
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.7,
-                  "f1": 0.0752,
-                  "recall": 0.0407,
-                  "precision": 0.5
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.75,
-                  "f1": 0.0758,
-                  "recall": 0.0407,
-                  "precision": 0.5556
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.8,
-                  "f1": 0.0615,
-                  "recall": 0.0325,
-                  "precision": 0.5714
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.85,
-                  "f1": 0.0615,
-                  "recall": 0.0325,
-                  "precision": 0.5714
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 },
                 {
                   "threshold": 0.9,
-                  "f1": 0.062,
-                  "recall": 0.0325,
-                  "precision": 0.6667
+                  "f1": 1.0,
+                  "recall": 1.0,
+                  "precision": 1.0
                 }
-              ]
+              ],
+              "recall_floor": 0.6
             },
             "validation_distribution": {
               "samples": 186,
-              "negative": 63,
-              "positive": 123,
+              "negative": 183,
+              "positive": 3,
               "has_both_classes": true
             }
           },
           {
             "window": 3,
-            "eligible": true,
-            "reasons": [],
-            "selected_for_vote": 0.9,
+            "eligible": false,
+            "reasons": [
+              "strategy_not_tuned",
+              "positive_below_min_5"
+            ],
+            "selected_for_vote": 0.5,
             "threshold": {
-              "strategy": "maximize_f1_then_recall",
-              "selected": 0.9,
+              "strategy": "fallback_default",
+              "selected": 0.5,
               "default": 0.5,
-              "reason": "Selected from validation threshold sweep.",
-              "grid": [
-                {
-                  "threshold": 0.1,
-                  "f1": 0.5503,
-                  "recall": 1.0,
-                  "precision": 0.3796
-                },
-                {
-                  "threshold": 0.15,
-                  "f1": 0.5926,
-                  "recall": 0.9756,
-                  "precision": 0.4255
-                },
-                {
-                  "threshold": 0.2,
-                  "f1": 0.7018,
-                  "recall": 0.9756,
-                  "precision": 0.5479
-                },
-                {
-                  "threshold": 0.25,
-                  "f1": 0.7018,
-                  "recall": 0.9756,
-                  "precision": 0.5479
-                },
-                {
-                  "threshold": 0.3,
-                  "f1": 0.7143,
-                  "recall": 0.9756,
-                  "precision": 0.5634
-                },
-                {
-                  "threshold": 0.35,
-                  "f1": 0.7143,
-                  "recall": 0.9756,
-                  "precision": 0.5634
-                },
-                {
-                  "threshold": 0.4,
-                  "f1": 0.7143,
-                  "recall": 0.9756,
-                  "precision": 0.5634
-                },
-                {
-                  "threshold": 0.45,
-                  "f1": 0.7547,
-                  "recall": 0.9756,
-                  "precision": 0.6154
-                },
-                {
-                  "threshold": 0.5,
-                  "f1": 0.7619,
-                  "recall": 0.9756,
-                  "precision": 0.625
-                },
-                {
-                  "threshold": 0.55,
-                  "f1": 0.9412,
-                  "recall": 0.9756,
-                  "precision": 0.9091
-                },
-                {
-                  "threshold": 0.6,
-                  "f1": 0.9412,
-                  "recall": 0.9756,
-                  "precision": 0.9091
-                },
-                {
-                  "threshold": 0.65,
-                  "f1": 0.9412,
-                  "recall": 0.9756,
-                  "precision": 0.9091
-                },
-                {
-                  "threshold": 0.7,
-                  "f1": 0.9398,
-                  "recall": 0.9512,
-                  "precision": 0.9286
-                },
-                {
-                  "threshold": 0.75,
-                  "f1": 0.9398,
-                  "recall": 0.9512,
-                  "precision": 0.9286
-                },
-                {
-                  "threshold": 0.8,
-                  "f1": 0.9398,
-                  "recall": 0.9512,
-                  "precision": 0.9286
-                },
-                {
-                  "threshold": 0.85,
-                  "f1": 0.9512,
-                  "recall": 0.9512,
-                  "precision": 0.9512
-                },
-                {
-                  "threshold": 0.9,
-                  "f1": 0.975,
-                  "recall": 0.9512,
-                  "precision": 1.0
-                }
-              ]
+              "reason": "Validation has only one class; threshold tuning skipped.",
+              "grid": []
             },
             "validation_distribution": {
               "samples": 186,
-              "negative": 145,
-              "positive": 41,
-              "has_both_classes": true
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false
             }
           },
           {
@@ -505,100 +419,100 @@
       "class_distribution": {
         "train": {
           "samples": 2982,
-          "negative": 2525,
-          "positive": 457,
+          "negative": 2796,
+          "positive": 186,
           "has_both_classes": true
         },
         "validation": {
           "samples": 744,
-          "negative": 418,
-          "positive": 326,
+          "negative": 678,
+          "positive": 66,
           "has_both_classes": true
         },
         "test": {
           "samples": 744,
-          "negative": 712,
-          "positive": 32,
-          "has_both_classes": true
+          "negative": 744,
+          "positive": 0,
+          "has_both_classes": false
         }
       },
       "classification": {
         "validation": {
           "samples": 744,
           "threshold": "window_specific",
-          "negative": 418,
-          "positive": 326,
+          "negative": 678,
+          "positive": 66,
           "has_both_classes": true,
-          "accuracy": 0.7137,
-          "precision": 0.8229,
-          "recall": 0.4417,
-          "f1": 0.5749,
-          "tp": 144,
-          "tn": 387,
-          "fp": 31,
-          "fn": 182,
-          "note": "1/4 validation windows were single-class; treat threshold-sensitive metrics with care."
+          "accuracy": 0.9153,
+          "precision": 1.0,
+          "recall": 0.0455,
+          "f1": 0.087,
+          "tp": 3,
+          "tn": 678,
+          "fp": 0,
+          "fn": 63,
+          "note": "2/4 validation windows were single-class; treat threshold-sensitive metrics with care."
         },
         "test": {
           "samples": 744,
           "threshold": "window_specific",
-          "negative": 712,
-          "positive": 32,
-          "has_both_classes": true,
-          "accuracy": 0.7446,
-          "precision": 0.0298,
-          "recall": 0.1562,
-          "f1": 0.05,
-          "tp": 5,
-          "tn": 549,
-          "fp": 163,
-          "fn": 27,
-          "note": "1/4 test windows were single-class; treat threshold-sensitive metrics with care."
+          "negative": 744,
+          "positive": 0,
+          "has_both_classes": false,
+          "accuracy": 1.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "tp": 0,
+          "tn": 744,
+          "fp": 0,
+          "fn": 0,
+          "note": "4/4 test windows were single-class; treat threshold-sensitive metrics with care."
         }
       },
       "checkpoint_gap_mae": {
         "validation": {
           "proposal_review_sem": {
             "samples": 744,
-            "mae": 1.1002
+            "mae": 1.1405
           },
           "research_review_sem": {
             "samples": 639,
-            "mae": 2.0931
+            "mae": 2.3071
           },
           "nos_sem": {
             "samples": 626,
-            "mae": 0.199
+            "mae": 0.158
           },
           "final_draft_sem": {
             "samples": 626,
-            "mae": 0.2019
+            "mae": 0.2223
           },
           "viva_sem": {
             "samples": 632,
-            "mae": 0.529
+            "mae": 0.5124
           }
         },
         "test": {
           "proposal_review_sem": {
             "samples": 744,
-            "mae": 1.5248
+            "mae": 1.557
           },
           "research_review_sem": {
             "samples": 632,
-            "mae": 2.9541
+            "mae": 3.0246
           },
           "nos_sem": {
             "samples": 619,
-            "mae": 0.1432
+            "mae": 0.1023
           },
           "final_draft_sem": {
             "samples": 619,
-            "mae": 0.1237
+            "mae": 0.1352
           },
           "viva_sem": {
             "samples": 626,
-            "mae": 0.4021
+            "mae": 0.4096
           }
         }
       },
@@ -611,34 +525,34 @@
             "test": 186
           },
           "threshold": {
-            "strategy": "maximize_f1_then_recall",
-            "selected": 0.1,
+            "strategy": "maximize_f1_with_recall_floor",
+            "selected": 0.5,
             "default": 0.5,
-            "reason": "Selected from validation threshold sweep.",
+            "reason": "No thresholds met recall floor; used fallback maximize_f1_then_recall.",
             "grid": [
               {
                 "threshold": 0.1,
-                "f1": 0.2211,
-                "recall": 0.1296,
-                "precision": 0.75
+                "f1": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
               },
               {
                 "threshold": 0.15,
-                "f1": 0.2211,
-                "recall": 0.1296,
-                "precision": 0.75
+                "f1": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
               },
               {
                 "threshold": 0.2,
-                "f1": 0.2211,
-                "recall": 0.1296,
-                "precision": 0.75
+                "f1": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
               },
               {
                 "threshold": 0.25,
-                "f1": 0.2211,
-                "recall": 0.1296,
-                "precision": 0.75
+                "f1": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
               },
               {
                 "threshold": 0.3,
@@ -718,60 +632,61 @@
                 "recall": 0.0,
                 "precision": 0.0
               }
-            ]
+            ],
+            "recall_floor": 0.6
           },
           "class_distribution": {
             "train": {
               "samples": 621,
-              "negative": 603,
-              "positive": 18,
-              "has_both_classes": true
+              "negative": 621,
+              "positive": 0,
+              "has_both_classes": false
             },
             "validation": {
               "samples": 186,
-              "negative": 24,
-              "positive": 162,
+              "negative": 123,
+              "positive": 63,
               "has_both_classes": true
             },
             "test": {
               "samples": 186,
-              "negative": 165,
-              "positive": 21,
-              "has_both_classes": true
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false
             }
           },
           "classification": {
             "validation": {
               "samples": 186,
-              "threshold": 0.1,
-              "negative": 24,
-              "positive": 162,
+              "threshold": 0.5,
+              "negative": 123,
+              "positive": 63,
               "has_both_classes": true,
-              "accuracy": 0.2043,
-              "precision": 0.75,
-              "recall": 0.1296,
-              "f1": 0.2211,
-              "tp": 21,
-              "tn": 17,
-              "fp": 7,
-              "fn": 141,
+              "accuracy": 0.6613,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 123,
+              "fp": 0,
+              "fn": 63,
               "note": ""
             },
             "test": {
               "samples": 186,
-              "threshold": 0.1,
-              "negative": 165,
-              "positive": 21,
-              "has_both_classes": true,
-              "accuracy": 0.4677,
-              "precision": 0.0357,
-              "recall": 0.1429,
-              "f1": 0.0571,
-              "tp": 3,
-              "tn": 84,
-              "fp": 81,
-              "fn": 18,
-              "note": ""
+              "threshold": 0.5,
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false,
+              "accuracy": 1.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 186,
+              "fp": 0,
+              "fn": 0,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
             }
           },
           "checkpoint_gap_mae": {
@@ -829,126 +744,127 @@
             "test": 186
           },
           "threshold": {
-            "strategy": "maximize_f1_then_recall",
+            "strategy": "maximize_f1_with_recall_floor",
             "selected": 0.1,
             "default": 0.5,
-            "reason": "Selected from validation threshold sweep.",
+            "reason": "Selected from validation threshold sweep with recall >= 0.6.",
             "grid": [
               {
                 "threshold": 0.1,
-                "f1": 0.7304,
-                "recall": 0.6829,
-                "precision": 0.785
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.15,
-                "f1": 0.4712,
-                "recall": 0.3659,
-                "precision": 0.6618
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.2,
-                "f1": 0.4731,
-                "recall": 0.3577,
-                "precision": 0.6984
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.25,
-                "f1": 0.4809,
-                "recall": 0.3577,
-                "precision": 0.7333
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.3,
-                "f1": 0.0699,
-                "recall": 0.0407,
-                "precision": 0.25
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.35,
-                "f1": 0.0704,
-                "recall": 0.0407,
-                "precision": 0.2632
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.4,
-                "f1": 0.0704,
-                "recall": 0.0407,
-                "precision": 0.2632
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.45,
-                "f1": 0.0704,
-                "recall": 0.0407,
-                "precision": 0.2632
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.5,
-                "f1": 0.0704,
-                "recall": 0.0407,
-                "precision": 0.2632
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.55,
-                "f1": 0.0704,
-                "recall": 0.0407,
-                "precision": 0.2632
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.6,
-                "f1": 0.0709,
-                "recall": 0.0407,
-                "precision": 0.2778
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.65,
-                "f1": 0.0741,
-                "recall": 0.0407,
-                "precision": 0.4167
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.7,
-                "f1": 0.0752,
-                "recall": 0.0407,
-                "precision": 0.5
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.75,
-                "f1": 0.0758,
-                "recall": 0.0407,
-                "precision": 0.5556
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.8,
-                "f1": 0.0615,
-                "recall": 0.0325,
-                "precision": 0.5714
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.85,
-                "f1": 0.0615,
-                "recall": 0.0325,
-                "precision": 0.5714
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               },
               {
                 "threshold": 0.9,
-                "f1": 0.062,
-                "recall": 0.0325,
-                "precision": 0.6667
+                "f1": 1.0,
+                "recall": 1.0,
+                "precision": 1.0
               }
-            ]
+            ],
+            "recall_floor": 0.6
           },
           "class_distribution": {
             "train": {
               "samples": 704,
-              "negative": 626,
-              "positive": 78,
+              "negative": 644,
+              "positive": 60,
               "has_both_classes": true
             },
             "validation": {
               "samples": 186,
-              "negative": 63,
-              "positive": 123,
+              "negative": 183,
+              "positive": 3,
               "has_both_classes": true
             },
             "test": {
@@ -962,17 +878,17 @@
             "validation": {
               "samples": 186,
               "threshold": 0.1,
-              "negative": 63,
-              "positive": 123,
+              "negative": 183,
+              "positive": 3,
               "has_both_classes": true,
-              "accuracy": 0.6667,
-              "precision": 0.785,
-              "recall": 0.6829,
-              "f1": 0.7304,
-              "tp": 84,
-              "tn": 40,
-              "fp": 23,
-              "fn": 39,
+              "accuracy": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "tp": 3,
+              "tn": 183,
+              "fp": 0,
+              "fn": 0,
               "note": ""
             },
             "test": {
@@ -981,13 +897,13 @@
               "negative": 186,
               "positive": 0,
               "has_both_classes": false,
-              "accuracy": 0.5591,
+              "accuracy": 1.0,
               "precision": 0.0,
               "recall": 0.0,
               "f1": 0.0,
               "tp": 0,
-              "tn": 104,
-              "fp": 82,
+              "tn": 186,
+              "fp": 0,
               "fn": 0,
               "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
             }
@@ -996,45 +912,45 @@
             "validation": {
               "proposal_review_sem": {
                 "samples": 186,
-                "mae": 0.6132
+                "mae": 0.6291
               },
               "research_review_sem": {
                 "samples": 147,
-                "mae": 3.0189
+                "mae": 2.9263
               },
               "nos_sem": {
                 "samples": 142,
-                "mae": 0.0362
+                "mae": 0.0324
               },
               "final_draft_sem": {
                 "samples": 142,
-                "mae": 0.0796
+                "mae": 0.1212
               },
               "viva_sem": {
                 "samples": 145,
-                "mae": 0.5885
+                "mae": 0.517
               }
             },
             "test": {
               "proposal_review_sem": {
                 "samples": 186,
-                "mae": 1.9242
+                "mae": 1.9888
               },
               "research_review_sem": {
                 "samples": 184,
-                "mae": 4.4075
+                "mae": 3.5411
               },
               "nos_sem": {
                 "samples": 184,
-                "mae": 0.1902
+                "mae": 0.0982
               },
               "final_draft_sem": {
                 "samples": 184,
-                "mae": 0.0208
+                "mae": 0.034
               },
               "viva_sem": {
                 "samples": 184,
-                "mae": 0.4299
+                "mae": 0.434
               }
             }
           }
@@ -1047,212 +963,109 @@
             "test": 186
           },
           "threshold": {
-            "strategy": "maximize_f1_then_recall",
-            "selected": 0.9,
+            "strategy": "fallback_default",
+            "selected": 0.5,
             "default": 0.5,
-            "reason": "Selected from validation threshold sweep.",
-            "grid": [
-              {
-                "threshold": 0.1,
-                "f1": 0.5503,
-                "recall": 1.0,
-                "precision": 0.3796
-              },
-              {
-                "threshold": 0.15,
-                "f1": 0.5926,
-                "recall": 0.9756,
-                "precision": 0.4255
-              },
-              {
-                "threshold": 0.2,
-                "f1": 0.7018,
-                "recall": 0.9756,
-                "precision": 0.5479
-              },
-              {
-                "threshold": 0.25,
-                "f1": 0.7018,
-                "recall": 0.9756,
-                "precision": 0.5479
-              },
-              {
-                "threshold": 0.3,
-                "f1": 0.7143,
-                "recall": 0.9756,
-                "precision": 0.5634
-              },
-              {
-                "threshold": 0.35,
-                "f1": 0.7143,
-                "recall": 0.9756,
-                "precision": 0.5634
-              },
-              {
-                "threshold": 0.4,
-                "f1": 0.7143,
-                "recall": 0.9756,
-                "precision": 0.5634
-              },
-              {
-                "threshold": 0.45,
-                "f1": 0.7547,
-                "recall": 0.9756,
-                "precision": 0.6154
-              },
-              {
-                "threshold": 0.5,
-                "f1": 0.7619,
-                "recall": 0.9756,
-                "precision": 0.625
-              },
-              {
-                "threshold": 0.55,
-                "f1": 0.9412,
-                "recall": 0.9756,
-                "precision": 0.9091
-              },
-              {
-                "threshold": 0.6,
-                "f1": 0.9412,
-                "recall": 0.9756,
-                "precision": 0.9091
-              },
-              {
-                "threshold": 0.65,
-                "f1": 0.9412,
-                "recall": 0.9756,
-                "precision": 0.9091
-              },
-              {
-                "threshold": 0.7,
-                "f1": 0.9398,
-                "recall": 0.9512,
-                "precision": 0.9286
-              },
-              {
-                "threshold": 0.75,
-                "f1": 0.9398,
-                "recall": 0.9512,
-                "precision": 0.9286
-              },
-              {
-                "threshold": 0.8,
-                "f1": 0.9398,
-                "recall": 0.9512,
-                "precision": 0.9286
-              },
-              {
-                "threshold": 0.85,
-                "f1": 0.9512,
-                "recall": 0.9512,
-                "precision": 0.9512
-              },
-              {
-                "threshold": 0.9,
-                "f1": 0.975,
-                "recall": 0.9512,
-                "precision": 1.0
-              }
-            ]
+            "reason": "Validation has only one class; threshold tuning skipped.",
+            "grid": []
           },
           "class_distribution": {
             "train": {
               "samples": 787,
-              "negative": 627,
-              "positive": 160,
+              "negative": 724,
+              "positive": 63,
               "has_both_classes": true
             },
             "validation": {
               "samples": 186,
-              "negative": 145,
-              "positive": 41,
-              "has_both_classes": true
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false
             },
             "test": {
               "samples": 186,
-              "negative": 182,
-              "positive": 4,
-              "has_both_classes": true
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false
             }
           },
           "classification": {
             "validation": {
               "samples": 186,
-              "threshold": 0.9,
-              "negative": 145,
-              "positive": 41,
-              "has_both_classes": true,
-              "accuracy": 0.9892,
-              "precision": 1.0,
-              "recall": 0.9512,
-              "f1": 0.975,
-              "tp": 39,
-              "tn": 145,
-              "fp": 0,
-              "fn": 2,
-              "note": ""
-            },
-            "test": {
-              "samples": 186,
-              "threshold": 0.9,
-              "negative": 182,
-              "positive": 4,
-              "has_both_classes": true,
-              "accuracy": 0.9785,
+              "threshold": 0.5,
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false,
+              "accuracy": 1.0,
               "precision": 0.0,
               "recall": 0.0,
               "f1": 0.0,
               "tp": 0,
-              "tn": 182,
+              "tn": 186,
               "fp": 0,
-              "fn": 4,
-              "note": ""
+              "fn": 0,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
+            },
+            "test": {
+              "samples": 186,
+              "threshold": 0.5,
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false,
+              "accuracy": 1.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 186,
+              "fp": 0,
+              "fn": 0,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
             }
           },
           "checkpoint_gap_mae": {
             "validation": {
               "proposal_review_sem": {
                 "samples": 186,
-                "mae": 1.5019
+                "mae": 1.5685
               },
               "research_review_sem": {
                 "samples": 146,
-                "mae": 2.2346
+                "mae": 2.6505
               },
               "nos_sem": {
                 "samples": 141,
-                "mae": 0.2002
+                "mae": 0.1279
               },
               "final_draft_sem": {
                 "samples": 141,
-                "mae": 0.0531
+                "mae": 0.082
               },
               "viva_sem": {
                 "samples": 144,
-                "mae": 0.3819
+                "mae": 0.3816
               }
             },
             "test": {
               "proposal_review_sem": {
                 "samples": 186,
-                "mae": 1.3916
+                "mae": 1.4707
               },
               "research_review_sem": {
                 "samples": 158,
-                "mae": 2.9902
+                "mae": 3.3544
               },
               "nos_sem": {
                 "samples": 154,
-                "mae": 0.0987
+                "mae": 0.0513
               },
               "final_draft_sem": {
                 "samples": 154,
-                "mae": 0.1325
+                "mae": 0.1496
               },
               "viva_sem": {
                 "samples": 155,
-                "mae": 0.3845
+                "mae": 0.401
               }
             }
           }
@@ -1274,8 +1087,8 @@
           "class_distribution": {
             "train": {
               "samples": 870,
-              "negative": 669,
-              "positive": 201,
+              "negative": 807,
+              "positive": 63,
               "has_both_classes": true
             },
             "validation": {
@@ -1286,9 +1099,9 @@
             },
             "test": {
               "samples": 186,
-              "negative": 179,
-              "positive": 7,
-              "has_both_classes": true
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false
             }
           },
           "classification": {
@@ -1298,76 +1111,76 @@
               "negative": 186,
               "positive": 0,
               "has_both_classes": false,
-              "accuracy": 0.9946,
+              "accuracy": 1.0,
               "precision": 0.0,
               "recall": 0.0,
               "f1": 0.0,
               "tp": 0,
-              "tn": 185,
-              "fp": 1,
+              "tn": 186,
+              "fp": 0,
               "fn": 0,
               "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
             },
             "test": {
               "samples": 186,
               "threshold": 0.5,
-              "negative": 179,
-              "positive": 7,
-              "has_both_classes": true,
-              "accuracy": 0.9731,
-              "precision": 1.0,
-              "recall": 0.2857,
-              "f1": 0.4444,
-              "tp": 2,
-              "tn": 179,
+              "negative": 186,
+              "positive": 0,
+              "has_both_classes": false,
+              "accuracy": 1.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "tp": 0,
+              "tn": 186,
               "fp": 0,
-              "fn": 5,
-              "note": ""
+              "fn": 0,
+              "note": "Single-class evaluation window; compare against multi-window metrics for reliable tuning."
             }
           },
           "checkpoint_gap_mae": {
             "validation": {
               "proposal_review_sem": {
                 "samples": 186,
-                "mae": 1.8046
+                "mae": 1.8832
               },
               "research_review_sem": {
                 "samples": 173,
-                "mae": 1.9957
+                "mae": 2.5141
               },
               "nos_sem": {
                 "samples": 171,
-                "mae": 0.1949
+                "mae": 0.1075
               },
               "final_draft_sem": {
                 "samples": 171,
-                "mae": 0.0278
+                "mae": 0.0441
               },
               "viva_sem": {
                 "samples": 171,
-                "mae": 0.4357
+                "mae": 0.435
               }
             },
             "test": {
               "proposal_review_sem": {
                 "samples": 186,
-                "mae": 0.8838
+                "mae": 0.8689
               },
               "research_review_sem": {
                 "samples": 144,
-                "mae": 1.8085
+                "mae": 2.8253
               },
               "nos_sem": {
                 "samples": 140,
-                "mae": 0.0554
+                "mae": 0.0476
               },
               "final_draft_sem": {
                 "samples": 140,
-                "mae": 0.3253
+                "mae": 0.3403
               },
               "viva_sem": {
                 "samples": 143,
-                "mae": 0.325
+                "mae": 0.3349
               }
             }
           }
