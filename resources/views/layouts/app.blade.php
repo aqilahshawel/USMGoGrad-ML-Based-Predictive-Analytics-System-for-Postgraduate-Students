@@ -54,7 +54,7 @@
             --muted:   var(--n-700);
             --border:  var(--n-200);
             --hue-gradient: linear-gradient(135deg, rgba(243, 240, 255, 0.96) 0%, rgba(255, 245, 239, 0.94) 100%);
-            --hue-gradient-strong: linear-gradient(135deg, rgba(109, 91, 208, 0.96) 0%, rgba(224, 125, 69, 0.94) 100%);
+            --hue-gradient-strong: linear-gradient(135deg, rgba(243, 240, 255, 0.96) 0%, rgba(255, 245, 239, 0.94) 100%);
 
             /* Typography */
             --font-display: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -102,8 +102,8 @@
             width: 36px;
             height: 36px;
             border-radius: var(--radius-sm);
-            background: var(--hue-gradient-strong);
-            color: #fff;
+            background: var(--hue-gradient);
+            color: var(--lav-500);
             display: flex;
             align-items: center;
             justify-content: center;

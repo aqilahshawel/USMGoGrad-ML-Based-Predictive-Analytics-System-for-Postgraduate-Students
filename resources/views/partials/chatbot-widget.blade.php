@@ -56,16 +56,17 @@
                 width: 56px;
                 height: 56px;
                 z-index: 1055;
-                border: none;
-                background: var(--hue-gradient-strong);
-                box-shadow: 0 4px 14px rgba(109,91,208,.35);
+                border: 1px solid var(--lav-200);
+                background: var(--hue-gradient);
+                color: var(--lav-500);
+                box-shadow: 0 4px 14px rgba(46, 41, 36, 0.12);
                 transition: transform .2s, box-shadow .2s;
             }
             #usmg-chatbot-toggle:hover {
                 transform: scale(1.08);
-                box-shadow: 0 6px 20px rgba(109,91,208,.45);
+                box-shadow: 0 6px 20px rgba(46, 41, 36, 0.18);
             }
-            #usmg-chatbot-toggle i { color: #fff; font-size: 1.2rem; }
+            #usmg-chatbot-toggle i { color: var(--lav-500); font-size: 1.2rem; }
 
             /* ── Modal Sizing ── */
             .usmg-chatbot-dialog { max-width: 640px; }
@@ -81,14 +82,14 @@
 
             /* ── Header ── */
             .usmg-chatbot-header {
-                background: var(--hue-gradient-strong);
-                color: #fff;
+                background: var(--hue-gradient);
+                color: var(--text);
                 border-bottom: none;
                 padding: .85rem 1.25rem;
                 flex-shrink: 0;
             }
-            .usmg-chatbot-header i { font-size: 1.1rem; }
-            .usmg-chatbot-header .btn-close-white { filter: brightness(0) invert(1); opacity: .8; }
+            .usmg-chatbot-header i { font-size: 1.1rem; color: var(--lav-500); }
+            .usmg-chatbot-header .btn-close-white { filter: none; opacity: .65; }
             .usmg-chatbot-header .btn-close-white:hover { opacity: 1; }
 
             /* ── Body / Messages ── */
@@ -123,8 +124,9 @@
             }
             .usmg-chatbot-footer .btn-primary {
                 border-radius: 0 12px 12px 0;
-                background: var(--hue-gradient-strong);
+                background: var(--hue-gradient);
                 border-color: transparent;
+                color: var(--lav-500);
                 padding: .6rem 1rem;
             }
 

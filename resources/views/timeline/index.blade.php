@@ -161,12 +161,8 @@
 
 .tl-header-left { display: flex; align-items: center; gap: 10px; }
 .tl-header-icon {
-    width: 36px; height: 36px;
-    background: var(--hue-gradient-strong);
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    color: #fff;
-    font-size: 16px;
+    flex-shrink: 0;
+    color: var(--n-900);
 }
 .tl-header h2 {
     margin: 0;
@@ -660,7 +656,7 @@
     {{-- ── Page Header ──────────────────────────────────── --}}
     <div class="tl-header">
         <div class="tl-header-left">
-            <div class="tl-header-icon"><i class="fas fa-route"></i></div>
+            <div class="ui-header-icon tl-header-icon"><i class="fas fa-route"></i></div>
             <h2>Timeline Tracking</h2>
         </div>
         @if($readOnlyTimeline)

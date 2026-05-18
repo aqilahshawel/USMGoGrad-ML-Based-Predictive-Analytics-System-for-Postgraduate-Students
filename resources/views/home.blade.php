@@ -182,11 +182,10 @@
 
     .tab-content-section {
         background: var(--surface);
-        border-radius: 0 0 14px 14px;
+        border-radius: 14px;
         padding: 1.25rem 1.25rem 0.75rem;
         box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
         border: 1px solid var(--lav-200);
-        border-top: none;
         overflow: hidden;
     }
 

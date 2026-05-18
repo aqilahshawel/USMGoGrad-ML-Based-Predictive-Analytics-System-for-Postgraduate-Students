@@ -3,91 +3,132 @@
 @section('title', 'Messages - USMGoGrad')
 
 @section('content')
-
-
 <style>
+    .messenger-page {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
     .messages-header {
-        background: transparent;
+        background: var(--hue-gradient);
         color: var(--text);
-        padding: 0 0 1rem;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 1.5rem;
+        padding: 1.1rem 1.25rem;
+        border: 1px solid var(--lav-200);
+        border-radius: var(--radius);
+        box-shadow: 0 8px 18px rgba(124, 111, 179, 0.08);
     }
 
     .messages-header h3 {
         font-weight: 700;
         margin: 0;
         font-family: var(--font-display);
+        font-size: 1.05rem;
+        color: var(--n-900);
+    }
+
+    .messages-header p {
+        margin: 0.25rem 0 0;
+        color: var(--n-700);
+        font-size: 0.86rem;
     }
 
     .student-list {
         display: grid;
-        gap: 0.75rem;
+        gap: 0.9rem;
     }
 
     .student-card {
-        background: var(--surface);
-        border-radius: var(--radius);
-        padding: 1rem 1.25rem;
-        box-shadow: 0 1px 4px rgba(17, 17, 17, 0.04);
-        transition: all 0.25s ease;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-left: 4px solid var(--lav-500);
-        border: 1px solid var(--border);
-        border-left: 4px solid var(--lav-500);
+        gap: 1rem;
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(249,247,255,0.98) 100%);
+        border: 1px solid var(--lav-200);
+        border-left: 4px solid var(--lav-400);
+        border-radius: 16px;
+        padding: 1rem 1.1rem;
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .student-card:hover {
-        box-shadow: 0 4px 12px rgba(109, 91, 208, 0.10);
-        transform: translateX(3px);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(124, 111, 179, 0.12);
     }
 
     .student-info {
         flex-grow: 1;
+        min-width: 0;
     }
 
     .student-name {
-        font-size: 0.98rem;
-        font-weight: 600;
-        color: var(--text);
-        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--n-900);
+        margin-bottom: 0.3rem;
         font-family: var(--font-display);
     }
 
+    .student-name i {
+        color: var(--lav-500);
+    }
+
+    .student-meta {
+        color: var(--n-700);
+        font-size: 0.85rem;
+    }
+
     .unread-badge {
-        background: #e07d45;
-        color: white;
-        padding: 0.3rem 0.65rem;
+        background: var(--hue-gradient);
+        color: var(--lav-500);
+        padding: 0.32rem 0.7rem;
         border-radius: 999px;
         font-size: 0.75rem;
-        font-weight: 600;
-        display: inline-block;
-        margin-left: 0.5rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border: 1px solid var(--lav-200);
     }
 
     .student-actions {
         display: flex;
+        align-items: center;
         gap: 0.5rem;
+        flex-shrink: 0;
     }
 
     .student-actions .btn {
-        padding: 0.5rem 1rem;
+        padding: 0.55rem 1rem;
         font-size: 0.85rem;
+        border-radius: 999px;
+        background: var(--hue-gradient);
+        border: 1px solid var(--lav-200);
+        color: var(--lav-500);
+        font-weight: 700;
+    }
+
+    .student-actions .btn:hover {
+        box-shadow: 0 6px 16px rgba(124, 111, 179, 0.12);
     }
 
     .empty-state {
         text-align: center;
-        padding: 3rem 1rem;
+        padding: 3rem 1.25rem;
         background: var(--surface);
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
+        border-radius: 16px;
+        border: 1px solid var(--lav-200);
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
     }
 
     .empty-state i {
         font-size: 2.5rem;
-        color: var(--n-200);
+        color: var(--lav-400);
         margin-bottom: 1rem;
     }
 
@@ -99,50 +140,54 @@
 
         .student-actions {
             width: 100%;
-            margin-top: 1rem;
         }
 
         .student-actions .btn {
-            flex: 1;
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>
 
-<div class="messages-header">
-    <h3><i class="fas fa-envelope" style="margin-right: 20px;"></i> Chat with Students Under Your Supervision</h3>
-</div>
+<div class="messenger-page">
+    <div class="messages-header">
+        <h3><i class="fas fa-envelope-open-text me-2"></i> Messenger</h3>
+        <p>Chat with the students under your supervision.</p>
+    </div>
 
-@forelse ($students as $student)
-    <div class="student-card my-3">
-        <div class="student-info">
-            <div class="student-name">
-                <i class="fas fa-user-circle"></i> {{ $student->name }}
-                @if ($student->unread_count > 0)
-                    <span class="unread-badge">
-                        <i class="fas fa-bell"></i> {{ $student->unread_count }} Unread
-                    </span>
-                @endif
+    @forelse ($students as $student)
+        <div class="student-card">
+            <div class="student-info">
+                <div class="student-name">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ $student->name }}</span>
+                    @if ($student->unread_count > 0)
+                        <span class="unread-badge">
+                            <i class="fas fa-bell"></i> {{ $student->unread_count }} unread
+                        </span>
+                    @endif
+                </div>
+                <div class="student-meta">
+                    @if($student->cluster)
+                        {{ $student->cluster }}
+                    @else
+                        No cluster assigned
+                    @endif
+                </div>
             </div>
-            <small class="text-muted">
-                @if($student->cluster)
-                    {{ $student->cluster }}
-                @endif
-            </small>
+            <div class="student-actions">
+                <a href="{{ route('lecturer.messages.student.chat', ['studentId' => $student->id]) }}" class="btn">
+                    <i class="fas fa-comment-dots me-1"></i> Open chat
+                </a>
+            </div>
         </div>
-        <div class="student-actions">
-            <a href="{{ route('lecturer.messages.student.chat', ['studentId' => $student->id]) }}" class="btn btn-primary">
-                <i class="fas fa-comment"></i> View Chat
-            </a>
+    @empty
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h4>No Students Assigned</h4>
+            <p class="text-muted mb-0">You currently have no students assigned. Once students are assigned, you'll be able to message them here.</p>
         </div>
-    </div>
-
-    
-@empty
-    <div class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <h4>No Students Assigned</h4>
-        <p class="text-muted">You currently have no students assigned. Once students are assigned, you'll be able to message them here.</p>
-    </div>
-@endforelse
+    @endforelse
+</div>
 
 @endsection
