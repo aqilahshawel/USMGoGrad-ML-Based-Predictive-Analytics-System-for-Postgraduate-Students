@@ -11,6 +11,9 @@ use Illuminate\Support\Str;
 use App\Services\CandidatureTimelineService;
 use App\Services\OverdueCheckpointNotificationService;
 use App\Services\StudentCheckpointPredictionService;
+use App\Notifications\TimelineEventSubmittedNotification;
+use App\Notifications\TimelineEventApprovedNotification;
+use App\Notifications\TimelineEventRejectedNotification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
@@ -177,7 +180,7 @@ class TimelineController extends Controller
         $reviewedBy = $status === 'approved' ? $user->id : null;
         $reviewedAt = $status === 'approved' ? now() : null;
 
-        Timeline::create([
+        $timelineEntry = Timeline::create([
             'title' => $request->title,
             'event_date' => $request->event_date,
             'completed' => $request->has('completed'),
@@ -190,6 +193,18 @@ class TimelineController extends Controller
             'system_key' => $user->hasRole('student') ? ('proposal:' . Str::uuid()) : null,
             'is_system_generated' => false,
         ]);
+
+        if ($status === 'pending') {
+            $supervisor = $user->supervisor;
+            if ($supervisor) {
+                $supervisor->notify(new TimelineEventSubmittedNotification(
+                    $user->id,
+                    $user->name,
+                    $timelineEntry->title,
+                    optional($timelineEntry->event_date)->format('d M Y')
+                ));
+            }
+        }
 
         $message = $status === 'pending'
             ? 'Timeline event submitted for supervisor approval.'
@@ -265,6 +280,7 @@ class TimelineController extends Controller
         $validated = $request->validate([
             'ekc500_admin_approved' => ['nullable', 'boolean'],
             'proposal_review_date' => ['nullable', 'date'],
+            'publish_paper' => ['nullable', 'boolean'],
             'research_review_date' => ['nullable', 'date'],
             'nos_date' => ['nullable', 'date'],
             'final_draft_submission_date' => ['nullable', 'date'],
@@ -272,6 +288,7 @@ class TimelineController extends Controller
         ]);
 
         $validated['ekc500_admin_approved'] = (bool) $request->boolean('ekc500_admin_approved');
+        $validated['publish_paper'] = (bool) $request->boolean('publish_paper');
 
         $checkpoint = StudentCheckpoint::firstOrCreate(['user_id' => $student->id]);
         $this->validateCheckpointSequence(array_merge($checkpoint->toArray(), $validated));
@@ -383,6 +400,11 @@ class TimelineController extends Controller
             $timeline->status = 'approved';
             $timeline->save();
 
+            $student->notify(new TimelineEventApprovedNotification(
+                $timeline->title,
+                optional($timeline->event_date)->format('d M Y')
+            ));
+
             $timeline->delete();
 
             return redirect()->route('timeline.index')->with('success', 'Change request approved and applied.');
@@ -395,10 +417,15 @@ class TimelineController extends Controller
         $timeline->review_note = null;
         $timeline->save();
 
+        $student->notify(new TimelineEventApprovedNotification(
+            $timeline->title,
+            optional($timeline->event_date)->format('d M Y')
+        ));
+
         return redirect()->route('timeline.index')->with('success', 'Timeline event approved.');
     }
 
-    public function reject(Timeline $timeline)
+    public function reject(Request $request, Timeline $timeline)
     {
         $lecturer = Auth::user();
         if (! $lecturer || ! $lecturer->hasRole('lecturer')) {
@@ -423,6 +450,12 @@ class TimelineController extends Controller
         $timeline->reviewed_at = now();
         $timeline->review_note = $validated['review_note'];
         $timeline->save();
+
+        $student->notify(new TimelineEventRejectedNotification(
+            $timeline->title,
+            optional($timeline->event_date)->format('d M Y'),
+            $timeline->review_note
+        ));
 
         return redirect()->route('timeline.index')->with('success', 'Timeline request rejected.');
     }
@@ -462,7 +495,8 @@ class TimelineController extends Controller
         $sequence = [
             'ekc500_admin_approved' => null,
             'proposal_review_date' => 'ekc500_admin_approved',
-            'research_review_date' => 'proposal_review_date',
+            'publish_paper' => 'proposal_review_date',
+            'research_review_date' => 'publish_paper',
             'nos_date' => 'research_review_date',
             'final_draft_submission_date' => 'nos_date',
             'viva_date' => 'final_draft_submission_date',

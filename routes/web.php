@@ -57,6 +57,7 @@ Route::middleware(['auth', 'role:student|lecturer'])->group(function () {
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::put('checkpoints', [TimelineController::class, 'updateCheckpoint'])->name('checkpoints.update');
     Route::put('timeline/checkpoints', [TimelineController::class, 'updateCheckpoint'])->name('timeline.checkpoints.update');
+    Route::put('timeline/{timeline}/completion', [TimelineController::class, 'updateCompletion'])->name('timeline.completion.update');
 });
 
 // SV Assign Page (Admin Only)

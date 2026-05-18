@@ -6,6 +6,9 @@ use App\Models\Message;
 use App\Models\User;
 use App\Notifications\CheckpointOverdueReminderNotification;
 use App\Notifications\MeetingRequestWorkflowNotification;
+use App\Notifications\TimelineEventApprovedNotification;
+use App\Notifications\TimelineEventRejectedNotification;
+use App\Notifications\TimelineEventSubmittedNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
@@ -36,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
                     ->whereIn('type', [
                         CheckpointOverdueReminderNotification::class,
                         MeetingRequestWorkflowNotification::class,
+                        TimelineEventSubmittedNotification::class,
+                        TimelineEventApprovedNotification::class,
+                        TimelineEventRejectedNotification::class,
                     ])
                     ->latest()
                     ->get();
@@ -51,6 +57,22 @@ class AppServiceProvider extends ServiceProvider
                             'action_type' => 'post',
                             'action_url' => route('notifications.openTimeline', $notice->id),
                             'action_label' => 'Open',
+                            'dismiss_url' => route('notifications.dismiss', $notice->id),
+                        ];
+                    }
+
+                    if (
+                        $notice->type === TimelineEventSubmittedNotification::class
+                        || $notice->type === TimelineEventApprovedNotification::class
+                        || $notice->type === TimelineEventRejectedNotification::class
+                    ) {
+                        return [
+                            'type' => 'timeline',
+                            'message' => $data['message'] ?? 'A timeline update is available.',
+                            'created_at' => $notice->created_at,
+                            'action_type' => 'post',
+                            'action_url' => route('notifications.open', $notice->id),
+                            'action_label' => $data['action_label'] ?? 'Open timeline',
                             'dismiss_url' => route('notifications.dismiss', $notice->id),
                         ];
                     }

@@ -38,6 +38,12 @@ return [
                     'target_semester' => 3,
                 ],
                 [
+                    'key' => 'publish_paper',
+                    'title' => 'Publish Paper',
+                    'field' => 'publish_paper',
+                    'target_semester' => 4,
+                ],
+                [
                     'key' => 'research_review',
                     'title' => 'Research Review Date',
                     'field' => 'research_review_date',

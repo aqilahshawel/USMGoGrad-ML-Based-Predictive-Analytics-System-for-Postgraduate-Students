@@ -14,6 +14,7 @@ class StudentCheckpoint extends Model
         'user_id',
         'ekc500_admin_approved',
         'proposal_review_date',
+        'publish_paper',
         'research_review_date',
         'nos_date',
         'final_draft_submission_date',
@@ -41,6 +42,7 @@ class StudentCheckpoint extends Model
 
     protected $casts = [
         'ekc500_admin_approved' => 'bool',
+        'publish_paper' => 'bool',
         'proposal_review_date' => 'date',
         'research_review_date' => 'date',
         'nos_date' => 'date',

@@ -7,6 +7,7 @@
     $checkpointStyles = [
         'ekc500_admin_approval' => ['icon' => 'fa-file-circle-check', 'color' => '#7c6fb3', 'bg' => '#f3f0ff'],
         'proposal_review' => ['icon' => 'fa-file-signature', 'color' => '#e07d45', 'bg' => '#fff5ef'],
+        'publish_paper' => ['icon' => 'fa-newspaper', 'color' => '#0f766e', 'bg' => '#e6fffa'],
         'research_review' => ['icon' => 'fa-magnifying-glass-chart', 'color' => '#3d9970', 'bg' => '#e8f5e9'],
         'nos' => ['icon' => 'fa-envelope-open-text', 'color' => '#d97706', 'bg' => '#fff5ef'],
         'final_draft_submission' => ['icon' => 'fa-file-arrow-up', 'color' => '#b7791f', 'bg' => '#fffbf0'],
@@ -18,6 +19,7 @@
     $checkpointFieldMap = [
         'checkpoint:ekc500_admin_approval' => 'ekc500_admin_approved',
         'checkpoint:proposal_review' => 'proposal_review_date',
+        'checkpoint:publish_paper' => 'publish_paper',
         'checkpoint:research_review' => 'research_review_date',
         'checkpoint:nos' => 'nos_date',
         'checkpoint:final_draft_submission' => 'final_draft_submission_date',
@@ -26,6 +28,7 @@
     $checkpointInputs = [
         ['field' => 'ekc500_admin_approved', 'title' => 'EKC500 Admin Approval', 'stage' => 1],
         ['field' => 'proposal_review_date', 'title' => 'Proposal Review Date', 'stage' => 1],
+        ['field' => 'publish_paper', 'title' => 'Publish Paper', 'stage' => 1],
         ['field' => 'research_review_date', 'title' => 'Research Review Date', 'stage' => 1],
         ['field' => 'nos_date', 'title' => 'Notice of Submission Date', 'stage' => 2],
         ['field' => 'final_draft_submission_date', 'title' => 'Final Draft Submission Date', 'stage' => 2],
@@ -36,6 +39,7 @@
 
     $stage1Complete = (bool) ($checkpoint?->ekc500_admin_approved)
         && ($checkpoint?->proposal_review_date !== null)
+        && (bool) ($checkpoint?->publish_paper)
         && ($checkpoint?->research_review_date !== null);
     $stage2Locked = ! $stage1Complete;
 
@@ -77,6 +81,7 @@
     // Stage 1 completion counts for progress display
     $s1CompletedCount = (int)(bool)($checkpoint?->ekc500_admin_approved)
         + (int)($checkpoint?->proposal_review_date !== null)
+        + (int)(bool)($checkpoint?->publish_paper)
         + (int)($checkpoint?->research_review_date !== null);
 
     $s2CompletedCount = (int)($checkpoint?->nos_date !== null)
@@ -485,7 +490,7 @@
                                     <div class="stage-number" id="s1-number">1</div>
                                     <div class="stage-header-text">
                                         <h4>Proposal &amp; Research Review</h4>
-                                        <p id="s1-subtitle">Complete all three fields to unlock Stage 2</p>
+                                        <p id="s1-subtitle">Complete all four fields to unlock Stage 2</p>
                                     </div>
                                     <span class="stage-status-pill pill-progress" id="s1-pill">
                                         <i class="fas fa-spinner fa-spin"></i> In progress
@@ -493,7 +498,7 @@
                                 </div>
                                 <div class="stage-progress-bar">
                                     <div class="stage-progress-fill" id="s1-bar"
-                                         style="width: {{ round(($s1CompletedCount / 3) * 100) }}%"></div>
+                                     style="width: {{ round(($s1CompletedCount / 4) * 100) }}%"></div>
                                 </div>
                                 <div class="stage-body">
                                     
@@ -545,6 +550,25 @@
                                         </div>
                                     </div>
 
+                                    {{-- Publish Paper --}}
+                                    <div class="checkpoint-item">
+                                        <div class="checkpoint-info">
+                                            <label for="publish_paper">Publish Paper</label>
+                                            <span style="font-size: 0.8rem; color: #666;">Confirm your paper has been published.</span>
+                                        </div>
+                                        <div class="checkpoint-action toggle-wrapper">
+                                            <input type="hidden" name="publish_paper" value="0">
+                                            <input
+                                                type="checkbox"
+                                                id="publish_paper"
+                                                name="publish_paper"
+                                                value="1"
+                                                {{ old('publish_paper', $checkpoint?->publish_paper ?? false) ? 'checked' : '' }}
+                                            >
+                                            <span style="font-size: 0.9rem; font-weight: 500;">Published</span>
+                                        </div>
+                                    </div>
+
                                     {{-- Research Review Date --}}
                                     <div class="checkpoint-item">
                                         <div class="checkpoint-info">
@@ -576,7 +600,7 @@
 
                                     <div class="stage-footer">
                                         <div class="stage-footer-meta">
-                                            Fields completed: <strong id="s1-count">{{ $s1CompletedCount }} / 3</strong>
+                                            Fields completed: <strong id="s1-count">{{ $s1CompletedCount }} / 4</strong>
                                         </div>
                                         <button type="submit" class="btn-save">
                                             <i class="fas fa-save me-1"></i> Save Progress
@@ -614,7 +638,7 @@
                                     {{-- Lock overlay --}}
                                     <div class="lock-notice {{ $stage1Complete ? 'd-none' : '' }}" id="s2-lock-notice">
                                         <i class="fas fa-lock"></i>
-                                        <span>Complete Stage 1 (EKC500 approval, proposal review, and research review) to unlock submission fields.</span>
+                                        <span>Complete Stage 1 (EKC500 approval, proposal review, publish paper, and research review) to unlock submission fields.</span>
                                     </div>
 
                                     {{-- Fields --}}

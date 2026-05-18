@@ -1177,6 +1177,7 @@
         $checkpointStyles = [
             'ekc500_admin_approval' => ['icon' => 'fa-file-circle-check', 'color' => '#7c6fb3', 'bg' => '#f3f0ff'],
             'proposal_review' => ['icon' => 'fa-file-signature', 'color' => '#e07d45', 'bg' => '#fff5ef'],
+            'publish_paper' => ['icon' => 'fa-newspaper', 'color' => '#0f766e', 'bg' => '#e6fffa'],
             'research_review' => ['icon' => 'fa-magnifying-glass-chart', 'color' => '#3d9970', 'bg' => '#e8f5e9'],
             'nos'             => ['icon' => 'fa-envelope-open-text', 'color' => '#d97706', 'bg' => '#fff5ef'],
             'final_draft_submission' => ['icon' => 'fa-file-arrow-up', 'color' => '#b7791f', 'bg' => '#fffbf0'],
@@ -1190,6 +1191,7 @@
         $checkpointFieldMap = [
             'checkpoint:ekc500_admin_approval' => 'ekc500_admin_approved',
             'checkpoint:proposal_review' => 'proposal_review_date',
+            'checkpoint:publish_paper' => 'publish_paper',
             'checkpoint:research_review' => 'research_review_date',
             'checkpoint:nos' => 'nos_date',
             'checkpoint:final_draft_submission' => 'final_draft_submission_date',
@@ -1219,6 +1221,45 @@
         $completedStops = $systemStops->where('completed', true)->count();
         $currentStopId = optional($systemStops->firstWhere('completed', false))->id;
     @endphp
+
+    @php
+        $profileUser = Auth::user()->hasRole('lecturer') ? $dashboardTargetUser : Auth::user();
+    @endphp
+
+    @if($profileUser)
+        <details class="timeline-panel mb-3" style="overflow: hidden;">
+            <summary class="timeline-panel-header" style="cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                <div>
+                    <h5 style="margin-bottom: 0.15rem;">{{ Auth::user()->hasRole('lecturer') ? 'Student Profile' : 'Your Profile' }}</h5>
+                    <p class="mb-0">Key registration details for this candidature.</p>
+                </div>
+                <span style="font-size: 0.78rem; color: var(--lav-500); font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <i class="fas fa-chevron-down"></i>
+                    Toggle
+                </span>
+            </summary>
+            <div class="timeline-panel-body">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem;">
+                    <div>
+                        <div class="text-muted" style="font-size: 0.78rem;">Name</div>
+                        <div style="font-weight: 600; color: var(--n-900);">{{ $profileUser->name }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.78rem;">Cluster</div>
+                        <div style="font-weight: 600; color: var(--n-900);">{{ $profileUser->cluster ?: '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.78rem;">Research Title</div>
+                        <div style="font-weight: 600; color: var(--n-900);">{{ $profileUser->research_title ?: '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.78rem;">Research Objective</div>
+                        <div style="font-weight: 600; color: var(--n-900);">{{ $profileUser->research_objective ?: '—' }}</div>
+                    </div>
+                </div>
+            </div>
+        </details>
+    @endif
 
     <section class="tab-content-section mt-3">
         @if(Auth::user()->hasRole('lecturer'))
