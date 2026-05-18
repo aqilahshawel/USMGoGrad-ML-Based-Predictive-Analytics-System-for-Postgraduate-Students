@@ -308,6 +308,12 @@ class TimelineController extends Controller
         $validated['ekc500_admin_approved'] = (bool) $request->boolean('ekc500_admin_approved');
         $validated['publish_paper'] = (bool) $request->boolean('publish_paper');
 
+        if (! $validated['publish_paper'] && ! empty($validated['research_review_date'])) {
+            throw ValidationException::withMessages([
+                'research_review_date' => 'Publish Paper must be completed before entering Research Review Date.',
+            ]);
+        }
+
         $checkpoint = StudentCheckpoint::firstOrCreate(['user_id' => $student->id]);
         if (! $validated['publish_paper'] && $this->shouldAutoPublishPaper($checkpoint, $validated)) {
             $validated['publish_paper'] = true;

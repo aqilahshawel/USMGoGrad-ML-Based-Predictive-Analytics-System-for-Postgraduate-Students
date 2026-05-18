@@ -118,6 +118,8 @@
         'pending'   => ['dot' => '#6366f1', 'bg' => '#eef2ff', 'text' => '#4f46e5'],
     ];
     $risk = $riskColors[$riskLevel] ?? $riskColors['pending'];
+
+    $publishPaperDone = (bool) ($checkpoint?->publish_paper);
 @endphp
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -838,10 +840,15 @@
                                         <input type="date" name="research_review_date"
                                             class="tl-input {{ !empty($actualCheckpointDates['research_review_date']) ? 'filled' : '' }}"
                                             value="{{ old('research_review_date', optional($checkpoint?->research_review_date)->format('Y-m-d')) }}"
-                                            {{ $readOnlyTimeline ? 'disabled' : '' }}>
+                                            {{ ($readOnlyTimeline || ! $publishPaperDone) ? 'disabled' : '' }}>
                                         @error('research_review_date')
                                             <span style="font-size:11px; color:#dc2626; display:block; margin-top:3px;">{{ $message }}</span>
                                         @enderror
+                                        @if(! $publishPaperDone)
+                                            <span style="font-size:11px; color:var(--c-muted); display:block; margin-top:3px;">
+                                                Publish paper to unlock this date.
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
 
