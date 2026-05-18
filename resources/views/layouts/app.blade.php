@@ -53,6 +53,8 @@
             --text:    var(--n-900);
             --muted:   var(--n-700);
             --border:  var(--n-200);
+            --hue-gradient: linear-gradient(135deg, rgba(243, 240, 255, 0.96) 0%, rgba(255, 245, 239, 0.94) 100%);
+            --hue-gradient-strong: linear-gradient(135deg, rgba(109, 91, 208, 0.96) 0%, rgba(224, 125, 69, 0.94) 100%);
 
             /* Typography */
             --font-display: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -100,8 +102,8 @@
             width: 36px;
             height: 36px;
             border-radius: var(--radius-sm);
-            background: var(--lav-100);
-            color: var(--lav-500);
+            background: var(--hue-gradient-strong);
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -131,7 +133,7 @@
         .ui-card-head {
             padding: 12px 16px;
             border-bottom: 1px solid var(--n-100);
-            background: var(--n-50);
+            background: var(--hue-gradient);
         }
 
         .ui-card-title {
@@ -805,7 +807,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.8rem 0.95rem;
-            background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
+            background: var(--hue-gradient);
             border-bottom: 1px solid var(--lav-200);
             color: var(--n-900);
             font-size: 0.85rem;

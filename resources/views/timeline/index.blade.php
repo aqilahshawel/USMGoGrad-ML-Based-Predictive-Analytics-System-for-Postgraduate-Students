@@ -152,24 +152,27 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--c-border);
+    padding: 1.1rem 1.25rem;
+    background: var(--hue-gradient);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 18px rgba(124, 111, 179, 0.08);
 }
 
 .tl-header-left { display: flex; align-items: center; gap: 10px; }
 .tl-header-icon {
     width: 36px; height: 36px;
-    background: var(--c-purple-light);
+    background: var(--hue-gradient-strong);
     border-radius: var(--radius-sm);
     display: flex; align-items: center; justify-content: center;
-    color: var(--c-purple);
+    color: #fff;
     font-size: 16px;
 }
 .tl-header h2 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: #111;
+    color: var(--c-purple-dark);
 }
 
 /* ─── Status Banner ────────────────────────────────── */

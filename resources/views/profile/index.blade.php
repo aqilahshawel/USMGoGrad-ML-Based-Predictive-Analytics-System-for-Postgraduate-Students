@@ -5,11 +5,13 @@
 @section('styles')
 <style>
     .profile-hero {
-        background: transparent;
+        background: var(--hue-gradient);
         color: var(--text);
-        padding: 0 0 1rem;
+        padding: 1.1rem 1.25rem;
         margin-bottom: 1.5rem;
-        border-bottom: 1px solid var(--border);
+        border: 1px solid var(--lav-200);
+        border-radius: var(--radius);
+        box-shadow: 0 8px 18px rgba(124, 111, 179, 0.08);
     }
 
     .profile-card {

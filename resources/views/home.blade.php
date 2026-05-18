@@ -6,11 +6,13 @@
 
 <style>
     .hero-section {
-        background: transparent;
+        background: var(--hue-gradient);
         color: var(--text);
-        padding: 0 0 1rem;
+        padding: 1.1rem 1.25rem;
         margin-bottom: 1.5rem;
-        border-bottom: 1px solid var(--border);
+        border: 1px solid var(--lav-200);
+        border-radius: var(--radius);
+        box-shadow: 0 8px 18px rgba(124, 111, 179, 0.08);
     }
 
     .hero-section h1 {
@@ -18,11 +20,11 @@
         font-weight: 600;
         margin-bottom: 0.2rem;
         font-family: var(--font-display);
-        color: var(--text);
+        color: var(--n-900);
     }
 
     .hero-section .lead {
-        color: var(--muted);
+        color: var(--n-700);
         font-size: 0.8rem;
         margin: 0;
     }

@@ -4,7 +4,7 @@
         <button
             type="button"
             id="usmg-chatbot-toggle"
-            class="btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center"
+            class="btn rounded-circle shadow d-flex align-items-center justify-content-center"
             aria-label="Open chatbot"
             data-bs-toggle="modal"
             data-bs-target="#usmg-chatbot-modal"
@@ -57,7 +57,7 @@
                 height: 56px;
                 z-index: 1055;
                 border: none;
-                background: var(--lav-500);
+                background: var(--hue-gradient-strong);
                 box-shadow: 0 4px 14px rgba(109,91,208,.35);
                 transition: transform .2s, box-shadow .2s;
             }
@@ -81,7 +81,7 @@
 
             /* ── Header ── */
             .usmg-chatbot-header {
-                background: var(--lav-500);
+                background: var(--hue-gradient-strong);
                 color: #fff;
                 border-bottom: none;
                 padding: .85rem 1.25rem;
@@ -123,8 +123,8 @@
             }
             .usmg-chatbot-footer .btn-primary {
                 border-radius: 0 12px 12px 0;
-                background: var(--lav-500);
-                border-color: var(--lav-500);
+                background: var(--hue-gradient-strong);
+                border-color: transparent;
                 padding: .6rem 1rem;
             }
 
