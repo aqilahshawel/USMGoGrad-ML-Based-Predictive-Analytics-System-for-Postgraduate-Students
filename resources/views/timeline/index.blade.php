@@ -502,9 +502,15 @@
                                         <h4>Proposal &amp; Research Review</h4>
                                         <p id="s1-subtitle">Complete all four fields to unlock Stage 2</p>
                                     </div>
-                                    <span class="stage-status-pill pill-progress" id="s1-pill">
-                                        <i class="fas fa-spinner fa-spin"></i> In progress
-                                    </span>
+                                    @if($readOnlyTimeline)
+                                        <span class="stage-status-pill pill-done" id="s1-pill">
+                                            <i class="fas fa-check-circle"></i> Completed
+                                        </span>
+                                    @else
+                                        <span class="stage-status-pill pill-progress" id="s1-pill">
+                                            <i class="fas fa-spinner fa-spin"></i> In progress
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="stage-progress-bar">
                                     <div class="stage-progress-fill" id="s1-bar"
@@ -635,13 +641,19 @@
                                             {{ $stage2Locked ? 'Locked until Stage 1 is completed' : 'Enter your submission checkpoint dates' }}
                                         </p>
                                     </div>
-                                    <span class="stage-status-pill {{ $stage2Locked ? 'pill-locked' : 'pill-progress' }}" id="s2-pill">
-                                        @if($stage2Locked)
-                                            <i class="fas fa-lock"></i> Locked
-                                        @else
-                                            <i class="fas fa-lock-open"></i> Unlocked
-                                        @endif
-                                    </span>
+                                    @if($readOnlyTimeline)
+                                        <span class="stage-status-pill pill-done" id="s2-pill">
+                                            <i class="fas fa-check-circle"></i> Completed
+                                        </span>
+                                    @else
+                                        <span class="stage-status-pill {{ $stage2Locked ? 'pill-locked' : 'pill-progress' }}" id="s2-pill">
+                                            @if($stage2Locked)
+                                                <i class="fas fa-lock"></i> Locked
+                                            @else
+                                                <i class="fas fa-lock-open"></i> Unlocked
+                                            @endif
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="stage-progress-bar">
                                     <div class="stage-progress-fill" id="s2-bar"
@@ -757,7 +769,7 @@
                         };
 
                         if ($hasCompletedStudies) {
-                            $forecastHeadline = $graduatedOnTime ? 'Complete Studies';
+                            $forecastHeadline = $graduatedOnTime ? 'Graduated on time' : 'Complete Studies';
                         }
 
                         $forecastRiskClass = $hasCompletedStudies
