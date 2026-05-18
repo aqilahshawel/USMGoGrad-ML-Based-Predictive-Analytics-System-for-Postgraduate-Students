@@ -173,14 +173,19 @@ def split_chronological(
         val = ordered.iloc[train_size:train_size + val_size].copy()
         test = ordered.iloc[train_size + val_size:].copy()
 
-        # GoT class balance can be extremely skewed (especially with the stricter 42-month definition).
-        # Evaluation helpers already handle single-class windows, so we only require non-empty splits here.
-        if train.empty or val.empty or test.empty:
+        if not has_min_class_counts(train, MIN_CLASS_POS, MIN_CLASS_NEG):
+            continue
+        if not has_min_class_counts(val, MIN_CLASS_POS, MIN_CLASS_NEG):
+            continue
+        if not has_min_class_counts(test, MIN_CLASS_POS, MIN_CLASS_NEG):
             continue
 
         return train, val, test
 
-    raise ValueError("Unable to create a chronological split with current split ratios.")
+    raise ValueError(
+        "Unable to create a chronological split with minimum class counts "
+        f"(min_pos={MIN_CLASS_POS}, min_neg={MIN_CLASS_NEG})."
+    )
 
 
 def build_walk_forward_splits(
@@ -241,7 +246,16 @@ def build_walk_forward_splits(
         if train.empty or val.empty or test.empty:
             continue
 
-        # Allow single-class windows; the evaluation layer annotates them and threshold voting can skip them.
+        if not has_min_class_counts(train, MIN_CLASS_POS, MIN_CLASS_NEG):
+            skipped_windows += 1
+            continue
+        if not has_min_class_counts(val, MIN_CLASS_POS, MIN_CLASS_NEG):
+            skipped_windows += 1
+            continue
+        if not has_min_class_counts(test, MIN_CLASS_POS, MIN_CLASS_NEG):
+            skipped_windows += 1
+            continue
+
         splits.append((train, val, test))
 
     metadata = {
