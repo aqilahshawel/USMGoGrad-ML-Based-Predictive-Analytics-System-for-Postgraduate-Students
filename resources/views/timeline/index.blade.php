@@ -1060,13 +1060,19 @@
         ════════════════════════════════════════════════════ --}}
         <div class="{{ $activeTab === 'crud' ? '' : 'd-none' }}">
 
-            @if(auth()->user()->hasRole('student') && ! $readOnlyTimeline)
+            @if(auth()->user()->hasRole('student'))
                 <div class="tl-add-event">
                     <div class="tl-add-event-head">
                         <h4>New Event</h4>
                         <p>Add an extra timeline event — requires supervisor review before approval.</p>
                     </div>
                     <div class="tl-add-event-body">
+                        @if($readOnlyTimeline)
+                            <div class="tl-banner success" style="margin-bottom: 12px;">
+                                <i class="fas fa-lock"></i>
+                                Timeline is read-only after completion. New events cannot be added.
+                            </div>
+                        @endif
                         <form action="{{ route('timeline.store') }}" method="POST">
                             @csrf
                             <div class="tl-form-row">
@@ -1075,22 +1081,29 @@
                                     <input type="text" id="crud_title" name="title"
                                            class="tl-form-input title"
                                            value="{{ old('title') }}"
-                                           placeholder="e.g. Internal mock presentation" required>
+                                           placeholder="e.g. Internal mock presentation" required
+                                           {{ $readOnlyTimeline ? 'disabled' : '' }}>
                                     @error('title') <span style="font-size:11px;color:#dc2626;">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="tl-form-group">
                                     <label for="crud_event_date">Target Date</label>
                                     <input type="date" id="crud_event_date" name="event_date"
                                            class="tl-form-input date"
-                                           value="{{ old('event_date') }}" required>
+                                           value="{{ old('event_date') }}" required
+                                           {{ $readOnlyTimeline ? 'disabled' : '' }}>
                                     @error('event_date') <span style="font-size:11px;color:#dc2626;">{{ $message }}</span> @enderror
                                 </div>
-                                <button type="submit" class="tl-btn tl-btn-primary">
+                                <button type="submit" class="tl-btn tl-btn-primary" {{ $readOnlyTimeline ? 'disabled' : '' }}>
                                     <i class="fas fa-paper-plane"></i> Submit
                                 </button>
                             </div>
                         </form>
                     </div>
+                </div>
+            @elseif(auth()->user()->hasRole('lecturer'))
+                <div class="tl-banner warning" style="margin-bottom: 12px;">
+                    <i class="fas fa-circle-exclamation"></i>
+                    Event creation is available for students only.
                 </div>
             @endif
 

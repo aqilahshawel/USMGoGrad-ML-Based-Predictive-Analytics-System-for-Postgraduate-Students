@@ -5,30 +5,28 @@
 @section('styles')
 <style>
     .scheduling-header {
-        background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
-        color: var(--n-900);
-        padding: 2rem;
-        border-radius: 14px;
-        margin-bottom: 2rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        background: transparent;
+        color: var(--text);
+        padding: 0 0 1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.5rem;
     }
     .scheduling-header h1 {
         font-family: var(--font-display);
-        font-weight: 700;
+        font-weight: 600;
         margin: 0 0 0.5rem 0;
-        color: var(--n-900);
+        color: var(--text);
     }
     .scheduling-header p {
         margin: 0;
-        color: var(--n-700);
+        color: var(--muted);
     }
     #calendar {
         background: var(--surface);
-        border-radius: 14px;
+        border-radius: var(--radius);
         padding: 1.5rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46,41,36,0.04);
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 6px rgba(17,17,17,0.04);
     }
     .fc .fc-button-primary {
         background: var(--lav-500) !important;
@@ -53,13 +51,13 @@
     }
     .event-title-inline {
         background: var(--surface);
-        border: 1px solid var(--lav-200);
-        border-radius: 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
         padding: 0.9rem 1rem;
         margin-bottom: 1rem;
     }
     .inline-feedback {
-        border-radius: 12px;
+        border-radius: var(--radius-sm);
         padding: 0.75rem 1rem;
         margin-bottom: 1rem;
         border: 1px solid transparent;

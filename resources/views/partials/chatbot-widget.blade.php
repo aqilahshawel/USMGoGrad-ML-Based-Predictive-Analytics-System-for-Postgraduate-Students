@@ -58,12 +58,12 @@
                 z-index: 1055;
                 border: none;
                 background: var(--lav-500);
-                box-shadow: 0 4px 14px rgba(124,111,179,.35);
+                box-shadow: 0 4px 14px rgba(109,91,208,.35);
                 transition: transform .2s, box-shadow .2s;
             }
             #usmg-chatbot-toggle:hover {
                 transform: scale(1.08);
-                box-shadow: 0 6px 20px rgba(124,111,179,.45);
+                box-shadow: 0 6px 20px rgba(109,91,208,.45);
             }
             #usmg-chatbot-toggle i { color: #fff; font-size: 1.2rem; }
 
@@ -72,9 +72,9 @@
             .usmg-chatbot-content {
                 height: 78vh;
                 max-height: 720px;
-                border-radius: 18px;
+                border-radius: 16px;
                 overflow: hidden;
-                border: 1px solid var(--lav-200);
+                border: 1px solid var(--border);
                 display: flex;
                 flex-direction: column;
             }
@@ -107,19 +107,19 @@
 
             /* ── Footer ── */
             .usmg-chatbot-footer {
-                border-top: 1px solid var(--lav-200);
+                border-top: 1px solid var(--border);
                 background: var(--surface);
                 padding: .75rem 1rem;
                 flex-shrink: 0;
             }
             .usmg-chatbot-footer .form-control {
                 border-radius: 12px 0 0 12px;
-                border: 1.5px solid var(--lav-200);
+                border: 1px solid var(--border);
                 padding: .6rem 1rem;
             }
             .usmg-chatbot-footer .form-control:focus {
-                border-color: var(--lav-400);
-                box-shadow: 0 0 0 .2rem rgba(124,111,179,.15);
+                border-color: var(--lav-500);
+                box-shadow: 0 0 0 .2rem rgba(109,91,208,.15);
             }
             .usmg-chatbot-footer .btn-primary {
                 border-radius: 0 12px 12px 0;
@@ -132,8 +132,8 @@
             .usmg-chatbot-user-message {
                 align-self: flex-end;
                 padding: .7rem 1rem;
-                background: var(--lav-100);
-                color: var(--lav-500);
+                background: #eef2ff;
+                color: #4f46e5;
                 border-radius: 14px 14px 4px 14px;
                 max-width: 78%;
                 font-size: .88rem;
@@ -144,8 +144,8 @@
                 align-self: flex-start;
                 padding: .7rem 1rem;
                 background: var(--surface);
-                color: var(--n-900);
-                border: 1px solid var(--n-200);
+                color: var(--text);
+                border: 1px solid var(--border);
                 border-radius: 14px 14px 14px 4px;
                 max-width: 90%;
                 font-size: .88rem;
