@@ -6,28 +6,21 @@
 
 <style>
     .feedback-header {
-        background: linear-gradient(135deg, var(--lav-200) 0%, var(--lav-300) 100%);
-        color: var(--n-900);
-        padding: 1.25rem 2rem;
-        border-radius: 18px;
+        background: transparent;
+        color: var(--text);
+        padding: 0 0 1rem;
         margin-bottom: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(124, 111, 179, 0.15);
+        border-bottom: 1px solid var(--border);
     }
 
     .feedback-header::after {
-        content: '';
-        position: absolute;
-        width: 200px; height: 200px;
-        background: rgba(255,255,255,0.06);
-        border-radius: 50%;
+        content: none;
     }
 
     .feedback-header h1 {
         font-weight: 700;
         margin-bottom: 0.2rem;
-        font-size: 1.6rem;
+        font-size: 1.1rem;
         font-family: var(--font-display);
     }
 
@@ -39,16 +32,16 @@
 
     .feedback-form-container {
         background: var(--surface);
-        border-radius: 14px;
-        padding: 2.5rem;
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: 0 2px 6px rgba(17, 17, 17, 0.04);
         margin: 0 auto;
-        border: 1px solid var(--lav-200);
+        border: 1px solid var(--border);
         transition: all 0.25s ease;
     }
 
     .feedback-form-container:hover {
-        box-shadow: 0 6px 20px rgba(46, 41, 36, 0.08);
+        box-shadow: 0 6px 16px rgba(17, 17, 17, 0.08);
     }
 
     .form-group {
@@ -57,7 +50,7 @@
 
     .form-group label {
         font-weight: 600;
-        color: var(--n-900);
+        color: var(--text);
         display: flex;
         align-items: center;
         margin-bottom: 0.75rem;
@@ -72,32 +65,32 @@
 
     .form-control,
     .form-textarea {
-        border-radius: 8px;
-        border: 1.5px solid var(--n-200);
-        padding: 0.8rem 1rem;
-        font-size: 0.95rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        padding: 0.7rem 0.85rem;
+        font-size: 0.9rem;
         transition: all 0.25s ease;
         font-family: inherit;
     }
 
     .form-control:focus,
     .form-textarea:focus {
-        border-color: var(--lav-400);
-        box-shadow: 0 0 0 3px rgba(124, 111, 179, 0.10);
+        border-color: var(--lav-500);
+        box-shadow: 0 0 0 3px rgba(109, 91, 208, 0.10);
         outline: none;
     }
 
     .form-control::placeholder,
     .form-textarea::placeholder {
-        color: var(--n-200);
+        color: #a1a1aa;
     }
 
     .btn-submit {
         width: 100%;
-        padding: 0.85rem;
+        padding: 0.7rem;
         font-weight: 600;
-        font-size: 1rem;
-        border-radius: 8px;
+        font-size: 0.9rem;
+        border-radius: var(--radius-sm);
         background: var(--lav-500);
         color: white;
         border: none;
@@ -106,17 +99,17 @@
     }
 
     .btn-submit:hover {
-        background: var(--lav-400);
+        background: #5a4ab8;
         transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(124, 111, 179, 0.25);
+        box-shadow: 0 4px 16px rgba(109, 91, 208, 0.25);
         color: white;
     }
 
     .success-alert {
-        background: var(--lav-100);
-        color: var(--lav-500);
-        border-left: 4px solid var(--lav-400);
-        border-radius: 10px;
+        background: #eef2ff;
+        color: #4f46e5;
+        border-left: 4px solid #818cf8;
+        border-radius: var(--radius-sm);
         padding: 1rem;
         margin-bottom: 1.5rem;
     }

@@ -6,26 +6,24 @@
 
 <style>
     .hero-section {
-        background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
-        color: var(--n-900);
-        padding: 1.5rem 2rem;
-        border-radius: 14px;
-        margin-bottom: 1rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        background: transparent;
+        color: var(--text);
+        padding: 0 0 1rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
     }
 
     .hero-section h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin-bottom: 0.3rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
         font-family: var(--font-display);
-        color: var(--n-900);
+        color: var(--text);
     }
 
     .hero-section .lead {
-        color: var(--n-700);
-        font-size: 0.95rem;
+        color: var(--muted);
+        font-size: 0.8rem;
         margin: 0;
     }
 
@@ -38,36 +36,36 @@
 
     .stat-card {
         background: var(--surface);
-        border-radius: 14px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        border-radius: var(--radius);
+        padding: 1.2rem 1.3rem;
+        box-shadow: 0 2px 6px rgba(17, 17, 17, 0.04);
         text-align: center;
         transition: all 0.3s ease;
-        border: 1px solid var(--lav-200);
+        border: 1px solid var(--border);
     }
 
     .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(124, 111, 179, 0.10);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(109, 91, 208, 0.10);
     }
 
     .stat-card .icon {
-        font-size: 2.25rem;
-        color: var(--lav-400);
-        margin-bottom: 0.5rem;
+        font-size: 2rem;
+        color: var(--lav-500);
+        margin-bottom: 0.35rem;
     }
 
     .stat-card .number {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        color: var(--lav-500);
+        color: var(--text);
         font-family: var(--font-display);
     }
 
     .stat-card .label {
         color: var(--muted);
-        font-size: 0.85rem;
-        margin-top: 0.4rem;
+        font-size: 0.8rem;
+        margin-top: 0.35rem;
     }
 
     .admin-dashboard-grid {
@@ -79,15 +77,15 @@
 
     .admin-panel {
         background: var(--surface);
-        border-radius: 14px;
-        padding: 1.25rem 1.4rem;
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
-        border: 1px solid var(--lav-200);
+        border-radius: var(--radius);
+        padding: 1.1rem 1.25rem;
+        box-shadow: 0 2px 6px rgba(17, 17, 17, 0.04);
+        border: 1px solid var(--border);
     }
 
     .admin-panel h5 {
         margin: 0;
-        color: var(--n-900);
+        color: var(--text);
         font-family: var(--font-display);
     }
 
@@ -1280,38 +1278,6 @@
             $graduatedOnTime = (bool) ($progressSnapshot['graduated_on_time'] ?? false);
             $hasCompletedStudies = (bool) ($progressSnapshot['has_completed_studies'] ?? false);
         @endphp
-
-        @if(Auth::user()->hasRole('student') && ! $hasCompletedStudies)
-            <section class="timeline-panel mb-3">
-                <div class="timeline-panel-header">
-                    <h5>Add New Event</h5>
-                    <p class="mb-0">Create an extra timeline event for your candidature (will require supervisor review).</p>
-                </div>
-                <div class="timeline-panel-body timeline-form">
-                    <form action="{{ route('timeline.store') }}" method="POST">
-                        @csrf
-
-                        <div class="checkpoint-item">
-                            <div class="checkpoint-info">
-                                <label for="home_timeline_title">Title</label>
-                                <input type="text" id="home_timeline_title" name="title" value="{{ old('title') }}" placeholder="e.g. Internal mock presentation" required>
-                                @error('title') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
-                            </div>
-
-                            <div class="checkpoint-action">
-                                <label for="home_timeline_event_date">Target Date</label>
-                                <input type="date" id="home_timeline_event_date" name="event_date" value="{{ old('event_date') }}" required>
-                                @error('event_date') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
-                            </div>
-
-                            <div style="width:140px; flex-shrink:0; display:flex; align-items:flex-end;">
-                                <button type="submit" class="btn-save" style="width:100%;"><i class="fas fa-paper-plane me-1"></i> Submit</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </section>
-        @endif
 
         @if($systemStops->isNotEmpty())
             <div class="road-path">

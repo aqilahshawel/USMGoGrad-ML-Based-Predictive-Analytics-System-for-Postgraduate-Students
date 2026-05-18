@@ -7,13 +7,11 @@
 
 <style>
     .messages-header {
-        background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
-        color: var(--n-900);
-        padding: 2rem;
-        border-radius: 14px;
-        margin-bottom: 2rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        background: transparent;
+        color: var(--text);
+        padding: 0 0 1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.5rem;
     }
 
     .messages-header h3 {
@@ -29,20 +27,20 @@
 
     .student-card {
         background: var(--surface);
-        border-radius: 12px;
-        padding: 1.25rem 1.5rem;
-        box-shadow: 0 1px 4px rgba(46, 41, 36, 0.04);
+        border-radius: var(--radius);
+        padding: 1rem 1.25rem;
+        box-shadow: 0 1px 4px rgba(17, 17, 17, 0.04);
         transition: all 0.25s ease;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-left: 4px solid var(--lav-400);
-        border: 1px solid var(--lav-200);
-        border-left: 4px solid var(--lav-400);
+        border-left: 4px solid var(--lav-500);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--lav-500);
     }
 
     .student-card:hover {
-        box-shadow: 0 4px 12px rgba(124, 111, 179, 0.10);
+        box-shadow: 0 4px 12px rgba(109, 91, 208, 0.10);
         transform: translateX(3px);
     }
 
@@ -51,19 +49,19 @@
     }
 
     .student-name {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: var(--lav-500);
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--text);
         margin-bottom: 0.25rem;
         font-family: var(--font-display);
     }
 
     .unread-badge {
-        background: var(--peach-500);
+        background: #e07d45;
         color: white;
         padding: 0.3rem 0.65rem;
-        border-radius: 20px;
-        font-size: 0.78rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
         font-weight: 600;
         display: inline-block;
         margin-left: 0.5rem;
@@ -83,8 +81,8 @@
         text-align: center;
         padding: 3rem 1rem;
         background: var(--surface);
-        border-radius: 14px;
-        border: 1px solid var(--lav-200);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
     }
 
     .empty-state i {

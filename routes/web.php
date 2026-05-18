@@ -14,6 +14,11 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\CalendarOAuthController;
 use App\Http\Controllers\IpsDownloadController;
+
+// Profile Route (for profile.show)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+});
 use App\Notifications\CheckpointOverdueReminderNotification;
 
 

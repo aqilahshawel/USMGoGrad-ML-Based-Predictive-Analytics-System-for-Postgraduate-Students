@@ -5,31 +5,29 @@
 @section('styles')
 <style>
     .scheduling-header {
-        background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
-        color: var(--n-900);
-        padding: 2rem;
-        border-radius: 14px;
-        margin-bottom: 2rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        background: transparent;
+        color: var(--text);
+        padding: 0 0 1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.5rem;
     }
     .scheduling-header h1 {
         font-family: var(--font-display);
-        font-weight: 700;
+        font-weight: 600;
         margin: 0 0 0.5rem 0;
-        color: var(--n-900);
+        color: var(--text);
     }
     .scheduling-header p {
         margin: 0;
-        color: var(--n-700);
+        color: var(--muted);
     }
     .calendar-status-card {
         background: var(--surface);
-        border: 1px solid var(--lav-200);
-        border-radius: 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
         padding: 1rem 1.25rem;
         margin-bottom: 1.25rem;
-        box-shadow: 0 2px 8px rgba(46,41,36,0.04);
+        box-shadow: 0 2px 6px rgba(17,17,17,0.04);
     }
     .status-pill {
         display: inline-block;
@@ -71,10 +69,10 @@
         flex: 1;
         min-width: 0;
         background: var(--surface);
-        border-radius: 14px;
+        border-radius: var(--radius);
         padding: 1.5rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46,41,36,0.04);
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 6px rgba(17,17,17,0.04);
     }
     .calendar-sidebar {
         width: 380px;
@@ -115,11 +113,11 @@
     .meeting-request-panel,
     .meeting-history-card {
         background: var(--surface);
-        border: 1px solid var(--lav-200);
-        border-radius: 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
         padding: 1rem 1.25rem;
         margin-bottom: 1rem;
-        box-shadow: 0 2px 8px rgba(46,41,36,0.04);
+        box-shadow: 0 2px 6px rgba(17,17,17,0.04);
     }
     .calendar-sidebar .meeting-request-panel:first-child,
     .calendar-sidebar .meeting-history-card:first-child {
@@ -188,14 +186,14 @@
     .inline-modal {
         width: min(520px, 100%);
         background: var(--surface);
-        border: 1px solid var(--lav-200);
-        border-radius: 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
         overflow: hidden;
     }
     .inline-modal-header {
         padding: 0.9rem 1rem;
-        border-bottom: 1px solid var(--lav-200);
+        border-bottom: 1px solid var(--border);
     }
     .inline-modal-header h5 {
         margin: 0;

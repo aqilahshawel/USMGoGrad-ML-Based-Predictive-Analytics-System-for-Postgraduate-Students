@@ -6,21 +6,22 @@
     <title>Login - USMGoGrad</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --lav-100: #f3f0ff;
-            --lav-200: #e2daff;
-            --lav-300: #c9bdff;
-            --lav-400: #a99dd6;
-            --lav-500: #7c6fb3;
-            --n-50:  #faf9f7;
-            --n-200: #e3ddd5;
-            --n-700: #5a524a;
-            --n-900: #2e2924;
+            --lav-100: #ede9fc;
+            --lav-200: #dcd6f5;
+            --lav-300: #c9c1ee;
+            --lav-400: #9a8fe0;
+            --lav-500: #6d5bd0;
+            --n-50:  #fafafa;
+            --n-200: #e4e4e7;
+            --n-700: #71717a;
+            --n-900: #111111;
             --surface: #ffffff;
-            --font-display: 'Cormorant Garamond', Georgia, serif;
+            --font-display: 'DM Sans', sans-serif;
             --font-body: 'DM Sans', sans-serif;
+            --font-mono: 'DM Mono', monospace;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,7 +35,7 @@
 
         .panel-left {
             width: 50%;
-            background: linear-gradient(160deg, var(--lav-400) 0%, var(--lav-500) 100%);
+            background: linear-gradient(160deg, #9a8fe0 0%, #6d5bd0 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -87,25 +88,24 @@
         .login-box { width: 100%; max-width: 380px; }
 
         .login-box h1 {
-            font-size: 2rem;
-            font-weight: 400;
+            font-size: 1.5rem;
+            font-weight: 600;
             font-family: var(--font-display);
-            color: var(--n-700);
+            color: var(--n-900);
             line-height: 1.25;
-            margin-bottom: 2.2rem;
-            letter-spacing: 0.01em;
+            margin-bottom: 1.6rem;
+            letter-spacing: -0.01em;
         }
 
         .field-group { margin-bottom: 1rem; }
 
         .field-group input {
             width: 100%;
-            padding: 0.72rem 0.9rem;
-            border: 1.5px solid var(--n-200);
-            border-radius: 8px;
-            font-size: 0.78rem;
+            padding: 0.7rem 0.85rem;
+            border: 1px solid var(--n-200);
+            border-radius: 6px;
+            font-size: 0.85rem;
             font-family: var(--font-body);
-            letter-spacing: 0.06em;
             color: var(--n-900);
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -113,14 +113,13 @@
         }
 
         .field-group input::placeholder {
-            color: var(--n-200);
-            letter-spacing: 0.08em;
-            font-size: 0.72rem;
+            color: #a1a1aa;
+            font-size: 0.8rem;
         }
 
         .field-group input:focus {
-            border-color: var(--lav-400);
-            box-shadow: 0 0 0 3px rgba(169, 157, 214, 0.15);
+            border-color: var(--lav-500);
+            box-shadow: 0 0 0 3px rgba(109, 91, 208, 0.12);
         }
         .field-group input.is-invalid { border-color: #cc4b4b; }
 
@@ -142,20 +141,19 @@
             background: var(--lav-500);
             color: #fff;
             border: none;
-            padding: 0.62rem 2rem;
-            font-size: 0.8rem;
+            padding: 0.6rem 1.6rem;
+            font-size: 0.85rem;
             font-family: var(--font-body);
             font-weight: 600;
-            border-radius: 8px;
-            letter-spacing: 0.06em;
+            border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
         }
 
         .btn-login:hover {
-            background: var(--lav-400);
+            background: #5a4ab8;
             transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(124, 111, 179, 0.28);
+            box-shadow: 0 4px 14px rgba(109, 91, 208, 0.28);
         }
 
         .forgot-link {

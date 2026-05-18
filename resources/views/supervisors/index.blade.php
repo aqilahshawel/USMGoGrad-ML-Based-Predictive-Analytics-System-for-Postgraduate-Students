@@ -6,19 +6,17 @@
 
 <style>
     .supervisors-header {
-        background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
-        color: var(--n-900);
-        padding: 2rem;
-        border-radius: 14px;
-        margin-bottom: 2rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        background: transparent;
+        color: var(--text);
+        padding: 0 0 1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.5rem;
     }
 
     .supervisors-header h2 {
         font-weight: 700;
         margin: 0;
-        font-size: 2rem;
+        font-size: 1.1rem;
         font-family: var(--font-display);
     }
 
@@ -31,14 +29,14 @@
 
     .accordion-item {
         background: var(--surface);
-        border: 1px solid var(--lav-200);
-        border-radius: 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
         overflow: hidden;
         transition: box-shadow 0.2s ease;
     }
 
     .accordion-item:has(.accordion-body.open) {
-        box-shadow: 0 4px 16px rgba(124, 111, 179, 0.1);
+        box-shadow: 0 4px 16px rgba(109, 91, 208, 0.1);
     }
 
     .accordion-header {
@@ -60,7 +58,7 @@
     }
 
     .accordion-header.open {
-        border-bottom-color: var(--lav-200);
+        border-bottom-color: var(--border);
     }
 
     .accordion-header-left {
@@ -87,7 +85,7 @@
     .accordion-header-text .acc-title {
         font-size: 0.95rem;
         font-weight: 700;
-        color: var(--n-900);
+        color: var(--text);
         font-family: var(--font-display);
         display: block;
     }
@@ -136,7 +134,7 @@
     .form-group label {
         font-size: 0.82rem;
         font-weight: 600;
-        color: var(--n-900);
+        color: var(--text);
         display: flex;
         align-items: center;
         gap: 0.4rem;
@@ -145,35 +143,35 @@
     }
 
     .form-group label i {
-        color: var(--lav-400);
+        color: var(--lav-500);
         font-size: 0.85rem;
     }
 
     .form-select,
     .form-control {
-        border-radius: 8px;
-        border: 1.5px solid var(--n-200);
-        padding: 0.75rem 1rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        padding: 0.7rem 0.85rem;
         font-size: 0.9rem;
         transition: all 0.2s ease;
         background: var(--surface);
-        color: var(--n-900);
+        color: var(--text);
         width: 100%;
         box-sizing: border-box;
     }
 
     .form-select:focus,
     .form-control:focus {
-        border-color: var(--lav-400);
-        box-shadow: 0 0 0 3px rgba(124, 111, 179, 0.12);
+        border-color: var(--lav-500);
+        box-shadow: 0 0 0 3px rgba(109, 91, 208, 0.12);
         outline: none;
     }
 
     .btn-submit {
-        padding: 0.75rem 1.5rem;
+        padding: 0.6rem 1.2rem;
         font-size: 0.9rem;
         font-weight: 600;
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
         border: none;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -188,9 +186,9 @@
     }
 
     .btn-submit.purple:hover {
-        background: var(--lav-400);
+        background: #5a4ab8;
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(124, 111, 179, 0.3);
+        box-shadow: 0 4px 14px rgba(109, 91, 208, 0.3);
     }
 
     .btn-submit.red {

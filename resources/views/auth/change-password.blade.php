@@ -3,41 +3,39 @@
 @section('styles')
 <style>
     .password-header {
-        background: linear-gradient(135deg, rgba(243, 240, 255, 0.95) 0%, rgba(255, 245, 239, 0.92) 100%);
-        color: var(--n-900);
-        padding: 2rem;
-        border-radius: 14px;
-        margin-bottom: 2rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+        background: transparent;
+        color: var(--text);
+        padding: 0 0 1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.5rem;
     }
     .password-header h2 {
         font-family: var(--font-display);
-        font-weight: 700;
+        font-weight: 600;
         margin: 0;
     }
     .password-form-card {
         background: var(--surface);
-        border-radius: 14px;
-        padding: 2.5rem;
-        border: 1px solid var(--lav-200);
-        box-shadow: 0 2px 8px rgba(46,41,36,0.04);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 6px rgba(17,17,17,0.04);
         max-width: 550px;
     }
     .password-form-card .form-label {
         font-weight: 600;
-        color: var(--n-900);
+        color: var(--text);
         font-size: 0.92rem;
     }
     .password-form-card .form-control {
-        border-radius: 8px;
-        border: 1.5px solid var(--n-200);
-        padding: 0.8rem 1rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        padding: 0.7rem 0.85rem;
         transition: all 0.25s ease;
     }
     .password-form-card .form-control:focus {
-        border-color: var(--lav-400);
-        box-shadow: 0 0 0 3px rgba(124,111,179,0.12);
+        border-color: var(--lav-500);
+        box-shadow: 0 0 0 3px rgba(109,91,208,0.12);
     }
 </style>
 @endsection

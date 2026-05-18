@@ -3,10 +3,10 @@
 @section('styles')
     <style>
         .chat-box {
-            border: 1px solid var(--lav-200);
+            border: 1px solid var(--border);
             padding: 1.25rem;
             margin-bottom: 1rem;
-            border-radius: 14px;
+            border-radius: var(--radius);
             background: var(--n-50);
             height: 400px;
             overflow-y: auto;
@@ -14,22 +14,22 @@
         .message {
             margin-bottom: 0.75rem;
             padding: 0.75rem 1rem;
-            border-radius: 10px;
+            border-radius: var(--radius-sm);
             font-size: 0.9rem;
         }
         .sent {
-            background: var(--lav-100);
+            background: #eef2ff;
             text-align: right;
-            border-left: 3px solid var(--lav-400);
+            border-left: 3px solid var(--lav-500);
         }
         .received {
             background: var(--surface);
             text-align: left;
-            border: 1px solid var(--n-200);
+            border: 1px solid var(--border);
             border-left: 3px solid var(--peach-400);
         }
         .chat-box .text-muted { font-size: 0.78rem; display: block; margin-top: 4px; color: var(--muted); }
-        h3 { font-family: var(--font-display); color: var(--lav-500); margin-bottom: 1.5rem; }
+        h3 { font-family: var(--font-display); color: var(--text); margin-bottom: 1.5rem; }
         .form-group { margin-top: 0.75rem; }
     </style>
 @endsection

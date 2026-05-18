@@ -9,54 +9,55 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts — Cormorant Garamond + DM Sans -->
+    <!-- Google Fonts — DM Sans + DM Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         /* ═══════════════════════════════════════════════
-           USM PASTEL COLOUR SYSTEM — Design Tokens
+           Timeline UI System — Design Tokens
            ═══════════════════════════════════════════════ */
         :root {
-            /* Lavender — Primary (Pastel USM Purple) */
-            --lav-100: #f3f0ff;
-            --lav-200: #e2daff;
-            --lav-300: #c9bdff;
-            --lav-400: #a99dd6;
-            --lav-500: #7c6fb3;
+            --radius: 10px;
+            --radius-sm: 6px;
+            /* Primary + Secondary */
+            --lav-100: #ede9fc;
+            --lav-200: #dcd6f5;
+            --lav-300: #c9c1ee;
+            --lav-400: #9a8fe0;
+            --lav-500: #6d5bd0;
 
-            /* Peach Blossom — Secondary (Pastel USM Orange) */
             --peach-100: #fff5ef;
             --peach-200: #fde5d2;
             --peach-300: #f8c9a8;
             --peach-400: #f2a97a;
             --peach-500: #e07d45;
 
-            /* Champagne Gold — Accent (Softened USM Gold) */
             --gold-100: #fffbf0;
             --gold-200: #fff0c2;
             --gold-300: #ffe08a;
             --gold-400: #e6c355;
             --gold-500: #c9a227;
 
-            /* Warm Mist — Neutrals */
-            --n-50:  #faf9f7;
-            --n-100: #f2efeb;
-            --n-200: #e3ddd5;
-            --n-700: #5a524a;
-            --n-900: #2e2924;
+            /* Neutrals */
+            --n-50:  #fafafa;
+            --n-100: #f4f4f5;
+            --n-200: #e4e4e7;
+            --n-700: #71717a;
+            --n-900: #111111;
 
             /* Semantic shortcuts */
             --surface: #ffffff;
             --bg:      var(--n-50);
             --text:    var(--n-900);
             --muted:   var(--n-700);
-            --border:  var(--lav-200);
+            --border:  var(--n-200);
 
             /* Typography */
-            --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+            --font-display: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --font-body:    'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono:    'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
         }
 
         /* ── Base ──────────────────────────────────── */
@@ -70,7 +71,148 @@
 
         h1, h2, h3, .page-title {
             font-family: var(--font-display);
+            letter-spacing: -0.01em;
         }
+
+        /* ── Shared UI Kit ───────────────────────────── */
+        .ui-page {
+            font-family: var(--font-body);
+            color: var(--text);
+        }
+
+        .ui-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ui-header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ui-header-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: var(--lav-100);
+            color: var(--lav-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .ui-header-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .ui-header-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .ui-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 6px rgba(17, 17, 17, 0.04);
+            overflow: hidden;
+        }
+
+        .ui-card-head {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--n-100);
+            background: var(--n-50);
+        }
+
+        .ui-card-title {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .ui-card-sub {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .ui-card-body {
+            padding: 16px;
+        }
+
+        .ui-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        .ui-btn-primary {
+            background: var(--lav-500);
+            color: #ffffff;
+        }
+
+        .ui-btn-primary:hover {
+            background: #5a4ab8;
+        }
+
+        .ui-btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .ui-btn-outline:hover {
+            background: var(--n-50);
+        }
+
+        .ui-input {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 7px 10px;
+            font-size: 13px;
+            font-family: var(--font-body);
+            background: #ffffff;
+            color: var(--text);
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+        .ui-input:focus {
+            border-color: var(--lav-500);
+            box-shadow: 0 0 0 3px rgba(109, 91, 208, 0.12);
+        }
+
+        .ui-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            border: 1px solid;
+            margin-bottom: 12px;
+        }
+
+        .ui-alert.success { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .ui-alert.warning { background: #fffbeb; color: #b45309; border-color: #fde68a; }
 
         /* ── Layout Wrapper ──────────────────────── */
         .layout-wrapper {
