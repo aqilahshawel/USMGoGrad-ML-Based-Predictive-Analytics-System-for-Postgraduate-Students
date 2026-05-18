@@ -91,6 +91,14 @@
         $tabParams['student_id'] = $selectedStudentId;
     }
 
+    $registrationDate = $targetUser?->start_date;
+    $latestCompletedEventDate = $timelines
+        ->filter(fn($timeline) => $timeline->completed && $timeline->event_date)
+        ->max('event_date');
+    $minEventDate = collect([$registrationDate, $latestCompletedEventDate])
+        ->filter()
+        ->max();
+
     $forecastHeadline = match ($predictionState ?? null) {
         'ready' => (bool) ($checkpoint?->predicted_got) ? 'On Track' : 'Potential Delay',
         'unavailable_prerequisites' => 'Unavailable',
@@ -1089,9 +1097,16 @@
                                     <label for="crud_event_date">Target Date</label>
                                     <input type="date" id="crud_event_date" name="event_date"
                                            class="tl-form-input date"
-                                           value="{{ old('event_date') }}" required
+                                           value="{{ old('event_date') }}"
+                                           min="{{ $minEventDate ? $minEventDate->format('Y-m-d') : '' }}"
+                                           required
                                            {{ $readOnlyTimeline ? 'disabled' : '' }}>
                                     @error('event_date') <span style="font-size:11px;color:#dc2626;">{{ $message }}</span> @enderror
+                                    @if($minEventDate)
+                                        <span style="font-size:11px;color:var(--c-muted); margin-top:4px; display:block;">
+                                            Earliest allowed date: {{ $minEventDate->format('d M Y') }}
+                                        </span>
+                                    @endif
                                 </div>
                                 <button type="submit" class="tl-btn tl-btn-primary" {{ $readOnlyTimeline ? 'disabled' : '' }}>
                                     <i class="fas fa-paper-plane"></i> Submit
