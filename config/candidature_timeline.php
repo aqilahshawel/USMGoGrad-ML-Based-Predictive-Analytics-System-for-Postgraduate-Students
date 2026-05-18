@@ -8,7 +8,7 @@ return [
     'study_modes' => [
         'full_time' => [
             'min_semesters' => 4,
-            'expected_semesters' => 8,
+            'expected_semesters' => 7,
             'max_semesters' => 10,
             'stages' => [
                 [
@@ -21,7 +21,7 @@ return [
                     'key' => 'stage_2',
                     'title' => 'Stage 2 — Submission',
                     'from' => 6,
-                    'to' => 8,
+                    'to' => 7,
                 ],
             ],
             'checkpoint_targets' => [
