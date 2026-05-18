@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Timeline;
 use App\Models\User;
 use App\Notifications\CheckpointOverdueReminderNotification;
+use App\Models\StudentCheckpoint;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
 
@@ -59,6 +60,11 @@ class OverdueCheckpointNotificationService
             ->map(fn (Timeline $stop) => $this->buildReminderKey($student, $stop))
             ->values()
             ->all();
+
+        $upcomingReminders = $this->buildUpcomingReminders($student, $checkpoint);
+        foreach ($upcomingReminders as $reminder) {
+            $activeReminderKeys[] = $reminder['reminder_key'];
+        }
 
         if ($needsProgressNudge) {
             $activeReminderKeys[] = $this->buildProgressNudgeKey($student);
@@ -128,6 +134,27 @@ class OverdueCheckpointNotificationService
             }
         }
 
+        foreach ($upcomingReminders as $reminder) {
+            foreach ($recipients as $recipient) {
+                if ($this->notificationAlreadySent($recipient, $reminder['reminder_key'])) {
+                    continue;
+                }
+
+                $recipient->notify(new CheckpointOverdueReminderNotification(
+                    studentId: (int) $student->id,
+                    studentName: (string) $student->name,
+                    checkpointTitle: (string) $reminder['title'],
+                    targetDate: $reminder['target_date'],
+                    targetSemester: (int) $reminder['target_semester'],
+                    currentSemester: $currentSemester,
+                    reminderKey: $reminder['reminder_key'],
+                    message: $reminder['message'],
+                ));
+
+                $sent++;
+            }
+        }
+
         return $sent;
     }
 
@@ -165,6 +192,105 @@ class OverdueCheckpointNotificationService
     private function buildProgressNudgeKey(User $student): string
     {
         return sprintf('checkpoint_progress_nudge:%d', (int) $student->id);
+    }
+
+    /**
+     * @return array<int, array{reminder_key:string,title:string,target_date:?string,target_semester:int,message:string}>
+     */
+    private function buildUpcomingReminders(User $student, ?StudentCheckpoint $checkpoint): array
+    {
+        if (! $checkpoint) {
+            return [];
+        }
+
+        $today = Carbon::today();
+        $reminders = [];
+
+        foreach ($this->upcomingReminderDefinitions() as $definition) {
+            $recommendedDate = $checkpoint->{$definition['recommended_field']} ?? null;
+            if (! $recommendedDate) {
+                continue;
+            }
+
+            $recommendedDate = $recommendedDate instanceof Carbon
+                ? $recommendedDate->copy()->startOfDay()
+                : Carbon::parse((string) $recommendedDate)->startOfDay();
+
+            if ($recommendedDate->lte($today)) {
+                continue;
+            }
+
+            $daysUntil = $today->diffInDays($recommendedDate, false);
+            if (! in_array($daysUntil, [14, 7], true)) {
+                continue;
+            }
+
+            if (! empty($definition['observed_field']) && ! empty($checkpoint->{$definition['observed_field']})) {
+                continue;
+            }
+
+            $windowLabel = $daysUntil === 14 ? '2 weeks' : '1 week';
+            $reminderKey = sprintf(
+                'checkpoint_upcoming:%d:%s:d%d',
+                (int) $student->id,
+                $definition['recommended_field'],
+                $daysUntil
+            );
+
+            $reminders[] = [
+                'reminder_key' => $reminderKey,
+                'title' => $definition['title'],
+                'target_date' => $recommendedDate->format('Y-m-d'),
+                'target_semester' => (int) ($definition['target_semester'] ?? 0),
+                'message' => sprintf(
+                    'Your model-suggested deadline for %s is in %s on %s. Please prepare early and check in with your supervisor if needed.',
+                    $definition['title'],
+                    $windowLabel,
+                    $recommendedDate->format('d M Y')
+                ),
+            ];
+        }
+
+        return $reminders;
+    }
+
+    /**
+     * @return array<int, array{recommended_field:string,observed_field:string,title:string,target_semester:int}>
+     */
+    private function upcomingReminderDefinitions(): array
+    {
+        return [
+            [
+                'recommended_field' => 'recommended_proposal_review_date',
+                'observed_field' => 'proposal_review_date',
+                'title' => 'Proposal Review Date',
+                'target_semester' => 0,
+            ],
+            [
+                'recommended_field' => 'recommended_research_review_date',
+                'observed_field' => 'research_review_date',
+                'title' => 'Research Review Date',
+                'target_semester' => 0,
+            ],
+            [
+                'recommended_field' => 'recommended_nos_date',
+                'observed_field' => 'nos_date',
+                'title' => 'NOS Date',
+                'target_semester' => 0,
+            ],
+            [
+                'recommended_field' => 'recommended_final_draft_submission_date',
+                'observed_field' => 'final_draft_submission_date',
+                'title' => 'Final Draft Submission Date',
+                'target_semester' => 0,
+            ],
+            [
+                'recommended_field' => 'recommended_viva_date',
+                'observed_field' => 'viva_date',
+                'title' => 'Viva Date',
+                'target_semester' => 0,
+            ],
+        ];
     }
 
     /**

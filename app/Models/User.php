@@ -13,15 +13,13 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'cluster', 'research_title', 'research_objective', 'start_date', 'study_mode', 'force_password_change', 'password_changed_at'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'cluster', 'research_title', 'research_objective', 'start_date', 'study_mode'];
 
     protected $hidden = ['password'];
 
     protected $casts = [
         'password' => 'hashed',
         'start_date' => 'date',
-        'password_changed_at' => 'datetime',
-        'force_password_change' => 'boolean',
     ];
 
     public function supervisor()

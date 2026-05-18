@@ -78,7 +78,6 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($randomPassword),
-            'force_password_change' => true,
             'cluster' => $isStudent ? $request->cluster : null,
             'study_mode' => $isStudent ? 'full_time' : null,
             'start_date' => $isStudent ? $request->start_date : null,
@@ -127,12 +126,6 @@ class AuthController extends Controller
             ['email' => $request->email, 'password' => $request->password],
             $request->boolean('remember')
         )) {
-            $user = Auth::user();
-
-            if ((bool) ($user->force_password_change ?? false)) {
-                return redirect()->route('profile.show');
-            }
-
             return redirect()->route('home');
         }
 

@@ -28,8 +28,6 @@ class PasswordController extends Controller
         }
 
         $user->password = Hash::make($request->new_password);
-        $user->force_password_change = false;
-        $user->password_changed_at = now();
         $user->save();
 
         return redirect()->route('home')->with('success', 'Password changed successfully.');

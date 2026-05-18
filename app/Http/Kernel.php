@@ -33,7 +33,6 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
-            \App\Http\Middleware\ForcePasswordChange::class,
         ],
 
         'api' => [
