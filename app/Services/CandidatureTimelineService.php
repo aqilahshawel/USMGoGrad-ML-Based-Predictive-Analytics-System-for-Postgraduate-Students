@@ -228,7 +228,7 @@ class CandidatureTimelineService
     }
 
     /**
-     * @return array{current_semester:int,stage_key:string|null,stage_title:string|null,risk_status:string,display_risk_label:string,base_risk_status:string,ml_state:string,show_ml_pending_badge:bool,has_checkpoint_evidence:bool,has_checkpoint_delay:bool,overdue_checkpoint_count:int,late_completed_count:int,risk_reasons:array<int,string>,expected_semesters:int,max_semesters:int}
+     * @return array{current_semester:int,stage_key:string|null,stage_title:string|null,risk_status:string,display_risk_label:string,base_risk_status:string,ml_state:string,show_ml_pending_badge:bool,has_checkpoint_evidence:bool,has_checkpoint_delay:bool,overdue_checkpoint_count:int,late_completed_count:int,risk_reasons:array<int,string>,expected_semesters:int,max_semesters:int,graduated_on_time:bool,completion_semester:int|null,has_completed_studies:bool}
      */
     public function progressSnapshot(
         CarbonInterface $startDate,
@@ -240,7 +240,9 @@ class CandidatureTimelineService
         $mode = $studyMode instanceof StudyMode ? $studyMode : StudyMode::fromMixed($studyMode);
         $rules = $this->rulesForStudyMode($mode);
 
-        $currentSemester = $this->currentSemesterNumber($startDate, $mode, $today);
+        $todayDate = CarbonImmutable::instance($today ?? CarbonImmutable::today())->startOfDay();
+
+        $currentSemester = $this->currentSemesterNumber($startDate, $mode, $todayDate);
 
         $risk = $this->riskStatusForSemester($currentSemester === 0 ? 1 : $currentSemester, $mode);
         if ($currentSemester === 0) {
@@ -263,11 +265,17 @@ class CandidatureTimelineService
         $stage = $currentSemester > 0 ? $this->stageForSemester($currentSemester, $mode) : null;
 
         $hasCompletedStudies = $this->hasCompletedStudies($mode, $checkpoint);
+        $completionSemester = $hasCompletedStudies
+            ? $this->completionSemesterForCheckpoint($startDate, $mode, $checkpoint, $todayDate)
+            : null;
+        $graduatedOnTime = $hasCompletedStudies
+            && $completionSemester !== null
+            && $completionSemester <= $rules['expected_semesters'];
         $displayRiskLabel = str_replace('_', ' ', ucwords($finalRiskStatus, '_'));
 
         if ($hasCompletedStudies) {
             $finalRiskStatus = self::RISK_ON_TRACK;
-            $displayRiskLabel = 'Completed';
+            $displayRiskLabel = $graduatedOnTime ? 'Graduated on time' : 'Completed';
             $stage = ['key' => 'completed', 'title' => 'Studies completed', 'from' => 0, 'to' => 0];
 
             $riskMeta['show_ml_pending_badge'] = false;
@@ -293,7 +301,51 @@ class CandidatureTimelineService
             'risk_reasons' => $riskMeta['risk_reasons'],
             'expected_semesters' => $rules['expected_semesters'],
             'max_semesters' => $rules['max_semesters'],
+            'graduated_on_time' => $graduatedOnTime,
+            'completion_semester' => $completionSemester,
+            'has_completed_studies' => $hasCompletedStudies,
         ];
+    }
+
+    private function completionSemesterForCheckpoint(
+        CarbonInterface $startDate,
+        StudyMode|string $studyMode,
+        ?StudentCheckpoint $checkpoint,
+        CarbonInterface $today
+    ): ?int {
+        if (! $checkpoint) {
+            return null;
+        }
+
+        $targets = $this->checkpointTargets($studyMode);
+        $semesters = [];
+
+        foreach ($targets as $target) {
+            $field = (string) ($target['field'] ?? '');
+            if ($field === '') {
+                continue;
+            }
+
+            $value = $checkpoint->{$field};
+            if (! $this->isCheckpointCompleted($checkpoint, $field)) {
+                continue;
+            }
+
+            if ($value instanceof CarbonInterface) {
+                $semesters[] = $this->currentSemesterNumber($startDate, $studyMode, $value);
+                continue;
+            }
+
+            if (is_bool($value)) {
+                $semesters[] = $this->currentSemesterNumber($startDate, $studyMode, $today);
+            }
+        }
+
+        if ($semesters === []) {
+            return null;
+        }
+
+        return max($semesters);
     }
 
     private function hasCompletedStudies(StudyMode|string $studyMode, ?StudentCheckpoint $checkpoint): bool

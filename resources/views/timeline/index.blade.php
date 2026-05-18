@@ -98,6 +98,10 @@
         ->filter(fn($timeline) => ! $timeline->is_system_generated)
         ->sortBy('event_date')
         ->values();
+
+    $hasCompletedStudies = (bool) ($progressSnapshot['has_completed_studies'] ?? false);
+    $graduatedOnTime = (bool) ($progressSnapshot['graduated_on_time'] ?? false);
+    $readOnlyTimeline = $hasCompletedStudies;
 @endphp
 
 <style>
@@ -477,6 +481,12 @@
             @if(auth()->user()->hasRole('student'))
                 {{-- ── Editable stages (Stage 1 left, Stage 2 right) ─── --}}
                 <section class="col-12">
+                    @if($readOnlyTimeline)
+                        <div class="checkpoint-note info">
+                            <i class="fas fa-award me-1"></i>
+                            You have completed all checkpoints. Timeline tracking is now read-only.
+                        </div>
+                    @endif
                     <form method="POST" action="{{ route('timeline.checkpoints.update') }}" id="checkpoint-update-form">
                         @csrf
                         @method('PUT')
@@ -516,6 +526,7 @@
                                                 name="ekc500_admin_approved" 
                                                 value="1" 
                                                 {{ old('ekc500_admin_approved', $checkpoint?->ekc500_admin_approved ?? false) ? 'checked' : '' }}
+                                                {{ $readOnlyTimeline ? 'disabled' : '' }}
                                             >
                                             <span style="font-size: 0.9rem; font-weight: 500;">Approved</span>
                                         </div>
@@ -543,6 +554,7 @@
                                                 name="proposal_review_date"
                                                 value="{{ old('proposal_review_date', optional($checkpoint?->proposal_review_date)->format('Y-m-d')) }}"
                                                 class="{{ !empty($actualCheckpointDates['proposal_review_date']) ? 'input-filled' : '' }}"
+                                                {{ $readOnlyTimeline ? 'disabled' : '' }}
                                             >
                                             @error('proposal_review_date')
                                                 <span class="text-danger small d-block mt-1">{{ $message }}</span>
@@ -564,6 +576,7 @@
                                                 name="publish_paper"
                                                 value="1"
                                                 {{ old('publish_paper', $checkpoint?->publish_paper ?? false) ? 'checked' : '' }}
+                                                {{ $readOnlyTimeline ? 'disabled' : '' }}
                                             >
                                             <span style="font-size: 0.9rem; font-weight: 500;">Published</span>
                                         </div>
@@ -591,6 +604,7 @@
                                                 name="research_review_date"
                                                 value="{{ old('research_review_date', optional($checkpoint?->research_review_date)->format('Y-m-d')) }}"
                                                 class="{{ !empty($actualCheckpointDates['research_review_date']) ? 'input-filled' : '' }}"
+                                                {{ $readOnlyTimeline ? 'disabled' : '' }}
                                             >
                                             @error('research_review_date')
                                                 <span class="text-danger small d-block mt-1">{{ $message }}</span>
@@ -602,7 +616,7 @@
                                         <div class="stage-footer-meta">
                                             Fields completed: <strong id="s1-count">{{ $s1CompletedCount }} / 4</strong>
                                         </div>
-                                        <button type="submit" class="btn-save">
+                                        <button type="submit" class="btn-save" {{ $readOnlyTimeline ? 'disabled' : '' }}>
                                             <i class="fas fa-save me-1"></i> Save Progress
                                         </button>
                                     </div>
@@ -666,7 +680,7 @@
                                                     name="nos_date"
                                                     value="{{ old('nos_date', optional($checkpoint?->nos_date)->format('Y-m-d')) }}"
                                                     class="{{ !empty($actualCheckpointDates['nos_date']) ? 'input-filled' : '' }}"
-                                                    {{ $stage2Locked ? 'disabled' : '' }}
+                                                    {{ $stage2Locked || $readOnlyTimeline ? 'disabled' : '' }}
                                                 >
                                                 @error('nos_date')
                                                     <span class="text-danger small d-block mt-1">{{ $message }}</span>
@@ -696,7 +710,7 @@
                                                     name="final_draft_submission_date"
                                                     value="{{ old('final_draft_submission_date', optional($checkpoint?->final_draft_submission_date)->format('Y-m-d')) }}"
                                                     class="{{ !empty($actualCheckpointDates['final_draft_submission_date']) ? 'input-filled' : '' }}"
-                                                    {{ $stage2Locked ? 'disabled' : '' }}
+                                                    {{ $stage2Locked || $readOnlyTimeline ? 'disabled' : '' }}
                                                 >
                                                 @error('final_draft_submission_date')
                                                     <span class="text-danger small d-block mt-1">{{ $message }}</span>
@@ -708,7 +722,7 @@
                                             <div class="stage-footer-meta">
                                                 Fields completed: <strong id="s2-count">{{ $s2CompletedCount }} / 2</strong>
                                             </div>
-                                            <button type="submit" class="btn-save" {{ $stage2Locked ? 'disabled' : '' }}>
+                                            <button type="submit" class="btn-save" {{ $stage2Locked || $readOnlyTimeline ? 'disabled' : '' }}>
                                                 <i class="fas fa-save me-1"></i> Save Progress
                                             </button>
                                         </div>
@@ -742,14 +756,22 @@
                             default => 'Pending',
                         };
 
-                        $forecastRiskClass = 'risk-' . strtolower((string) ($checkpoint?->risk_level ?? 'pending'));
+                        if ($hasCompletedStudies) {
+                            $forecastHeadline = $graduatedOnTime ? 'Complete Studies';
+                        }
+
+                        $forecastRiskClass = $hasCompletedStudies
+                            ? 'risk-on_track'
+                            : 'risk-' . strtolower((string) ($checkpoint?->risk_level ?? 'pending'));
                     @endphp
                     <div class="prediction-score {{ $forecastRiskClass }}">
                         {{ $forecastHeadline }}
                     </div>
 
                     <p style="margin: .35rem 0 0; font-size: .85rem; color: #666;">
-                        @if(($predictionState ?? null) === 'ready')
+                        @if($hasCompletedStudies)
+                            All required checkpoints are completed.
+                        @elseif(($predictionState ?? null) === 'ready')
                             Forecast generated from your current checkpoint and profile data.
                         @elseif(($predictionState ?? null) === 'unavailable_prerequisites')
                             Missing profile details required to run the model.
@@ -760,29 +782,31 @@
                         @endif
                     </p>
 
-                    <div class="forecast-kv">
-                        <div class="forecast-kv-item">
-                            <div class="forecast-kv-label">Risk level</div>
-                            <div class="forecast-kv-value">{{ $checkpoint?->risk_level ? ucfirst(str_replace('_', ' ', $checkpoint->risk_level)) : '—' }}</div>
-                        </div>
-                        <div class="forecast-kv-item">
-                            <div class="forecast-kv-label">Last updated</div>
-                            <div class="forecast-kv-value">
-                                {{ $checkpoint?->last_predicted_at
-                                    ? $checkpoint->last_predicted_at->timezone(config('app.display_timezone'))->format('d M Y H:i')
-                                    : '—' }}
+                    @unless($hasCompletedStudies)
+                        <div class="forecast-kv">
+                            <div class="forecast-kv-item">
+                                <div class="forecast-kv-label">Risk level</div>
+                                <div class="forecast-kv-value">{{ $checkpoint?->risk_level ? ucfirst(str_replace('_', ' ', $checkpoint->risk_level)) : '—' }}</div>
+                            </div>
+                            <div class="forecast-kv-item">
+                                <div class="forecast-kv-label">Last updated</div>
+                                <div class="forecast-kv-value">
+                                    {{ $checkpoint?->last_predicted_at
+                                        ? $checkpoint->last_predicted_at->timezone(config('app.display_timezone'))->format('d M Y H:i')
+                                        : '—' }}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endunless
 
-                    @if(($predictionState ?? null) === 'unavailable_prerequisites' && !empty($missingPrerequisites))
+                    @if(!$hasCompletedStudies && ($predictionState ?? null) === 'unavailable_prerequisites' && !empty($missingPrerequisites))
                         <div class="forecast-table-wrap" style="margin-top: .9rem;">
                             <div class="forecast-table-title"><i class="fas fa-circle-exclamation"></i> Missing prerequisites</div>
                             <div style="padding: .75rem 1rem; font-size: .85rem; color: #666;">
                                 {{ implode(', ', $missingPrerequisites) }}
                             </div>
                         </div>
-                    @elseif(($predictionState ?? null) === 'refresh_failed' && !empty($predictionWarning))
+                    @elseif(!$hasCompletedStudies && ($predictionState ?? null) === 'refresh_failed' && !empty($predictionWarning))
                         <div class="forecast-table-wrap" style="margin-top: .9rem;">
                             <div class="forecast-table-title"><i class="fas fa-triangle-exclamation"></i> Forecast warning</div>
                             <div style="padding: .75rem 1rem; font-size: .85rem; color: #666;">
@@ -870,6 +894,9 @@
                                                 </form>
                                             </div>
                                         @elseif(auth()->user()->hasRole('student') && (int) $row->proposed_by_user_id === (int) auth()->id() && $row->status === 'approved')
+                                            @if($readOnlyTimeline)
+                                                <span class="status-pill pill-done">Read-only</span>
+                                            @else
                                             <div class="d-flex flex-column gap-2">
                                                 <form action="{{ route('timeline.completion.update', $row->id) }}" method="POST" class="d-flex align-items-center gap-2 flex-wrap">
                                                     @csrf
@@ -887,6 +914,7 @@
                                                     <button type="submit" class="btn btn-outline-danger btn-sm w-100"><i class="fas fa-trash"></i> Delete</button>
                                                 </form>
                                             </div>
+                                            @endif
                                         @else
                                             <span class="status-pill {{ $row->status === 'approved' ? 'pill-done' : ($row->status === 'rejected' ? 'pill-locked' : 'pill-progress') }}">
                                                 {{ $row->status === 'approved' ? 'Approved' : ($row->status === 'rejected' ? 'Rejected' : 'Pending') }}

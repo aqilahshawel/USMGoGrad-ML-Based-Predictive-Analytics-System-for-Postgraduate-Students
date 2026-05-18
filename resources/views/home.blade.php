@@ -1222,45 +1222,6 @@
         $currentStopId = optional($systemStops->firstWhere('completed', false))->id;
     @endphp
 
-    @php
-        $profileUser = Auth::user()->hasRole('lecturer') ? $dashboardTargetUser : Auth::user();
-    @endphp
-
-    @if($profileUser)
-        <details class="timeline-panel mb-3" style="overflow: hidden;">
-            <summary class="timeline-panel-header" style="cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-                <div>
-                    <h5 style="margin-bottom: 0.15rem;">{{ Auth::user()->hasRole('lecturer') ? 'Student Profile' : 'Your Profile' }}</h5>
-                    <p class="mb-0">Key registration details for this candidature.</p>
-                </div>
-                <span style="font-size: 0.78rem; color: var(--lav-500); font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem;">
-                    <i class="fas fa-chevron-down"></i>
-                    Toggle
-                </span>
-            </summary>
-            <div class="timeline-panel-body">
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem;">
-                    <div>
-                        <div class="text-muted" style="font-size: 0.78rem;">Name</div>
-                        <div style="font-weight: 600; color: var(--n-900);">{{ $profileUser->name }}</div>
-                    </div>
-                    <div>
-                        <div class="text-muted" style="font-size: 0.78rem;">Cluster</div>
-                        <div style="font-weight: 600; color: var(--n-900);">{{ $profileUser->cluster ?: '—' }}</div>
-                    </div>
-                    <div>
-                        <div class="text-muted" style="font-size: 0.78rem;">Research Title</div>
-                        <div style="font-weight: 600; color: var(--n-900);">{{ $profileUser->research_title ?: '—' }}</div>
-                    </div>
-                    <div>
-                        <div class="text-muted" style="font-size: 0.78rem;">Research Objective</div>
-                        <div style="font-weight: 600; color: var(--n-900);">{{ $profileUser->research_objective ?: '—' }}</div>
-                    </div>
-                </div>
-            </div>
-        </details>
-    @endif
-
     <section class="tab-content-section mt-3">
         @if(Auth::user()->hasRole('lecturer'))
             <div class="mb-3">
@@ -1315,7 +1276,12 @@
             </div>
         @endif
 
-        @if(Auth::user()->hasRole('student'))
+        @php
+            $graduatedOnTime = (bool) ($progressSnapshot['graduated_on_time'] ?? false);
+            $hasCompletedStudies = (bool) ($progressSnapshot['has_completed_studies'] ?? false);
+        @endphp
+
+        @if(Auth::user()->hasRole('student') && ! $hasCompletedStudies)
             <section class="timeline-panel mb-3">
                 <div class="timeline-panel-header">
                     <h5>Add New Event</h5>
@@ -1404,6 +1370,8 @@
 
                             @if($actualField === 'ekc500_admin_approved' && $actualValue)
                                 <div class="checkpoint-pill">Passed</div>
+                            @elseif(is_bool($actualValue) && $actualValue)
+                                <div class="checkpoint-pill">Passed</div>
                             @elseif($actualValue)
                                 <div class="checkpoint-pill">Completed on {{ $actualValue->format('d M Y') }}</div>
                             @endif
@@ -1458,7 +1426,7 @@
                                         </div>
                                     @endif
 
-                                    @if(auth()->user()->hasRole('student') && (int) $row->proposed_by_user_id === (int) auth()->id() && $row->status === 'approved')
+                                    @if(auth()->user()->hasRole('student') && (int) $row->proposed_by_user_id === (int) auth()->id() && $row->status === 'approved' && ! $graduatedOnTime)
                                         <div class="checkpoint-note info mb-0 mt-3">
                                             <strong>Completion:</strong> {{ $row->completed ? 'Completed' : 'Not yet completed' }}
                                         </div>

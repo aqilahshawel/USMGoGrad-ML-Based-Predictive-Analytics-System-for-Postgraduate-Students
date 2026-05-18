@@ -92,6 +92,7 @@ class TimelineController extends Controller
 
         if ($targetUser && $targetUser->start_date) {
             $checkpoint = StudentCheckpoint::firstOrCreate(['user_id' => $targetUser->id]);
+            $this->normalizePublishPaper($checkpoint);
 
             try {
                 $progressSnapshot = $timelineService->progressSnapshot(
@@ -175,6 +176,13 @@ class TimelineController extends Controller
 
         $user = Auth::user();
 
+        if ($user && $user->hasRole('student')) {
+            $blocked = $this->blockStudentEditsIfGraduated($user, 'Timeline changes are locked after graduating on time.');
+            if ($blocked) {
+                return $blocked;
+            }
+        }
+
         // Professional timeline: student-created items require supervisor approval
         $status = $user->hasRole('student') ? 'pending' : 'approved';
         $reviewedBy = $status === 'approved' ? $user->id : null;
@@ -224,6 +232,11 @@ class TimelineController extends Controller
 
         // Students cannot directly edit professional timeline items; they submit a change request.
         if ($user->hasRole('student')) {
+            $blocked = $this->blockStudentEditsIfGraduated($user, 'Timeline changes are locked after graduating on time.');
+            if ($blocked) {
+                return $blocked;
+            }
+
             if ((int) $timeline->user_id !== (int) $user->id) {
                 abort(403);
             }
@@ -277,6 +290,11 @@ class TimelineController extends Controller
             abort(403);
         }
 
+        $blocked = $this->blockStudentEditsIfGraduated($student, 'Checkpoint updates are locked after graduating on time.');
+        if ($blocked) {
+            return $blocked;
+        }
+
         $validated = $request->validate([
             'ekc500_admin_approved' => ['nullable', 'boolean'],
             'proposal_review_date' => ['nullable', 'date'],
@@ -291,6 +309,9 @@ class TimelineController extends Controller
         $validated['publish_paper'] = (bool) $request->boolean('publish_paper');
 
         $checkpoint = StudentCheckpoint::firstOrCreate(['user_id' => $student->id]);
+        if (! $validated['publish_paper'] && $this->shouldAutoPublishPaper($checkpoint, $validated)) {
+            $validated['publish_paper'] = true;
+        }
         $this->validateCheckpointSequence(array_merge($checkpoint->toArray(), $validated));
 
         $checkpoint->fill($validated)->save();
@@ -340,6 +361,11 @@ class TimelineController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('student')) {
+            $blocked = $this->blockStudentEditsIfGraduated($user, 'Timeline changes are locked after graduating on time.');
+            if ($blocked) {
+                return $blocked;
+            }
+
             if (
                 (int) $timeline->user_id !== (int) $user->id
                 || $timeline->is_system_generated
@@ -468,6 +494,11 @@ class TimelineController extends Controller
             abort(403);
         }
 
+        $blocked = $this->blockStudentEditsIfGraduated($student, 'Timeline updates are locked after graduating on time.');
+        if ($blocked) {
+            return $blocked;
+        }
+
         if (
             (int) $timeline->user_id !== (int) $student->id
             || $timeline->is_system_generated
@@ -525,11 +556,76 @@ class TimelineController extends Controller
                 continue;
             }
 
+            if (is_bool($requiredValue)) {
+                continue;
+            }
+
             if ((string) $value < (string) $requiredValue) {
                 throw ValidationException::withMessages([
                     $field => 'This checkpoint date cannot be earlier than the previous checkpoint date.',
                 ]);
             }
         }
+    }
+
+    private function shouldAutoPublishPaper(StudentCheckpoint $checkpoint, array $validated): bool
+    {
+        if ($checkpoint->publish_paper) {
+            return false;
+        }
+
+        if (! empty($validated['research_review_date'])
+            || ! empty($validated['nos_date'])
+            || ! empty($validated['final_draft_submission_date'])
+            || ! empty($validated['viva_date'])) {
+            return true;
+        }
+
+        return (bool) ($checkpoint->research_review_date
+            || $checkpoint->nos_date
+            || $checkpoint->final_draft_submission_date
+            || $checkpoint->viva_date);
+    }
+
+    private function normalizePublishPaper(StudentCheckpoint $checkpoint): void
+    {
+        if ($checkpoint->publish_paper) {
+            return;
+        }
+
+        if ($checkpoint->research_review_date
+            || $checkpoint->nos_date
+            || $checkpoint->final_draft_submission_date
+            || $checkpoint->viva_date) {
+            $checkpoint->publish_paper = true;
+            $checkpoint->save();
+        }
+    }
+
+    private function blockStudentEditsIfGraduated(User $student, string $message): ?\Illuminate\Http\RedirectResponse
+    {
+        if (! $student->start_date) {
+            return null;
+        }
+
+        $checkpoint = $student->checkpoint ?: StudentCheckpoint::firstOrCreate(['user_id' => $student->id]);
+        $timelineService = app(CandidatureTimelineService::class);
+
+        try {
+            $snapshot = $timelineService->progressSnapshot(
+                $student->start_date,
+                $student->study_mode ?: 'full_time',
+                null,
+                $checkpoint
+            );
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        if (! empty($snapshot['has_completed_studies']) || ! empty($snapshot['graduated_on_time'])) {
+            return redirect()->back()->with('warning', $message);
+        }
+
+        return null;
     }
 }
