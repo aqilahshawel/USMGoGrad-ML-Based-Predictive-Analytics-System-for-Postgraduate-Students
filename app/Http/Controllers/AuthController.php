@@ -127,7 +127,13 @@ class AuthController extends Controller
             ['email' => $request->email, 'password' => $request->password],
             $request->boolean('remember')
         )) {
-            return redirect()->route($role . '.dashboard'); // Redirect based on role
+            $user = Auth::user();
+
+            if ((bool) ($user->force_password_change ?? false)) {
+                return redirect()->route('profile.show');
+            }
+
+            return redirect()->route('home');
         }
 
         return back()

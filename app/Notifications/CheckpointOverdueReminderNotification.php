@@ -52,12 +52,14 @@ class CheckpointOverdueReminderNotification extends Notification
 
     private function defaultMessage(): string
     {
+        $overdueSemesters = max(1, $this->currentSemester - $this->targetSemester);
+        $overdueMonths = $overdueSemesters * 6;
+
         return sprintf(
-            '%s is overdue for %s (target semester %d, current semester %d).',
-            $this->studentName,
-            $this->checkpointTitle,
-            $this->targetSemester,
-            $this->currentSemester
+            'You are overdue by %d month%s for %s. Consider updating your timeline or meeting your supervisor.',
+            $overdueMonths,
+            $overdueMonths === 1 ? '' : 's',
+            $this->checkpointTitle
         );
     }
 

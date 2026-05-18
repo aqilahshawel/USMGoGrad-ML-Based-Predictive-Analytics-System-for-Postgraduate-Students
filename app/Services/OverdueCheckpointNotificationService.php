@@ -38,6 +38,18 @@ class OverdueCheckpointNotificationService
             ->filter(fn (Timeline $stop) => $currentSemester > (int) $stop->semester_number)
             ->values();
 
+        $checkpoint = $student->checkpoint;
+        $hasProgress = (bool) (
+            $checkpoint?->ekc500_admin_approved
+            || $checkpoint?->proposal_review_date
+            || $checkpoint?->publish_paper
+            || $checkpoint?->research_review_date
+            || $checkpoint?->nos_date
+            || $checkpoint?->final_draft_submission_date
+            || $checkpoint?->viva_date
+        );
+        $needsProgressNudge = ! $hasProgress && $currentSemester >= 3;
+
         $recipients = $this->buildRecipients($student);
         if ($recipients->isEmpty()) {
             return 0;
@@ -48,9 +60,13 @@ class OverdueCheckpointNotificationService
             ->values()
             ->all();
 
+        if ($needsProgressNudge) {
+            $activeReminderKeys[] = $this->buildProgressNudgeKey($student);
+        }
+
         $this->markResolvedNotificationsAsRead($recipients, $student, $activeReminderKeys);
 
-        if ($overdueStops->isEmpty()) {
+        if ($overdueStops->isEmpty() && ! $needsProgressNudge) {
             return 0;
         }
 
@@ -64,12 +80,13 @@ class OverdueCheckpointNotificationService
                     continue;
                 }
 
+                $overdueSemesters = max(1, $currentSemester - (int) $stop->semester_number);
+                $overdueMonths = $overdueSemesters * 6;
                 $defaultMessage = sprintf(
-                    '%s is overdue for %s (target semester %d, current semester %d).',
-                    (string) $student->name,
-                    (string) $stop->title,
-                    (int) $stop->semester_number,
-                    $currentSemester
+                    'You are overdue by %d month%s for %s. Consider updating your timeline or meeting your supervisor.',
+                    $overdueMonths,
+                    $overdueMonths === 1 ? '' : 's',
+                    (string) $stop->title
                 );
 
                 $personalizedMessage = $defaultMessage;
@@ -83,6 +100,28 @@ class OverdueCheckpointNotificationService
                     currentSemester: $currentSemester,
                     reminderKey: $reminderKey,
                     message: $personalizedMessage,
+                ));
+
+                $sent++;
+            }
+        }
+
+        if ($needsProgressNudge) {
+            $reminderKey = $this->buildProgressNudgeKey($student);
+            foreach ($recipients as $recipient) {
+                if ($this->notificationAlreadySent($recipient, $reminderKey)) {
+                    continue;
+                }
+
+                $recipient->notify(new CheckpointOverdueReminderNotification(
+                    studentId: (int) $student->id,
+                    studentName: (string) $student->name,
+                    checkpointTitle: 'Progress update',
+                    targetDate: null,
+                    targetSemester: 0,
+                    currentSemester: $currentSemester,
+                    reminderKey: $reminderKey,
+                    message: 'No checkpoint progress has been recorded after 2 semesters. Please schedule a meeting with your supervisor to plan next steps.',
                 ));
 
                 $sent++;
@@ -121,6 +160,11 @@ class OverdueCheckpointNotificationService
             (string) $stop->system_key,
             (int) $stop->semester_number
         );
+    }
+
+    private function buildProgressNudgeKey(User $student): string
+    {
+        return sprintf('checkpoint_progress_nudge:%d', (int) $student->id);
     }
 
     /**
