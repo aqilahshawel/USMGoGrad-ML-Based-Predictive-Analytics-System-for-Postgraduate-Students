@@ -9,6 +9,7 @@ use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChatBotController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FeedbackController;
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 // Password Change Controller
 Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/change-password', [PasswordController::class, 'showChangeForm'])->name('password.change');
     Route::post('/change-password', [PasswordController::class, 'changePassword'])->name('password.update');
 });

@@ -25,13 +25,14 @@ class ForcePasswordChange
         }
 
         if (
-            $request->routeIs('password.change')
+            $request->routeIs('profile.show')
+            || $request->routeIs('password.change')
             || $request->routeIs('password.update')
             || $request->routeIs('logout')
         ) {
             return $next($request);
         }
 
-        return redirect()->route('password.change');
+        return redirect()->route('profile.show');
     }
 }

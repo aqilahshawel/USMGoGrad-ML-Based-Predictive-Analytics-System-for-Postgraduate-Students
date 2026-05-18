@@ -11,7 +11,7 @@ class PasswordController extends Controller
 {
     public function showChangeForm()
     {
-        return view('auth.change-password');
+        return redirect()->route('profile.show');
     }
 
     public function changePassword(Request $request)

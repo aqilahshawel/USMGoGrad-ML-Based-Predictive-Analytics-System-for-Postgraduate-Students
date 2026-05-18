@@ -879,16 +879,10 @@
             </div>
 
             @auth
-            <!-- User section at top -->
-            <div class="sidebar-user-toggle" id="sidebarUserToggle">
-                <div class="sidebar-user-toggle-left">
-                    <i class="fas fa-user-circle avatar-icon"></i>
-                    <span title="{{ Auth::user()->name }}">{{ Auth::user()->name }}</span>
-                </div>
-                <i class="fas fa-chevron-down caret"></i>
-            </div>
-            <div class="sidebar-user-dropdown" id="sidebarUserDropdown">
-                <a class="sidebar-nav-link" href="{{ route('password.change') }}"><i class="fas fa-key"></i> Change Password</a>
+            <div class="sidebar-user-dropdown" style="display: block;">
+                <a class="sidebar-nav-link" href="{{ route('profile.show') }}">
+                    <i class="fas fa-user"></i> Profile
+                </a>
             </div>
             @endauth
 
