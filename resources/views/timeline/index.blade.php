@@ -721,7 +721,7 @@
             </a>
             <a class="tl-tab {{ $activeTab === 'crud' ? 'active' : '' }}"
                href="{{ route('timeline.index', array_merge($tabParams, ['tab' => 'crud'])) }}">
-                <i class="fas fa-calendar-plus"></i> Add Event
+                <i class="fas fa-calendar-plus"></i> Event Requests
             </a>
         </nav>
 
@@ -1067,8 +1067,8 @@
         </div>{{-- /checkpoint tab --}}
 
 
-        {{-- ════════════════════════════════════════════════════
-             TAB: ADD EVENT
+           {{-- ════════════════════════════════════════════════════
+               TAB: EVENT REQUESTS
         ════════════════════════════════════════════════════ --}}
         <div class="{{ $activeTab === 'crud' ? '' : 'd-none' }}">
 

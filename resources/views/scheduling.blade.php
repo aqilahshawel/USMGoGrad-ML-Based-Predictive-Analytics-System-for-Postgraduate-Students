@@ -5,21 +5,23 @@
 @section('styles')
 <style>
     .scheduling-header {
-        background: transparent;
-        color: var(--text);
-        padding: 0 0 1rem;
-        border-bottom: 1px solid var(--border);
+        background: var(--hue-gradient);
+        color: var(--n-900);
+        padding: 1.1rem 1.25rem;
+        border: 1px solid var(--lav-200);
+        border-radius: var(--radius);
+        box-shadow: 0 8px 18px rgba(124, 111, 179, 0.08);
         margin-bottom: 1.5rem;
     }
     .scheduling-header h1 {
         font-family: var(--font-display);
         font-weight: 600;
         margin: 0 0 0.5rem 0;
-        color: var(--text);
+        color: var(--n-900);
     }
     .scheduling-header p {
         margin: 0;
-        color: var(--muted);
+        color: var(--n-700);
     }
     #calendar {
         background: var(--surface);

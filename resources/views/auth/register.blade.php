@@ -6,11 +6,13 @@
 
 <style>
     .register-header {
-        background: transparent;
-        color: var(--text);
-        padding: 0 0 1rem;
+        background: var(--hue-gradient);
+        color: var(--n-900);
+        padding: 1.1rem 1.25rem;
+        border: 1px solid var(--lav-200);
+        border-radius: var(--radius);
         margin-bottom: 1.5rem;
-        border-bottom: 1px solid var(--border);
+        box-shadow: 0 8px 18px rgba(124, 111, 179, 0.08);
     }
 
     .register-header h2 {
@@ -18,6 +20,7 @@
         margin: 0;
         font-size: 1.1rem;
         font-family: var(--font-display);
+        color: var(--n-900);
     }
 
     .register-form-section {
