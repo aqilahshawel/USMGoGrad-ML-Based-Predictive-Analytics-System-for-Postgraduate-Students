@@ -204,6 +204,33 @@
         margin-top: 0.25rem;
     }
 
+    .student-directory-filters {
+        margin-top: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--lav-200);
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(124, 111, 179, 0.05), rgba(224, 125, 69, 0.05));
+    }
+
+    .student-directory-filters .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.35rem;
+    }
+
+    .student-directory-results {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 0.75rem;
+    }
+
+    .student-directory-no-results {
+        display: none;
+    }
+
     .risk-analytics-card {
         background: var(--surface);
         border: 1px solid var(--lav-200);
@@ -988,109 +1015,6 @@
         </div>
     </div>
 
-    <div class="admin-panel student-directory-card">
-        <h5>
-            <i class="fas fa-address-book" style="color: var(--lav-400); margin-right: 0.5rem;"></i>
-            Student Information Directory
-        </h5>
-        <p class="admin-panel-copy">
-            A full list of student records with cluster, research summary, and registration details.
-        </p>
-
-        @if($allStudents->count() > 0)
-            <div class="table-responsive mt-3">
-                <table class="table table-sm table-hover align-middle student-directory-table mb-0">
-                    <thead>
-                        <tr>
-                            <th style="min-width: 180px;">Student</th>
-                            <th style="min-width: 150px;">Cluster Type</th>
-                            <th style="min-width: 220px;">Research Title</th>
-                            <th style="min-width: 240px;">Research Objective</th>
-                            <th style="min-width: 150px;">Registration Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($allStudents as $student)
-                            <tr>
-                                <td>
-                                    <div class="student-name">{{ $student->name }}</div>
-                                    <div class="student-meta">
-                                        {{ $student->supervisor?->name ? 'Supervisor: ' . $student->supervisor->name : 'No supervisor assigned' }}
-                                    </div>
-                                </td>
-                                <td>{{ $student->cluster ?: 'Unassigned' }}</td>
-                                <td>{{ $student->research_title ?: 'Not provided' }}</td>
-                                <td>{{ $student->research_objective ?: 'Not provided' }}</td>
-                                <td>{{ $student->start_date ? $student->start_date->format('d M Y') : 'Not provided' }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <p class="admin-empty mt-3 mb-0">
-                No student records are available yet.
-            </p>
-        @endif
-    </div>
-
-    <div class="assignments-section">
-        <details class="assignments-dropdown">
-            <summary>
-                <h3>
-                    <i class="fas fa-list"></i> Current Assignments
-                    <i class="fas fa-chevron-down assignments-caret"></i>
-                </h3>
-            </summary>
-
-            <div class="assignments-dropdown-body">
-
-            @if($supervisors->count() > 0)
-                @foreach($supervisors as $supervisor)
-                    <div class="supervisor-card">
-                        <div class="supervisor-name">
-                            <i class="fas fa-user-tie"></i> {{ $supervisor->name }}
-                        </div>
-
-                        @if($supervisor->students->count() > 0)
-                            <ul class="students-list">
-                                @foreach($supervisor->students as $student)
-                                    <li>
-                                        <i class="fas fa-user-graduate"></i>
-                                        {{ $student->name }}
-                                        @if($student->cluster)
-                                            ({{ $student->cluster }})
-                                        @endif
-                                        @if($student->start_date)
-                                            -
-                                            @if($student->start_date)
-                                                {{ $student->start_date->format('d M Y') }}
-                                            @else
-                                                Missing registration date
-                                            @endif
-                                        @endif
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <div class="no-students">
-                                <i class="fas fa-inbox"></i> No students assigned yet
-                            </div>
-                        @endif
-                    </div>
-                @endforeach
-            @else
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <h5>No Supervisors Available</h5>
-                    <p class="text-muted">There are no supervisors in the system yet.</p>
-                </div>
-            @endif
-
-            </div>
-        </details>
-    </div>
-
     <!-- Analytics Dashboard Section -->
     @if($analyticsData)
     <div class="analytics-section" style="margin-top: 2.5rem;">
@@ -1099,23 +1023,23 @@
         </h3>
 
         <div class="analytics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-            <!-- Cluster Success Rates -->
+            <!-- On-Time Graduation Rates by Cluster -->
             @if(!empty($analyticsData['cluster_statistics']))
             <div class="analytics-card" style="background: var(--surface); border: 1px solid var(--lav-200); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);">
                 <h5 style="font-family: var(--font-display); margin-bottom: 1rem; color: var(--n-900); font-weight: 700;">
                     <i class="fas fa-layer-group" style="color: var(--lav-400); margin-right: 0.5rem;"></i>
-                    Graduation Success Rates by Cluster
+                    On-Time vs Delayed Graduation by Cluster
                 </h5>
-                <canvas id="clusterChart" style="max-height: 300px;"></canvas>
+                <canvas id="clusterChart" style="max-height: 320px;"></canvas>
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--n-100);">
                     <small style="color: var(--muted); display: block; margin-bottom: 0.75rem;">
-                        <strong>Overview:</strong> Historical graduation outcomes by research cluster.
+                        <strong>Overview:</strong> Stacked comparison of students who graduated on time versus those who took longer than 42 months by research cluster.
                     </small>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                         @foreach($analyticsData['cluster_statistics'] as $cluster)
                             <div style="padding: 0.5rem; background: var(--n-50); border-radius: 8px; border-left: 3px solid var(--lav-400);">
                                 <div style="font-weight: 600; color: var(--n-900); font-size: 0.9rem;">{{ $cluster['cluster'] }}</div>
-                                <div style="color: var(--muted); font-size: 0.8rem;">{{ $cluster['success_rate'] }}% ({{ $cluster['graduated_students'] }}/{{ $cluster['total_students'] }})</div>
+                                <div style="color: var(--muted); font-size: 0.8rem;">{{ $cluster['on_time_rate'] }}% on time ({{ $cluster['on_time_graduations'] }}/{{ $cluster['total_students'] }}) · {{ round(100 - $cluster['on_time_rate'], 1) }}% delayed</div>
                             </div>
                         @endforeach
                     </div>
@@ -1207,6 +1131,91 @@
             </div>
         </div>
         @endif
+
+        <div class="admin-panel student-directory-card">
+        <h5>
+            <i class="fas fa-address-book" style="color: var(--lav-400); margin-right: 0.5rem;"></i>
+            Student Information Directory
+        </h5>
+        <p class="admin-panel-copy">
+            A full list of student records with cluster, research summary, and registration details.
+        </p>
+
+        @if($allStudents->count() > 0)
+            @php
+                $studentClusters = $allStudents->pluck('cluster')->filter()->unique()->sort()->values();
+                $studentSupervisors = $allStudents->map(fn($student) => $student->supervisor?->name)->filter()->unique()->sort()->values();
+            @endphp
+            <div class="student-directory-filters">
+                <div class="row g-3 align-items-end">
+                    <div class="col-12 col-md-4">
+                        <label for="studentDirectorySearch" class="form-label">Search students</label>
+                        <input type="text" id="studentDirectorySearch" class="form-control" placeholder="Search by name, title, objective, or supervisor">
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="studentDirectoryCluster" class="form-label">Cluster</label>
+                        <select id="studentDirectoryCluster" class="form-select">
+                            <option value="">All clusters</option>
+                            <option value="unassigned">Unassigned</option>
+                            @foreach($studentClusters as $cluster)
+                                <option value="{{ strtolower($cluster) }}">{{ $cluster }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="studentDirectorySupervisor" class="form-label">Supervisor</label>
+                        <select id="studentDirectorySupervisor" class="form-select">
+                            <option value="">All supervisors</option>
+                            <option value="unassigned">Unassigned</option>
+                            @foreach($studentSupervisors as $supervisorName)
+                                <option value="{{ strtolower($supervisorName) }}">{{ $supervisorName }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-2 d-grid">
+                        <button type="button" id="studentDirectoryClearFilters" class="btn btn-outline-secondary">Clear</button>
+                    </div>
+                </div>
+                <div id="studentDirectoryResults" class="student-directory-results">Showing {{ $allStudents->count() }} students</div>
+            </div>
+
+            <div class="table-responsive mt-3">
+                <table class="table table-sm table-hover align-middle student-directory-table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 180px;">Student</th>
+                            <th style="min-width: 150px;">Cluster Type</th>
+                            <th style="min-width: 200px;">Assigned Supervisor</th>
+                            <th style="min-width: 220px;">Research Title</th>
+                            <th style="min-width: 240px;">Research Objective</th>
+                            <th style="min-width: 150px;">Registration Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($allStudents as $student)
+                            <tr data-student-directory-row data-search="{{ strtolower(trim(($student->name ?? '') . ' ' . ($student->cluster ?? '') . ' ' . ($student->supervisor?->name ?? 'Unassigned') . ' ' . ($student->research_title ?? '') . ' ' . ($student->research_objective ?? ''))) }}" data-cluster="{{ $student->cluster ? strtolower($student->cluster) : 'unassigned' }}" data-supervisor="{{ $student->supervisor?->name ? strtolower($student->supervisor->name) : 'unassigned' }}">
+                                <td>
+                                    <div class="student-name">{{ $student->name }}</div>
+                                </td>
+                                <td>{{ $student->cluster ?: 'Unassigned' }}</td>
+                                <td>{{ $student->supervisor?->name ?: 'Not assigned' }}</td>
+                                <td>{{ $student->research_title ?: 'Not provided' }}</td>
+                                <td>{{ $student->research_objective ?: 'Not provided' }}</td>
+                                <td>{{ $student->start_date ? $student->start_date->format('d M Y') : 'Not provided' }}</td>
+                            </tr>
+                        @endforeach
+                        <tr id="studentDirectoryNoResults" class="student-directory-no-results">
+                            <td colspan="6" class="text-center py-4 text-muted">No students match the selected filters.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <p class="admin-empty mt-3 mb-0">
+                No student records are available yet.
+            </p>
+        @endif
+    </div>
 
         <p style="color: var(--muted); font-size: 0.8rem; margin-top: 2rem; text-align: center;">
             Analytics generated at {{ \Carbon\Carbon::parse($analyticsData['generated_at'])->format('d M Y H:i A') }}
@@ -1573,8 +1582,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 data: {
                     labels: clusterData.map(c => c.cluster),
                     datasets: [{
-                        label: 'Success Rate (%)',
-                        data: clusterData.map(c => c.success_rate),
+                        label: 'On-Time Graduation Rate (%)',
+                        data: clusterData.map(c => c.on_time_rate),
+                        stack: 'graduation',
                         backgroundColor: [
                             'rgba(124, 111, 179, 0.7)',
                             'rgba(224, 125, 69, 0.7)',
@@ -1591,15 +1601,42 @@ document.addEventListener('DOMContentLoaded', function() {
                         ],
                         borderWidth: 1.5,
                         borderRadius: 6,
+                    }, {
+                        label: 'Delayed Graduation Rate (%)',
+                        data: clusterData.map(c => Math.max(0, 100 - c.on_time_rate)),
+                        stack: 'graduation',
+                        backgroundColor: 'rgba(194, 65, 12, 0.75)',
+                        borderColor: '#c2410c',
+                        borderWidth: 1.5,
+                        borderRadius: 6,
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
                     indexAxis: 'y',
+                    scales: {
+                        x: {
+                            stacked: true,
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                        }
+                    },
                     plugins: {
                         legend: {
-                            display: false
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: 'var(--muted)'
+                            }
                         },
                         tooltip: {
                             callbacks: {
@@ -1609,20 +1646,78 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
                     },
-                    scales: {
-                        x: {
-                            min: 0,
-                            max: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        }
-                    }
                 }
             });
         }
+    }
+
+    // Student Directory Filters
+    const studentDirectoryTable = document.querySelector('.student-directory-table');
+    if (studentDirectoryTable) {
+        const searchInput = document.getElementById('studentDirectorySearch');
+        const clusterSelect = document.getElementById('studentDirectoryCluster');
+        const supervisorSelect = document.getElementById('studentDirectorySupervisor');
+        const clearButton = document.getElementById('studentDirectoryClearFilters');
+        const resultsText = document.getElementById('studentDirectoryResults');
+        const noResultsRow = document.getElementById('studentDirectoryNoResults');
+        const rows = Array.from(studentDirectoryTable.querySelectorAll('tbody tr[data-student-directory-row]'));
+
+        const normalize = (value) => (value || '').toString().trim().toLowerCase();
+
+        const updateDirectoryFilters = () => {
+            const searchValue = normalize(searchInput ? searchInput.value : '');
+            const clusterValue = normalize(clusterSelect ? clusterSelect.value : '');
+            const supervisorValue = normalize(supervisorSelect ? supervisorSelect.value : '');
+            let visibleCount = 0;
+
+            rows.forEach((row) => {
+                const rowSearch = normalize(row.dataset.search);
+                const rowCluster = normalize(row.dataset.cluster);
+                const rowSupervisor = normalize(row.dataset.supervisor);
+
+                const matchesSearch = !searchValue || rowSearch.includes(searchValue);
+                const matchesCluster = !clusterValue || rowCluster === clusterValue;
+                const matchesSupervisor = !supervisorValue || rowSupervisor === supervisorValue;
+                const isVisible = matchesSearch && matchesCluster && matchesSupervisor;
+
+                row.style.display = isVisible ? '' : 'none';
+
+                if (isVisible) {
+                    visibleCount += 1;
+                }
+            });
+
+            if (noResultsRow) {
+                noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
+            }
+
+            if (resultsText) {
+                resultsText.textContent = `Showing ${visibleCount} of ${rows.length} students`;
+            }
+        };
+
+        [searchInput, clusterSelect, supervisorSelect].forEach((control) => {
+            if (control) {
+                control.addEventListener(control.tagName === 'INPUT' ? 'input' : 'change', updateDirectoryFilters);
+            }
+        });
+
+        if (clearButton) {
+            clearButton.addEventListener('click', function() {
+                if (searchInput) {
+                    searchInput.value = '';
+                }
+                if (clusterSelect) {
+                    clusterSelect.value = '';
+                }
+                if (supervisorSelect) {
+                    supervisorSelect.value = '';
+                }
+                updateDirectoryFilters();
+            });
+        }
+
+        updateDirectoryFilters();
     }
 
     // Time to Graduation Trends Chart

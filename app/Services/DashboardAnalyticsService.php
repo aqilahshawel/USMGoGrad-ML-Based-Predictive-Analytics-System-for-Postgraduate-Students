@@ -25,30 +25,38 @@ class DashboardAnalyticsService
         foreach ($clusterGroups as $cluster => $clusterStudents) {
             $total = $clusterStudents->count();
             
-            // Graduated = has viva_date completed (not null)
-            $graduated = $clusterStudents
-                ->filter(fn(array $row) => ! empty($row['viva_date']))
+            // Count students who graduated on time (<= 42 months / <= 7 semesters)
+            $onTimeGraduations = $clusterStudents
+                ->filter(function (array $row) {
+                    if (empty($row['registration_date']) || empty($row['viva_date'])) {
+                        return false;
+                    }
+                    $startDate = Carbon::parse($row['registration_date']);
+                    $vivaDate = Carbon::parse($row['viva_date']);
+                    $monthsTaken = $startDate->diffInMonths($vivaDate);
+                    return $monthsTaken <= 42; // <= 7 semesters
+                })
                 ->count();
 
-            $successRate = $total > 0 ? round(($graduated / $total) * 100, 2) : 0;
+            $onTimeRate = $total > 0 ? round(($onTimeGraduations / $total) * 100, 2) : 0;
 
             $clusterStats[] = [
                 'cluster' => $cluster ?: 'Unassigned',
                 'total_students' => $total,
-                'graduated_students' => $graduated,
-                'success_rate' => $successRate,
-                'percentage_label' => round($successRate) . '%',
+                'on_time_graduations' => $onTimeGraduations,
+                'on_time_rate' => $onTimeRate,
+                'percentage_label' => round($onTimeRate) . '%',
             ];
         }
 
-        // Sort by success rate descending
-        usort($clusterStats, fn($a, $b) => $b['success_rate'] <=> $a['success_rate']);
+        // Sort by on-time rate descending
+        usort($clusterStats, fn($a, $b) => $b['on_time_rate'] <=> $a['on_time_rate']);
 
         return $clusterStats;
     }
 
     /**
-     * Get time-to-graduation trends over past 3 years
+     * Get time-to-graduation trends for years 2017-2022
      * Grouped by cohort year from the historical CSV dataset.
      */
     public function getTimeToGraduationTrends(): array
@@ -59,6 +67,11 @@ class DashboardAnalyticsService
         $trends = [];
 
         foreach ($rows as $year => $cohort) {
+            // Only include years 2017-2022
+            if ($year < 2017 || $year > 2022) {
+                continue;
+            }
+
             $graduatedStudents = $cohort->filter(fn(array $row) => ! empty($row['viva_date']));
 
             if ($graduatedStudents->count() === 0) {
