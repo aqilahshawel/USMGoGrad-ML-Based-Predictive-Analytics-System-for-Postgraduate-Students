@@ -795,10 +795,11 @@
                                         <input type="date" name="proposal_review_date"
                                             class="tl-input {{ !empty($actualCheckpointDates['proposal_review_date']) ? 'filled' : '' }}"
                                             value="{{ old('proposal_review_date', optional($checkpoint?->proposal_review_date)->format('Y-m-d')) }}"
-                                            {{ $readOnlyTimeline ? 'disabled' : '' }}>
+                                            {{ ($readOnlyTimeline || ! ($checkpoint?->ekc500_admin_approved ?? false)) ? 'disabled' : '' }}>
                                         @error('proposal_review_date')
                                             <span style="font-size:11px; color:#dc2626; display:block; margin-top:3px;">{{ $message }}</span>
                                         @enderror
+                                        
                                     </div>
                                 </div>
 
@@ -813,7 +814,8 @@
                                             <input type="hidden" name="publish_paper" value="0">
                                             <input type="checkbox" name="publish_paper" value="1"
                                                 {{ old('publish_paper', $checkpoint?->publish_paper ?? false) ? 'checked' : '' }}
-                                                {{ $readOnlyTimeline ? 'disabled' : '' }}>
+                                                {{ ($readOnlyTimeline || empty($checkpoint?->proposal_review_date)) ? 'disabled' : '' }}>
+                                            
                                             <span>Published</span>
                                         </label>
                                     </div>
@@ -843,11 +845,7 @@
                                         @error('research_review_date')
                                             <span style="font-size:11px; color:#dc2626; display:block; margin-top:3px;">{{ $message }}</span>
                                         @enderror
-                                        @if(! $publishPaperDone)
-                                            <span style="font-size:11px; color:var(--c-muted); display:block; margin-top:3px;">
-                                                Publish paper to unlock this date.
-                                            </span>
-                                        @endif
+                                        
                                     </div>
                                 </div>
 

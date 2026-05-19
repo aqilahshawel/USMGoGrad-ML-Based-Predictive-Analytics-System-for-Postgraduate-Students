@@ -19,6 +19,17 @@
         margin: 0 0 0.5rem 0;
         color: var(--n-900);
     }
+
+    /* Reduce heading size in scheduling header to match page scale */
+    .scheduling-header h1 {
+        font-size: 1.25rem; /* ~20px */
+    }
+
+    @media (max-width: 576px) {
+        .scheduling-header h1 {
+            font-size: 1.05rem; /* slightly smaller on small screens */
+        }
+    }
     .scheduling-header p {
         margin: 0;
         color: var(--n-700);
