@@ -24,6 +24,7 @@ return [
 
     'paper_recommender_script' => base_path('ml/recommend_papers.py'),
     'paper_catalog_path' => base_path('ml/papers_catalog.csv'),
+    'historical_dataset_path' => base_path('ml/PhD Student Dataset.csv'),
 
     'predict_on_profile_view' => (bool) env('ML_PREDICT_ON_PROFILE_VIEW', true),
     'profile_refresh_cooldown_seconds' => (int) env('ML_PROFILE_REFRESH_COOLDOWN_SECONDS', 0),

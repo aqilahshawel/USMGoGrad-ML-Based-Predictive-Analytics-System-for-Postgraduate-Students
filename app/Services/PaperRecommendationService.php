@@ -44,7 +44,7 @@ class PaperRecommendationService
             $queryText,
             '--limit',
             (string) $limit,
-        ]);
+        ], base_path(), $this->pythonProcessEnvironment());
 
         $process->setTimeout(20);
         $process->run();
@@ -91,5 +91,35 @@ class PaperRecommendationService
         }
 
         return array_slice($items, 0, $limit);
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private function pythonProcessEnvironment(): array
+    {
+        $tempDir = sys_get_temp_dir();
+        $systemRoot = getenv('SystemRoot') ?: getenv('SYSTEMROOT') ?: 'C:\\Windows';
+        $comSpec = getenv('ComSpec') ?: getenv('COMSPEC') ?: $systemRoot . '\\System32\\cmd.exe';
+
+        $environment = [
+            'SystemRoot' => $systemRoot,
+            'SYSTEMROOT' => $systemRoot,
+            'ComSpec' => $comSpec,
+            'COMSPEC' => $comSpec,
+            'TEMP' => $tempDir,
+            'TMP' => $tempDir,
+            'PYTHONNOUSERSITE' => '1',
+            'PYTHONIOENCODING' => 'utf-8',
+        ];
+
+        foreach (['PATH', 'Path', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA'] as $key) {
+            $value = getenv($key);
+            if (is_string($value) && trim($value) !== '') {
+                $environment[$key] = $value;
+            }
+        }
+
+        return $environment;
     }
 }

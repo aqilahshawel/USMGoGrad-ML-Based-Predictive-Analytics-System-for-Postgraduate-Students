@@ -24,6 +24,7 @@ class HomeController extends Controller
     
         $students = collect();
         $timelines = collect();
+        $allStudents = collect();
         $supervisors = collect();
         $unassignedStudents = collect();
         $studentsMissingCandidature = collect();
@@ -91,7 +92,10 @@ class HomeController extends Controller
                     ->orderBy('name')
                     ->get();
 
-                $allStudents = User::role('student')->orderBy('name')->get();
+                $allStudents = User::role('student')
+                    ->with(['checkpoint', 'supervisor'])
+                    ->orderBy('name')
+                    ->get();
 
                 $unassignedStudents = $allStudents->whereNull('supervisor_id')->values();
                 $studentsMissingCandidature = $allStudents
@@ -149,6 +153,7 @@ class HomeController extends Controller
         return view('home', compact(
             'timelines',
             'students',
+            'allStudents',
             'supervisors',
             'unassignedStudents',
             'studentsMissingCandidature',

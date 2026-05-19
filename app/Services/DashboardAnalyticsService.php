@@ -6,23 +6,20 @@ use App\Models\User;
 use App\Models\StudentCheckpoint;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
+use SplFileObject;
 
 class DashboardAnalyticsService
 {
+    private ?array $historicalDatasetCache = null;
+
     /**
      * Get graduation success rates grouped by cluster
-     * Analyzes past 3 years of data
+     * Uses the historical CSV dataset for trend analysis.
      */
     public function getClusterStatistics(): array
     {
-        $threeYearsAgo = Carbon::now()->subYears(3);
-        
-        $students = User::role('student')
-            ->where('start_date', '<=', $threeYearsAgo)
-            ->with('checkpoint')
-            ->get();
-
-        $clusterGroups = $students->groupBy('cluster');
+        $rows = $this->historicalDatasetRows();
+        $clusterGroups = collect($rows)->groupBy('cluster');
         $clusterStats = [];
 
         foreach ($clusterGroups as $cluster => $clusterStudents) {
@@ -30,7 +27,7 @@ class DashboardAnalyticsService
             
             // Graduated = has viva_date completed (not null)
             $graduated = $clusterStudents
-                ->filter(fn(User $s) => $s->checkpoint?->viva_date !== null)
+                ->filter(fn(array $row) => ! empty($row['viva_date']))
                 ->count();
 
             $successRate = $total > 0 ? round(($graduated / $total) * 100, 2) : 0;
@@ -52,34 +49,27 @@ class DashboardAnalyticsService
 
     /**
      * Get time-to-graduation trends over past 3 years
-     * Grouped by cohort year
+     * Grouped by cohort year from the historical CSV dataset.
      */
     public function getTimeToGraduationTrends(): array
     {
-        $threeYearsAgo = Carbon::now()->subYears(3);
-        
-        $students = User::role('student')
-            ->where('start_date', '<=', $threeYearsAgo)
-            ->with('checkpoint')
-            ->get();
-
-        $cohortGroups = $students->groupBy(fn(User $s) => $s->start_date->year);
+        $rows = collect($this->historicalDatasetRows())
+            ->filter(fn(array $row) => ! empty($row['registration_date']))
+            ->groupBy(fn(array $row) => Carbon::parse($row['registration_date'])->year);
         $trends = [];
 
-        foreach ($cohortGroups as $year => $cohort) {
-            $graduatedStudents = $cohort->filter(
-                fn(User $s) => $s->checkpoint?->viva_date !== null &&
-                               $s->start_date !== null
-            );
+        foreach ($rows as $year => $cohort) {
+            $graduatedStudents = $cohort->filter(fn(array $row) => ! empty($row['viva_date']));
 
             if ($graduatedStudents->count() === 0) {
                 continue;
             }
 
             // Calculate average time to graduation in months
-            $totalMonths = $graduatedStudents->sum(function (User $student) {
-                $startDate = $student->start_date;
-                $vivaDate = $student->checkpoint->viva_date;
+            $totalMonths = $graduatedStudents->sum(function (array $row) {
+                $startDate = Carbon::parse($row['registration_date']);
+                $vivaDate = Carbon::parse($row['viva_date']);
+
                 return $startDate->diffInMonths($vivaDate);
             });
 
@@ -104,17 +94,11 @@ class DashboardAnalyticsService
 
     /**
      * Get milestone completion rates
-     * Measures % of students completing each checkpoint on-time
+     * Measures % of all current students completing each checkpoint.
      */
     public function getMilestoneCompletionRates(): array
     {
-        $threeYearsAgo = Carbon::now()->subYears(3);
-        
-        $checkpoints = StudentCheckpoint::whereHas('user', fn($q) => 
-            $q->where('start_date', '<=', $threeYearsAgo)
-        )
-        ->with('user')
-        ->get();
+        $students = User::role('student')->with('checkpoint')->get();
 
         $milestones = [
             'proposal_review' => [],
@@ -124,36 +108,36 @@ class DashboardAnalyticsService
             'viva' => [],
         ];
 
-        $total = $checkpoints->count();
+        $total = $students->count();
 
         if ($total > 0) {
             $milestones['proposal_review'] = [
                 'label' => 'Proposal Review',
-                'completed' => $checkpoints->whereNotNull('proposal_review_date')->count(),
+                'completed' => $students->filter(fn(User $student) => $student->checkpoint?->proposal_review_date !== null)->count(),
                 'total' => $total,
             ];
 
             $milestones['research_review'] = [
                 'label' => 'Research Review',
-                'completed' => $checkpoints->whereNotNull('research_review_date')->count(),
+                'completed' => $students->filter(fn(User $student) => $student->checkpoint?->research_review_date !== null)->count(),
                 'total' => $total,
             ];
 
             $milestones['nos'] = [
                 'label' => 'NOS',
-                'completed' => $checkpoints->whereNotNull('nos_date')->count(),
+                'completed' => $students->filter(fn(User $student) => $student->checkpoint?->nos_date !== null)->count(),
                 'total' => $total,
             ];
 
             $milestones['final_draft'] = [
                 'label' => 'Final Draft Submission',
-                'completed' => $checkpoints->whereNotNull('final_draft_submission_date')->count(),
+                'completed' => $students->filter(fn(User $student) => $student->checkpoint?->final_draft_submission_date !== null)->count(),
                 'total' => $total,
             ];
 
             $milestones['viva'] = [
                 'label' => 'Viva',
-                'completed' => $checkpoints->whereNotNull('viva_date')->count(),
+                'completed' => $students->filter(fn(User $student) => $student->checkpoint?->viva_date !== null)->count(),
                 'total' => $total,
             ];
 
@@ -223,7 +207,9 @@ class DashboardAnalyticsService
     public function getAllAnalytics(): array
     {
         // Cache can be invalidated by running: php artisan cache:clear
-        $cacheKey = 'dashboard_analytics_' . date('Y-m-d');
+        $datasetPath = config('ml.historical_dataset_path');
+        $datasetVersion = is_string($datasetPath) && is_file($datasetPath) ? (string) filemtime($datasetPath) : 'missing';
+        $cacheKey = 'dashboard_analytics_v2_' . date('Y-m-d') . '_' . $datasetVersion;
         
         return cache()->remember($cacheKey, 86400, function () {
             return [
@@ -234,5 +220,92 @@ class DashboardAnalyticsService
                 'generated_at' => now()->toIso8601String(),
             ];
         });
+    }
+
+    /**
+     * @return array<int, array{cluster:string,study_mode:string,registration_date:?string,proposal_review_date:?string,research_review_date:?string,nos_date:?string,final_draft_submission_date:?string,viva_date:?string}>
+     */
+    private function historicalDatasetRows(): array
+    {
+        if ($this->historicalDatasetCache !== null) {
+            return $this->historicalDatasetCache;
+        }
+
+        $path = config('ml.historical_dataset_path');
+        if (! is_string($path) || ! is_file($path)) {
+            return $this->historicalDatasetCache = [];
+        }
+
+        $file = new SplFileObject($path, 'r');
+        $file->setFlags(SplFileObject::READ_CSV | SplFileObject::SKIP_EMPTY | SplFileObject::DROP_NEW_LINE);
+
+        $headers = [];
+        $rows = [];
+
+        foreach ($file as $index => $row) {
+            if (! is_array($row) || $row === [null] || $row === false) {
+                continue;
+            }
+
+            if ($index === 0) {
+                $headers = array_map(fn($header) => $this->normalizeDatasetHeader((string) $header), $row);
+                continue;
+            }
+
+            $combined = [];
+            foreach ($headers as $columnIndex => $header) {
+                $combined[$header] = $this->normalizeDatasetValue($row[$columnIndex] ?? null);
+            }
+
+            $rows[] = [
+                'cluster' => (string) ($combined['cluster'] ?? 'Unassigned'),
+                'study_mode' => (string) ($combined['type'] ?? 'Full Time'),
+                'registration_date' => $this->normalizeDatasetDate($combined['registration_date'] ?? null),
+                'proposal_review_date' => $this->normalizeDatasetDate($combined['proposal_review_date'] ?? null),
+                'research_review_date' => $this->normalizeDatasetDate($combined['research_review_date'] ?? null),
+                'nos_date' => $this->normalizeDatasetDate($combined['nos_date'] ?? null),
+                'final_draft_submission_date' => $this->normalizeDatasetDate($combined['final_draft_submission_date'] ?? null),
+                'viva_date' => $this->normalizeDatasetDate($combined['viva_date'] ?? null),
+            ];
+        }
+
+        return $this->historicalDatasetCache = $rows;
+    }
+
+    private function normalizeDatasetHeader(string $header): string
+    {
+        return str_replace([' ', '-'], '_', strtolower(trim($header)));
+    }
+
+    private function normalizeDatasetValue(mixed $value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
+    }
+
+    private function normalizeDatasetDate(mixed $value): ?string
+    {
+        $value = $this->normalizeDatasetValue($value);
+        if ($value === null) {
+            return null;
+        }
+
+        foreach (['Y-m-d', 'd/m/Y', 'j/n/Y', 'd-m-Y', 'j-m-Y', 'd M Y', 'Y/m/d'] as $format) {
+            try {
+                $parsed = Carbon::createFromFormat($format, $value);
+                if ($parsed !== false) {
+                    return $parsed->startOfDay()->toDateString();
+                }
+            } catch (\Throwable) {
+                // Try the next known format.
+            }
+        }
+
+        try {
+            return Carbon::parse($value)->startOfDay()->toDateString();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

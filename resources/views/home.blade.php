@@ -176,6 +176,61 @@
         border: 1px solid #d8efe0;
     }
 
+    .student-directory-card {
+        margin-top: 1.5rem;
+    }
+
+    .student-directory-table thead th {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        border-bottom-color: var(--lav-200);
+    }
+
+    .student-directory-table tbody td {
+        vertical-align: top;
+        font-size: 0.9rem;
+    }
+
+    .student-directory-table .student-name {
+        font-weight: 700;
+        color: var(--n-900);
+    }
+
+    .student-directory-table .student-meta {
+        color: var(--muted);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+
+    .risk-analytics-card {
+        background: var(--surface);
+        border: 1px solid var(--lav-200);
+        border-radius: 14px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04);
+    }
+
+    .risk-analytics-layout {
+        display: grid;
+        grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .risk-legend-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    @media (max-width: 992px) {
+        .risk-analytics-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
     .roadmap-tabs {
         margin-bottom: 0;
     }
@@ -931,11 +986,52 @@
             <div class="number">{{ $adminStats['assigned_students'] }}</div>
             <div class="label">Students Assigned</div>
         </div>
-        <div class="stat-card">
-            <div class="icon"><i class="fas fa-triangle-exclamation"></i></div>
-            <div class="number">{{ $adminStats['unassigned_students'] + $adminStats['incomplete_candidature'] }}</div>
-            <div class="label">Items Needing Attention</div>
-        </div>
+    </div>
+
+    <div class="admin-panel student-directory-card">
+        <h5>
+            <i class="fas fa-address-book" style="color: var(--lav-400); margin-right: 0.5rem;"></i>
+            Student Information Directory
+        </h5>
+        <p class="admin-panel-copy">
+            A full list of student records with cluster, research summary, and registration details.
+        </p>
+
+        @if($allStudents->count() > 0)
+            <div class="table-responsive mt-3">
+                <table class="table table-sm table-hover align-middle student-directory-table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 180px;">Student</th>
+                            <th style="min-width: 150px;">Cluster Type</th>
+                            <th style="min-width: 220px;">Research Title</th>
+                            <th style="min-width: 240px;">Research Objective</th>
+                            <th style="min-width: 150px;">Registration Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($allStudents as $student)
+                            <tr>
+                                <td>
+                                    <div class="student-name">{{ $student->name }}</div>
+                                    <div class="student-meta">
+                                        {{ $student->supervisor?->name ? 'Supervisor: ' . $student->supervisor->name : 'No supervisor assigned' }}
+                                    </div>
+                                </td>
+                                <td>{{ $student->cluster ?: 'Unassigned' }}</td>
+                                <td>{{ $student->research_title ?: 'Not provided' }}</td>
+                                <td>{{ $student->research_objective ?: 'Not provided' }}</td>
+                                <td>{{ $student->start_date ? $student->start_date->format('d M Y') : 'Not provided' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <p class="admin-empty mt-3 mb-0">
+                No student records are available yet.
+            </p>
+        @endif
     </div>
 
     <div class="assignments-section">
@@ -999,7 +1095,7 @@
     @if($analyticsData)
     <div class="analytics-section" style="margin-top: 2.5rem;">
         <h3 style="font-family: var(--font-display); color: var(--lav-500); margin-bottom: 1.5rem; font-weight: 700; font-size: 1.5rem;">
-            <i class="fas fa-chart-line"></i> Historical Analytics (Past 3 Years)
+            <i class="fas fa-chart-line"></i> Historical Analytics
         </h3>
 
         <div class="analytics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
@@ -1013,7 +1109,7 @@
                 <canvas id="clusterChart" style="max-height: 300px;"></canvas>
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--n-100);">
                     <small style="color: var(--muted); display: block; margin-bottom: 0.75rem;">
-                        <strong>Overview:</strong> Students enrolled 3+ years ago and their graduation outcomes by research cluster.
+                        <strong>Overview:</strong> Historical graduation outcomes by research cluster.
                     </small>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                         @foreach($analyticsData['cluster_statistics'] as $cluster)
@@ -1037,7 +1133,7 @@
                 <canvas id="trendChart" style="max-height: 300px;"></canvas>
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--n-100);">
                     <small style="color: var(--muted); display: block; margin-bottom: 0.75rem;">
-                        <strong>Insight:</strong> Average months to complete candidature by enrollment year, based on graduated students.
+                        <strong>Insight:</strong> Average months to complete candidature by registration cohort, based on graduated students.
                     </small>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                         @foreach($analyticsData['time_to_graduation_trends'] as $trend)
@@ -1081,28 +1177,32 @@
 
         <!-- Risk Distribution Pie Chart -->
         @if(!empty($analyticsData['risk_distribution']))
-        <div class="analytics-card" style="background: var(--surface); border: 1px solid var(--lav-200); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(46, 41, 36, 0.04); max-width: 500px;">
+        <div class="risk-analytics-card">
             <h5 style="font-family: var(--font-display); margin-bottom: 1rem; color: var(--n-900); font-weight: 700;">
                 <i class="fas fa-exclamation-circle" style="color: #d97706; margin-right: 0.5rem;"></i>
                 Current Risk Distribution (All Students)
             </h5>
-            <canvas id="riskChart" style="max-height: 250px;"></canvas>
-            <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <div style="padding: 0.75rem; background: rgba(46, 125, 50, 0.1); border-left: 3px solid #2e7d32; border-radius: 8px;">
-                    <div style="font-weight: 600; color: #2e7d32;">Low Risk</div>
-                    <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['low']['count'] }} students ({{ $analyticsData['risk_distribution']['low']['percentage'] }}%)</div>
+            <div class="risk-analytics-layout">
+                <div>
+                    <canvas id="riskChart" style="max-height: 250px;"></canvas>
                 </div>
-                <div style="padding: 0.75rem; background: rgba(217, 119, 6, 0.1); border-left: 3px solid #d97706; border-radius: 8px;">
-                    <div style="font-weight: 600; color: #d97706;">Medium Risk</div>
-                    <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['medium']['count'] }} students ({{ $analyticsData['risk_distribution']['medium']['percentage'] }}%)</div>
-                </div>
-                <div style="padding: 0.75rem; background: rgba(194, 65, 12, 0.1); border-left: 3px solid #c2410c; border-radius: 8px;">
-                    <div style="font-weight: 600; color: #c2410c;">High Risk</div>
-                    <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['high']['count'] }} students ({{ $analyticsData['risk_distribution']['high']['percentage'] }}%)</div>
-                </div>
-                <div style="padding: 0.75rem; background: rgba(124, 111, 179, 0.1); border-left: 3px solid var(--lav-400); border-radius: 8px;">
-                    <div style="font-weight: 600; color: var(--lav-500);">Unassessed</div>
-                    <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['unknown']['count'] }} ({{ $analyticsData['risk_distribution']['unknown']['percentage'] }}%)</div>
+                <div class="risk-legend-grid">
+                    <div style="padding: 0.75rem; background: rgba(46, 125, 50, 0.1); border-left: 3px solid #2e7d32; border-radius: 8px;">
+                        <div style="font-weight: 600; color: #2e7d32;">Low Risk</div>
+                        <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['low']['count'] }} students ({{ $analyticsData['risk_distribution']['low']['percentage'] }}%)</div>
+                    </div>
+                    <div style="padding: 0.75rem; background: rgba(217, 119, 6, 0.1); border-left: 3px solid #d97706; border-radius: 8px;">
+                        <div style="font-weight: 600; color: #d97706;">Medium Risk</div>
+                        <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['medium']['count'] }} students ({{ $analyticsData['risk_distribution']['medium']['percentage'] }}%)</div>
+                    </div>
+                    <div style="padding: 0.75rem; background: rgba(194, 65, 12, 0.1); border-left: 3px solid #c2410c; border-radius: 8px;">
+                        <div style="font-weight: 600; color: #c2410c;">High Risk</div>
+                        <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['high']['count'] }} students ({{ $analyticsData['risk_distribution']['high']['percentage'] }}%)</div>
+                    </div>
+                    <div style="padding: 0.75rem; background: rgba(124, 111, 179, 0.1); border-left: 3px solid var(--lav-400); border-radius: 8px;">
+                        <div style="font-weight: 600; color: var(--lav-500);">Unassessed</div>
+                        <div style="font-size: 0.9rem; color: var(--muted);">{{ $analyticsData['risk_distribution']['unknown']['count'] }} ({{ $analyticsData['risk_distribution']['unknown']['percentage'] }}%)</div>
+                    </div>
                 </div>
             </div>
         </div>

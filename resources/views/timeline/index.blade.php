@@ -32,10 +32,10 @@
     $stage2Locked = ! $stage1Complete;
 
     $liveForecastCheckpointDates = [
-        'proposal_review_date' => optional($checkpoint?->recommended_proposal_review_date)->format('d M Y'),
-        'research_review_date' => optional($checkpoint?->recommended_research_review_date)->format('d M Y'),
-        'nos_date' => optional($checkpoint?->recommended_nos_date)->format('d M Y'),
-        'final_draft_submission_date' => optional($checkpoint?->recommended_final_draft_submission_date)->format('d M Y'),
+        'proposal_review_date' => optional($checkpoint?->forecast_recommended_proposal_review_date ?? $checkpoint?->recommended_proposal_review_date)->format('d M Y'),
+        'research_review_date' => optional($checkpoint?->forecast_recommended_research_review_date ?? $checkpoint?->recommended_research_review_date)->format('d M Y'),
+        'nos_date' => optional($checkpoint?->forecast_recommended_nos_date ?? $checkpoint?->recommended_nos_date)->format('d M Y'),
+        'final_draft_submission_date' => optional($checkpoint?->forecast_recommended_final_draft_submission_date ?? $checkpoint?->recommended_final_draft_submission_date)->format('d M Y'),
     ];
 
     $baselineCheckpointDates = [

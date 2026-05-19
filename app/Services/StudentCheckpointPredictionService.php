@@ -98,6 +98,31 @@ class StudentCheckpointPredictionService
 
         $baselineFill = $this->buildBaselineRecommendationFill($student, $checkpoint, $modelVersion);
 
+        // Build forecast values:
+        // - For incomplete checkpoints, use the live model recommendations.
+        // - For completed checkpoints, preserve any existing forecast; if none exists, fall back to baseline.
+        $forecastValues = [];
+        $fields = ['proposal_review_date', 'research_review_date', 'nos_date', 'final_draft_submission_date', 'viva_date'];
+
+        foreach ($fields as $field) {
+            $forecastColumn = 'forecast_recommended_' . $field;
+
+            if ($checkpoint->{$field} !== null) {
+                // Completed checkpoint: preserve existing forecast or fall back to baseline
+                if ($checkpoint->{$forecastColumn} !== null) {
+                    $forecastValues[$forecastColumn] = $checkpoint->{$forecastColumn};
+                } else {
+                    $baselineKey = 'baseline_recommended_' . $field;
+                    $forecastValues[$forecastColumn] = $this->normalizeDateValue(Arr::get($baselineFill, $baselineKey));
+                }
+            } else {
+                // Incomplete checkpoint: use live recommended date
+                $forecastValues[$forecastColumn] = $this->normalizeDateValue(Arr::get($recommendedDates, $field));
+            }
+        }
+
+        $forecastValues['forecast_recommendation_generated_at'] = now();
+
         $checkpoint->forceFill([
             'got_probability' => $probability,
             'predicted_got' => $predictedGot,
@@ -111,7 +136,7 @@ class StudentCheckpointPredictionService
             'recommended_viva_date' => $this->normalizeDateValue(Arr::get($recommendedDates, 'viva_date')),
             'recommendation_generated_at' => now(),
             'prediction_input' => $predictionInput,
-        ] + $baselineFill)->save();
+        ] + $baselineFill + $forecastValues)->save();
 
         return [
             'got_probability' => $probability,
@@ -148,7 +173,7 @@ class StudentCheckpointPredictionService
             (string) config('ml.model_path'),
             '--meta',
             (string) config('ml.meta_path'),
-        ], base_path());
+        ], base_path(), $this->pythonProcessEnvironment());
 
         $process->setInput(json_encode($payload, JSON_THROW_ON_ERROR));
         $process->setTimeout(20);
@@ -159,7 +184,9 @@ class StudentCheckpointPredictionService
 
             Log::error('GoT prediction process failed.', [
                 'student_id' => $studentId,
-                'python_binary' => (string) config('ml.python_binary'),
+                'python_binary' => (string) config('ml.got_python_binary', config('ml.python_binary')),
+                'fallback_python_binary' => (string) config('ml.python_binary'),
+                'cwd' => base_path(),
                 'error' => $rawError,
             ]);
 
@@ -601,7 +628,48 @@ class StudentCheckpointPredictionService
             return 'ML prediction is unavailable because the configured Python executable cannot be found. Please verify ML_PYTHON_BINARY.';
         }
 
+        if (str_contains($rawError, 'WinError 10106')
+            || str_contains($rawError, 'requested service provider could not be loaded or initialized')) {
+            return 'ML prediction is unavailable because the configured Windows Python environment could not initialize. Please restart the PHP server and verify ML_GOT_PYTHON_BINARY points to the working virtual environment.';
+        }
+
         return 'ML prediction could not be refreshed right now. Please try again later or contact an administrator.';
+    }
+
+    /**
+     * Keep the Python subprocess environment minimal and predictable on Windows.
+     *
+     * Web-server processes can inherit extra variables that destabilize native
+     * Python imports. Passing a curated environment avoids that drift while
+     * preserving the Windows essentials the interpreter needs.
+     *
+     * @return array<string,string>
+     */
+    private function pythonProcessEnvironment(): array
+    {
+        $tempDir = sys_get_temp_dir();
+        $systemRoot = getenv('SystemRoot') ?: getenv('SYSTEMROOT') ?: 'C:\\Windows';
+        $comSpec = getenv('ComSpec') ?: getenv('COMSPEC') ?: $systemRoot . '\\System32\\cmd.exe';
+
+        $environment = [
+            'SystemRoot' => $systemRoot,
+            'SYSTEMROOT' => $systemRoot,
+            'ComSpec' => $comSpec,
+            'COMSPEC' => $comSpec,
+            'TEMP' => $tempDir,
+            'TMP' => $tempDir,
+            'PYTHONNOUSERSITE' => '1',
+            'PYTHONIOENCODING' => 'utf-8',
+        ];
+
+        foreach (['PATH', 'Path', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA'] as $key) {
+            $value = getenv($key);
+            if (is_string($value) && trim($value) !== '') {
+                $environment[$key] = $value;
+            }
+        }
+
+        return $environment;
     }
 
     /**
