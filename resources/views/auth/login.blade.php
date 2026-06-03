@@ -165,9 +165,44 @@
 
         .forgot-link:hover { color: var(--lav-400); text-decoration: underline; }
 
+        /* Mobile logo banner — hidden on desktop */
+        .mobile-logo-banner {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .panel-left { display: none; }
-            .panel-right { width: 100%; padding: 2rem 1.5rem; }
+
+            .panel-right {
+                width: 100%;
+                padding: 0;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+            }
+
+            /* Show the logo banner on mobile */
+            .mobile-logo-banner {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                padding: 2.5rem 1.5rem;
+                background: linear-gradient(160deg, #9a8fe0 0%, #6d5bd0 100%);
+            }
+
+            .mobile-logo-banner img {
+                width: 100%;
+                max-width: 220px;
+                opacity: 0.85;
+                object-fit: contain;
+            }
+
+            .login-box {
+                width: 100%;
+                max-width: 380px;
+                padding: 2rem 1.5rem;
+            }
         }
     </style>
 </head>
@@ -182,6 +217,12 @@
     </div>
 
     <div class="panel-right">
+
+        <!-- Mobile-only logo, hidden on desktop -->
+        <div class="mobile-logo-banner">
+            <img src="{{ asset('logo.png') }}" alt="USM Logo">
+        </div>
+
         <div class="login-box">
 
             <h1>Login to your<br>student dashboard</h1>

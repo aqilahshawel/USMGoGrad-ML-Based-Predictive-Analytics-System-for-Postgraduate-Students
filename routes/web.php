@@ -70,6 +70,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/supervisors', [SupervisorController::class, 'index'])->name('supervisors.index');
     Route::post('/assign-supervisor', [SupervisorController::class, 'assign'])->name('supervisors.assign');
     Route::post('/unassign-supervisor', [SupervisorController::class, 'unassign'])->name('supervisors.unassign');
+    Route::get('/students/delete', function () {
+        return redirect()->route('supervisors.index')->with('error', 'Use the delete form on the Assignment page.');
+    });
     Route::post('/students/delete', [SupervisorController::class, 'deleteStudent'])->name('students.delete');
     Route::post('/students/cluster', [SupervisorController::class, 'updateCluster'])->name('students.cluster.update');
     Route::post('/students/research-title', [SupervisorController::class, 'updateResearchTitle'])->name('students.research-title.update');
