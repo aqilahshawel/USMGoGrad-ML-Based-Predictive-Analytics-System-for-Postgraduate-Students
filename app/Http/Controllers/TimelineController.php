@@ -562,6 +562,10 @@ class TimelineController extends Controller
                 continue;
             }
 
+            if ($field === 'publish_paper') {
+                continue;
+            }
+
             if (is_bool($requiredValue)) {
                 continue;
             }

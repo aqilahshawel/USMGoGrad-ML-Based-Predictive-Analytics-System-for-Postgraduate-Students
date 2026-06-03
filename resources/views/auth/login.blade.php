@@ -241,7 +241,7 @@
                     <input id="email" type="email"
                            name="email"
                            value="{{ old('email') }}"
-                           placeholder="USER ID"
+                           placeholder="EMAIL"
                            autocomplete="email"
                            autofocus
                            required

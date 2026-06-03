@@ -310,6 +310,35 @@ class StudentCheckpointPredictionService
                 $previousSemester = $semester;
             }
 
+            if (($isFixed['proposal_review_date'] ?? false) === true) {
+                $modelProposalSemester = $this->extractRecommendedSemester(
+                    'proposal_review_date',
+                    $recommendedSemesters,
+                    $recommendedDates,
+                    $timelineService,
+                    $registrationDate,
+                    1
+                );
+                $observedProposalSemester = $semesterValues['proposal_review_date'] ?? 1;
+
+                if ($observedProposalSemester < $modelProposalSemester) {
+                    $delta = $modelProposalSemester - $observedProposalSemester;
+                    for ($i = 1; $i < count(self::CHECKPOINT_FIELDS); $i++) {
+                        $field = self::CHECKPOINT_FIELDS[$i];
+                        if ($isFixed[$field]) {
+                            continue;
+                        }
+
+                        $previousField = self::CHECKPOINT_FIELDS[$i - 1];
+                        $minimumAllowed = $semesterValues[$previousField] ?? 1;
+                        $semesterValues[$field] = max(
+                            $minimumAllowed,
+                            (int) ($semesterValues[$field] ?? $minimumAllowed) - $delta
+                        );
+                    }
+                }
+            }
+
             $lastField = self::CHECKPOINT_FIELDS[count(self::CHECKPOINT_FIELDS) - 1];
             $overflow = max(0, $semesterValues[$lastField] - $maxSemesters);
             $compressedByMaxSemester = $overflow > 0;
