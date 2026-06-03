@@ -232,6 +232,37 @@
         color: #A32D2D;
     }
 
+    .feedback-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.86rem;
+    }
+
+    .feedback-table th,
+    .feedback-table td {
+        padding: 0.75rem 0.85rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+    }
+
+    .feedback-table th {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        text-align: left;
+    }
+
+    .feedback-table td p {
+        margin: 0;
+        color: var(--text);
+    }
+
+    .feedback-meta {
+        color: var(--muted);
+        font-size: 0.78rem;
+    }
+
     @media (max-width: 768px) {
         .supervisors-header h2 { font-size: 1.5rem; }
         .form-row { grid-template-columns: 1fr; }
@@ -582,7 +613,71 @@
         </div>
     </div>
 
-    {{-- 6. Delete student --}}
+    {{-- 6. Feedback submissions --}}
+    <div class="accordion-item">
+        <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-header-left">
+                <div class="accordion-icon purple">
+                    <i class="fas fa-comment-dots"></i>
+                </div>
+                <div class="accordion-header-text">
+                    <span class="acc-title">Student Feedback</span>
+                    <span class="acc-desc">View feedback submitted by students</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-down accordion-chevron"></i>
+        </button>
+        <div class="accordion-body">
+            <div class="note-box" style="margin-bottom:1rem;">
+                Feedback entries are read-only. You can remove entries if needed.
+            </div>
+            <div class="table-responsive">
+                <table class="feedback-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Supervisor</th>
+                            <th>Submitted</th>
+                            <th>Description</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse(($feedbackItems ?? collect()) as $item)
+                            <tr>
+                                <td>
+                                    <p>{{ $item->name }}</p>
+                                </td>
+                                <td>
+                                    <p>{{ $item->supervisor_name }}</p>
+                                </td>
+                                <td class="feedback-meta">
+                                    {{ optional($item->created_at)->format('d M Y, H:i') }}
+                                </td>
+                                <td>
+                                    <p>{{ $item->description }}</p>
+                                </td>
+                                <td>
+                                    <form action="{{ route('feedback.delete', $item) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn-submit red" style="padding:0.35rem 0.75rem; font-size:0.78rem;">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="feedback-meta">No feedback submissions yet.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{-- 7. Delete student --}}
     <div class="accordion-item">
         <button type="button" class="accordion-header" onclick="toggleAccordion(this)">
             <div class="accordion-header-left">

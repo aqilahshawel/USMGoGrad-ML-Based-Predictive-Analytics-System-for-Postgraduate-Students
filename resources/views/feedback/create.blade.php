@@ -171,26 +171,18 @@
             <label for="name">
                 <i class="fas fa-user"></i> Your Name
             </label>
-            <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                   id="name" name="name" value="{{ old('name') }}" 
-                   placeholder="Enter your full name" required>
-            <div class="help-text">Please provide your full name for identification</div>
-            @error('name')
-                <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-            @enderror
+            <input type="text" class="form-control" id="name" name="name"
+                   value="{{ auth()->user()->name ?? 'Unknown' }}" readonly>
+            <div class="help-text">This is submitted under your account</div>
         </div>
 
         <div class="form-group">
             <label for="supervisor_name">
                 <i class="fas fa-user-tie"></i> Supervisor's Name
             </label>
-            <input type="text" class="form-control @error('supervisor_name') is-invalid @enderror" 
-                   id="supervisor_name" name="supervisor_name" value="{{ old('supervisor_name') }}" 
-                   placeholder="Enter your supervisor's name" required>
-            <div class="help-text">The name of the supervisor/lecturer you're providing feedback about</div>
-            @error('supervisor_name')
-                <span class="invalid-feedback d-block mt-2">{{ $message }}</span>
-            @enderror
+            <input type="text" class="form-control" id="supervisor_name" name="supervisor_name"
+                   value="{{ auth()->user()->supervisor->name ?? 'Unassigned' }}" readonly>
+            <div class="help-text">Assigned supervisor for your account</div>
         </div>
 
         <div class="form-group">

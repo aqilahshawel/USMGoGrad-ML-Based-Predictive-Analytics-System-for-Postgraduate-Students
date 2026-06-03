@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\StudentCheckpoint;
+use App\Models\Feedback;
 use App\Models\CalendarIntegration;
 use App\Models\MeetingRequest;
 use App\Models\Schedule;
@@ -39,15 +40,27 @@ class SupervisorController extends Controller
             ->with('supervisor')
             ->orderBy('name')
             ->get();
+
+        $feedbackItems = Feedback::query()
+            ->orderByDesc('created_at')
+            ->get();
     
         return view('supervisors.index', [
             'supervisors' => $supervisors,
             'students' => $students,
             'allStudents' => $allStudents,
             'assignedStudents' => $assignedStudents,
+            'feedbackItems' => $feedbackItems,
             'clusters' => self::CLUSTERS,
             'studyModes' => self::STUDY_MODES,
         ]);
+    }
+
+    public function deleteFeedback(Feedback $feedback)
+    {
+        $feedback->delete();
+
+        return redirect()->back()->with('success', 'Feedback deleted successfully.');
     }
     
 

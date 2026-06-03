@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Feedback; 
+use App\Models\Feedback;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\FeedbackReceived;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 
@@ -26,17 +24,22 @@ class FeedbackController extends Controller
             return $redirect;
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'supervisor_name' => 'required|string|max:255',
+        $validated = $request->validate([
             'description' => 'required|string',
         ]);
 
-        // Send email
-        $recipientEmail = 'aqilahshawel03@student.usm.my'; 
-        Mail::to($recipientEmail)->send(new FeedbackReceived($request->all()));
+        $user = $request->user();
+        $supervisor = $user?->supervisor;
 
-        return redirect()->route('feedback.create')->with('success', 'Your feedback has been submitted and sent!');
+        Feedback::create([
+            'user_id' => $user?->id,
+            'supervisor_id' => $supervisor?->id,
+            'name' => (string) ($user?->name ?? 'Unknown'),
+            'supervisor_name' => (string) ($supervisor?->name ?? 'Unassigned'),
+            'description' => $validated['description'],
+        ]);
+
+        return redirect()->route('feedback.create')->with('success', 'Your feedback has been submitted.');
     }
 
     private function redirectIfNotEligible(?User $user): ?RedirectResponse
