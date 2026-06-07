@@ -779,6 +779,13 @@
         box-shadow: 0 0 0 4px rgba(124, 111, 179, 0.18), 0 2px 8px rgba(0, 0, 0, 0.10);
     }
 
+    .road-node.node-locked {
+        background: #f4f4f5;
+        color: #a1a1aa;
+        border-color: #e4e4e7;
+        box-shadow: none;
+    }
+
     .road-card {
         position: relative;
         flex: 1;
@@ -813,6 +820,29 @@
 
     .road-card.current {
         border-left: 4px solid var(--lav-500);
+    }
+
+    .road-card.locked {
+        background: #f9fafb;
+        border-color: #e4e4e7;
+        box-shadow: none;
+        opacity: 0.72;
+    }
+
+    .road-card.locked::after {
+        background: #f9fafb;
+        border-color: #e4e4e7;
+    }
+
+    .road-card.locked .road-card-title,
+    .road-card.locked .road-card-meta,
+    .road-card.locked .checkpoint-pill {
+        color: #a1a1aa;
+    }
+
+    .road-card.locked .status-pill {
+        background: #f4f4f5;
+        color: #a1a1aa;
     }
 
     .road-card-header {
@@ -1339,6 +1369,11 @@
         @php
             $graduatedOnTime = (bool) ($progressSnapshot['graduated_on_time'] ?? false);
             $hasCompletedStudies = (bool) ($progressSnapshot['has_completed_studies'] ?? false);
+            $stage1Complete = (bool) ($checkpoint?->ekc500_admin_approved)
+                && ($checkpoint?->proposal_review_date !== null)
+                && (bool) ($checkpoint?->publish_paper)
+                && ($checkpoint?->research_review_date !== null);
+            $stage2Locked = ! $stage1Complete;
         @endphp
 
         @if($systemStops->isNotEmpty())
@@ -1354,17 +1389,21 @@
                         $style = $checkpointStyles[$key] ?? $defaultStyle;
                         $actualField = $checkpointFieldMap[$stop->system_key] ?? null;
                         $actualValue = $actualField && $checkpoint ? $checkpoint->{$actualField} : null;
+                        $isStage2Checkpoint = in_array($key, ['nos', 'final_draft_submission'], true);
                         $isCompleted = (bool) $stop->completed;
                         $isCurrent = ! $isCompleted && $currentStopId === $stop->id;
                         $isOverdue = ! $isCompleted && $progressSnapshot && $stop->semester_number && $progressSnapshot['current_semester'] > $stop->semester_number;
-                        $cardClass = $isCompleted ? 'completed' : ($isOverdue ? 'warning' : ($isCurrent ? 'current' : ''));
+                        $isLocked = $stage2Locked && $isStage2Checkpoint && ! $isCompleted;
+                        $cardClass = $isCompleted ? 'completed' : ($isLocked ? 'locked' : ($isOverdue ? 'warning' : ($isCurrent ? 'current' : '')));
                     @endphp
 
                     <div class="road-stop">
-                        <div class="road-node {{ $isCompleted ? 'node-completed' : ($isCurrent ? 'node-current' : '') }}"
-                             @if(! $isCompleted && ! $isCurrent) style="background: {{ $style['bg'] }}; color: {{ $style['color'] }}; border-color: {{ $style['bg'] }};" @endif>
+                            <div class="road-node {{ $isCompleted ? 'node-completed' : ($isLocked ? 'node-locked' : ($isCurrent ? 'node-current' : '')) }}"
+                                @if(! $isCompleted && ! $isCurrent && ! $isLocked) style="background: {{ $style['bg'] }}; color: {{ $style['color'] }}; border-color: {{ $style['bg'] }};" @endif>
                             @if($isCompleted)
                                 <i class="fas fa-check"></i>
+                            @elseif($isLocked)
+                                <i class="fas fa-lock"></i>
                             @elseif($isCurrent)
                                 <i class="fas fa-location-dot" style="color: {{ $style['color'] }};"></i>
                             @else
@@ -1375,11 +1414,13 @@
                         <div class="road-card {{ $cardClass }}">
                             <div class="road-card-header">
                                 <div class="road-card-title">
-                                    <i class="fas {{ $style['icon'] }}" style="color: {{ $style['color'] }};"></i>
+                                    <i class="fas {{ $isLocked ? 'fa-lock' : $style['icon'] }}" style="color: {{ $isLocked ? '#a1a1aa' : $style['color'] }};"></i>
                                     {{ $stop->title }}
                                 </div>
                                 @if($isCompleted)
                                     <span class="status-pill pill-completed"><i class="fas fa-check-circle"></i> Completed</span>
+                                @elseif($isLocked)
+                                    <span class="status-pill badge-locked"><i class="fas fa-lock"></i> Locked</span>
                                 @elseif($isOverdue)
                                     <span class="status-pill pill-warning"><i class="fas fa-bell"></i> Reminder Needed</span>
                                 @elseif($isCurrent)
