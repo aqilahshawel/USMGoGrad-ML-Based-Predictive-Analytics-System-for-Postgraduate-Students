@@ -5,8 +5,9 @@ I use this as a simple, explainable recommender:
 - Data: a CSV catalog of papers (title/abstract/keywords/url)
 - Output: top-K papers ranked by cosine similarity in TF-IDF space
 
-This is not a neural model and there's no fine-tuning — it's classic Information retrieval:
-vectorize text with TF-IDF, then rank by cosine similarity.
+This is not a neural model and there's no fine-tuning — it's classic information retrieval:
+vectorize text with TF-IDF, then rank with Maximal Marginal Relevance (MMR) to keep
+results relevant while reducing repetition inside each suggestion batch.
 """
 
 import argparse
@@ -71,7 +72,7 @@ def pick_candidates(papers: List[Paper], cluster: str) -> List[Paper]:
 
 
 def recommend(papers: List[Paper], query: str, limit: int) -> List[Dict]:
-    """Return top-K papers using TF-IDF + cosine similarity."""
+    """Return top-K papers using TF-IDF + MMR diversification."""
     limit = max(1, min(10, int(limit)))
     query = (query or "").strip()
     if not papers or query == "":
@@ -93,20 +94,52 @@ def recommend(papers: List[Paper], query: str, limit: int) -> List[Dict]:
     tfidf = vectorizer.fit_transform(corpus)
     q = vectorizer.transform([query])
 
-    sims = cosine_similarity(q, tfidf).flatten()
+    relevance_scores = cosine_similarity(q, tfidf).flatten()
+    document_similarities = cosine_similarity(tfidf)
 
-    scored: List[Tuple[float, Paper]] = []
-    for idx, score in enumerate(sims):
+    scored: List[Tuple[float, int, Paper]] = []
+    for idx, score in enumerate(relevance_scores):
         # Defensive: skip any weird numerical values.
         s = float(score)
         if math.isnan(s) or math.isinf(s):
             continue
-        scored.append((s, papers[idx]))
+        scored.append((s, idx, papers[idx]))
 
     scored.sort(key=lambda x: x[0], reverse=True)
 
+    # MMR balances relevance to the query and diversity from already selected papers.
+    # Higher lambda keeps results closer to pure TF-IDF; lower lambda increases novelty.
+    mmr_lambda = 0.75
+    candidate_pool_size = max(limit * 4, 10)
+    candidate_pool = scored[:candidate_pool_size]
+
+    selected: List[Tuple[float, int, Paper]] = []
+    selected_indexes: List[int] = []
+
+    while candidate_pool and len(selected) < limit:
+        best_item: Tuple[float, int, Paper] | None = None
+        best_mmr_score = -float("inf")
+
+        for relevance, idx, paper in candidate_pool:
+            if not selected_indexes:
+                mmr_score = relevance
+            else:
+                max_similarity = max(float(document_similarities[idx][selected_idx]) for selected_idx in selected_indexes)
+                mmr_score = (mmr_lambda * relevance) - ((1.0 - mmr_lambda) * max_similarity)
+
+            if mmr_score > best_mmr_score:
+                best_mmr_score = mmr_score
+                best_item = (relevance, idx, paper)
+
+        if best_item is None:
+            break
+
+        selected.append(best_item)
+        selected_indexes.append(best_item[1])
+        candidate_pool = [item for item in candidate_pool if item[1] != best_item[1]]
+
     results: List[Dict] = []
-    for score, paper in scored[:limit]:
+    for score, _, paper in selected:
         # I round the score just to keep JSON small + readable.
         results.append({"title": paper.title, "url": paper.url, "score": round(score, 6)})
 
