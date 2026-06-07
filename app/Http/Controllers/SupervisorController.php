@@ -3,18 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\StudentCheckpoint;
-use App\Models\Feedback;
-use App\Models\CalendarIntegration;
-use App\Models\MeetingRequest;
-use App\Models\Schedule;
-use App\Models\Timeline;
 use App\Models\User;
 use App\Services\CandidatureTimelineService;
 use App\Services\StudentCheckpointPredictionService;
 use Illuminate\Validation\Rule;
-use Illuminate\Database\QueryException;
 
 class SupervisorController extends Controller
 {
@@ -40,27 +33,15 @@ class SupervisorController extends Controller
             ->with('supervisor')
             ->orderBy('name')
             ->get();
-
-        $feedbackItems = Feedback::query()
-            ->orderByDesc('created_at')
-            ->get();
     
         return view('supervisors.index', [
             'supervisors' => $supervisors,
             'students' => $students,
             'allStudents' => $allStudents,
             'assignedStudents' => $assignedStudents,
-            'feedbackItems' => $feedbackItems,
             'clusters' => self::CLUSTERS,
             'studyModes' => self::STUDY_MODES,
         ]);
-    }
-
-    public function deleteFeedback(Feedback $feedback)
-    {
-        $feedback->delete();
-
-        return redirect()->back()->with('success', 'Feedback deleted successfully.');
     }
     
 
@@ -101,38 +82,8 @@ class SupervisorController extends Controller
             return redirect()->back()->with('error', 'You cannot delete the currently logged-in user.');
         }
 
-        $student = User::find($validated['delete_student_id']);
-
-        if (! $student || ! $student->hasRole('student')) {
-            return redirect()->back()->withErrors([
-                'delete_student_id' => 'Please select a valid student account.',
-            ]);
-        }
-
-        try {
-            DB::transaction(function () use ($student) {
-                Schedule::where('user_id', $student->id)->delete();
-                CalendarIntegration::where('user_id', $student->id)->delete();
-                StudentCheckpoint::where('user_id', $student->id)->delete();
-
-                Timeline::where('user_id', $student->id)->delete();
-                Timeline::where('proposed_by_user_id', $student->id)->update(['proposed_by_user_id' => null]);
-                Timeline::where('reviewed_by_user_id', $student->id)->update(['reviewed_by_user_id' => null]);
-
-                MeetingRequest::where('student_id', $student->id)
-                    ->orWhere('supervisor_id', $student->id)
-                    ->orWhere('reviewed_by', $student->id)
-                    ->delete();
-
-                User::where('supervisor_id', $student->id)->update(['supervisor_id' => null]);
-
-                $student->delete();
-            });
-        } catch (QueryException $exception) {
-            return redirect()->back()->withErrors([
-                'delete_student_id' => 'Unable to delete this student because related records are still protected by the database.',
-            ]);
-        }
+        $student = User::role('student')->findOrFail($validated['delete_student_id']);
+        $student->delete();
 
         return redirect()->back()->with('success', 'Student account deleted successfully.');
     }

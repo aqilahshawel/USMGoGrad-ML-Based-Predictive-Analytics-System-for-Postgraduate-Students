@@ -1024,7 +1024,7 @@
 
             @auth
             <div class="sidebar-user-dropdown" style="display: block;">
-                <a class="sidebar-nav-link" href="{{ route('profile.show') }}">
+                <a class="sidebar-nav-link" href="{{ route('password.change') }}">
                     <i class="fas fa-user"></i> Profile
                 </a>
             </div>
