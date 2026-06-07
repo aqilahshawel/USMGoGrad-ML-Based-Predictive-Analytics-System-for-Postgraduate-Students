@@ -638,11 +638,40 @@ class StudentAssistantService
                 ? CarbonImmutable::instance($eventDateRaw)
                 : CarbonImmutable::parse((string) $eventDateRaw);
 
-            $diffDays = $today->diffInDays($eventDate, false);
-            $relative = $diffDays === 0
-                ? 'due today'
-                : ($diffDays > 0 ? 'due in ' . $diffDays . ' day(s)' : abs($diffDays) . ' day(s) overdue');
+            $diffDays = (int) floor($today->diffInDays($eventDate, false));
 
+                if ($diffDays === 0) {
+                    $relative = 'Due today';
+                } elseif ($diffDays < 0) {
+                    $overdueDays = abs($diffDays);
+
+                    $relative = $overdueDays === 1
+                        ? '1 day overdue'
+                        : $overdueDays . ' days overdue';
+                } elseif ($diffDays < 30) {
+                    $relative = $diffDays === 1
+                        ? 'Due in 1 day'
+                        : 'Due in ' . $diffDays . ' days';
+                } elseif ($diffDays < 365) {
+                    $months = (int) floor($diffDays / 30);
+
+                    $relative = $months === 1
+                        ? 'Due in about 1 month'
+                        : 'Due in about ' . $months . ' months';
+                } else {
+                    $years = (int) floor($diffDays / 365);
+                    $remainingMonths = (int) floor(($diffDays % 365) / 30);
+
+                    $relative = $years === 1
+                        ? 'Due in about 1 year'
+                        : 'Due in about ' . $years . ' years';
+
+                    if ($remainingMonths > 0) {
+                        $relative .= $remainingMonths === 1
+                            ? ' 1 month'
+                            : ' ' . $remainingMonths . ' months';
+                    }
+                }
             return [
                 'title' => (string) ($target['title'] ?? 'Checkpoint'),
                 'date_label' => $eventDate->format('d M Y'),

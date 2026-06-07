@@ -462,7 +462,7 @@
             <form id="eventTitleForm">
                 <div class="inline-modal-body">
                     <label for="eventTitleInput" class="form-label">Event title</label>
-                    <input id="eventTitleInput" type="text" class="form-control" maxlength="120" required>
+                    <input id="eventTitleInput" type="text" class="form-control" maxlength="120" required autocomplete="off">
                 </div>
                 <div class="inline-modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-close-modal="event">Cancel</button>
@@ -504,21 +504,21 @@
                     <div class="meeting-time-grid">
                         <div>
                             <label for="meetingDateInput" class="form-label">Meeting date</label>
-                            <input id="meetingDateInput" type="date" class="form-control" required>
+                            <input id="meetingDateInput" type="date" class="form-control" required autocomplete="off">
                         </div>
                         <div>
                             <label for="meetingStartTimeInput" class="form-label">Start time</label>
-                            <input id="meetingStartTimeInput" type="time" class="form-control" required>
+                            <input id="meetingStartTimeInput" type="time" class="form-control" required autocomplete="off">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="meetingEndTimeInput" class="form-label">End time</label>
-                        <input id="meetingEndTimeInput" type="time" class="form-control" required>
+                        <input id="meetingEndTimeInput" type="time" class="form-control" required autocomplete="off">
                     </div>
 
                     <label for="meetingTopicInput" class="form-label">Meeting topic</label>
-                    <input id="meetingTopicInput" type="text" class="form-control mb-3" maxlength="120" required>
+                    <input id="meetingTopicInput" type="text" class="form-control mb-3" maxlength="120" required autocomplete="off">
 
                     <label for="meetingNoteInput" class="form-label">Optional note for your supervisor</label>
                     <textarea id="meetingNoteInput" class="form-control" rows="3" maxlength="500"></textarea>

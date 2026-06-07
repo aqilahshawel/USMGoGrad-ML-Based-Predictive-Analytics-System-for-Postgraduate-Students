@@ -182,7 +182,7 @@
                     @csrf
                     <div class="chat-input-wrap">
                         <div class="input-group">
-                            <input type="text" name="message" class="form-control" placeholder="Type a message..." required>
+                            <input type="text" name="message" class="form-control" placeholder="Type a message..." required autocomplete="off">
                             <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i> Send</button>
                         </div>
                     </div>

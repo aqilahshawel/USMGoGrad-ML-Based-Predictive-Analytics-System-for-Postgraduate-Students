@@ -1249,12 +1249,26 @@
         $customRows = collect();
         if (!Auth::user()->hasRole('lecturer') || request('student_id')) {
             $systemStops = $timelines
-                ->filter(fn($t) => $t->system_key
-                    && (str_starts_with($t->system_key, 'checkpoint:') || $t->system_key === 'max_duration')
-                    && $t->system_key !== 'checkpoint:viva'
-                )
-                ->sortBy('event_date')
-                ->values();
+            ->filter(fn($t) => $t->system_key
+                && (str_starts_with($t->system_key, 'checkpoint:') || $t->system_key === 'max_duration')
+                && $t->system_key !== 'checkpoint:viva'
+            )
+            ->sortBy(function ($t) {
+                $order = [
+                    'checkpoint:ekc500_admin_approval',
+                    'checkpoint:proposal_review',
+                    'checkpoint:publish_paper',
+                    'checkpoint:research_review',
+                    'checkpoint:nos',
+                    'checkpoint:final_draft_submission',
+                    'max_duration',
+                ];
+
+                $position = array_search($t->system_key, $order, true);
+
+                return $position === false ? PHP_INT_MAX : $position;
+            })
+            ->values();
 
             $customRows = $timelines
                 ->filter(fn($t) => ! $t->is_system_generated)
