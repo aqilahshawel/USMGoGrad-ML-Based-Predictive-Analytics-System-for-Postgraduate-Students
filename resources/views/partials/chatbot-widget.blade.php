@@ -795,6 +795,7 @@
                             { label: 'Next Checkpoint', icon: 'fa-flag-checkered', msg: 'next checkpoint' },
                             { label: 'Graduation Timeline', icon: 'fa-graduation-cap', msg: 'time before graduation' },
                             { label: 'Reading Suggestions', icon: 'fa-book', msg: 'recommend readings' },
+                            { label: 'Viva-Voce files', icon: 'fa-file', msg: 'show viva-voce files from IPS' },
                         ];
                         chips.forEach(function (chip) {
                             var btn = document.createElement('button');
