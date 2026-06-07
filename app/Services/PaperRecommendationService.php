@@ -24,7 +24,7 @@ class PaperRecommendationService
         $researchObjective = trim((string) ($student->research_objective ?? ''));
 
         if ($researchTitle !== '' && $researchObjective !== '') {
-            $queryText = $researchTitle . "\nObjective: " . $researchObjective;
+            $queryText = trim($researchTitle . ' Objective: ' . $researchObjective);
         } elseif ($researchTitle !== '') {
             $queryText = $researchTitle;
         } elseif ($researchObjective !== '') {
@@ -32,6 +32,21 @@ class PaperRecommendationService
         } else {
             $queryText = sprintf('Postgraduate research topics for cluster %s', $cluster);
         }
+
+        // Simple per-process throttle to respect Semantic Scholar rate limits.
+        // For multi-worker deployments use a distributed limiter (Redis).
+        $ssMinInterval = (float) (getenv('SEMANTIC_SCHOLAR_MIN_INTERVAL_SECONDS') ?: getenv('SEMANTIC_SCHOLAR_MIN_INTERVAL') ?: 1.0);
+        $tempDir = sys_get_temp_dir();
+        $lastTsFile = $tempDir . DIRECTORY_SEPARATOR . 'usmg_ss_last_request_ts';
+        if (is_file($lastTsFile)) {
+            $last = (float) @file_get_contents($lastTsFile);
+            $elapsed = microtime(true) - $last;
+            if ($elapsed < $ssMinInterval) {
+                usleep((int)(($ssMinInterval - $elapsed) * 1e6));
+            }
+        }
+        // record timestamp for this process
+        @file_put_contents($lastTsFile, (string) microtime(true));
 
         $process = new Process([
             $pythonBinary,
@@ -113,7 +128,7 @@ class PaperRecommendationService
             'PYTHONIOENCODING' => 'utf-8',
         ];
 
-        foreach (['PATH', 'Path', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA'] as $key) {
+        foreach (['PATH', 'Path', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'SEMANTIC_SCHOLAR_ENABLED', 'SEMANTIC_SCHOLAR_API_KEY', 'SEMANTIC_SCHOLAR_CACHE_PATH', 'SEMANTIC_SCHOLAR_CACHE_TTL_SECONDS', 'SEMANTIC_SCHOLAR_SEARCH_LIMIT', 'SEMANTIC_SCHOLAR_FIELDS_OF_STUDY', 'SEMANTIC_SCHOLAR_MIN_INTERVAL_SECONDS'] as $key) {
             $value = getenv($key);
             if (is_string($value) && trim($value) !== '') {
                 $environment[$key] = $value;
