@@ -1,13 +1,12 @@
 """GoT model bundle + feature engineering.
 
-This file is the heart of my "intelligent" logic for the system.
+This file is the core of intelligent logic for the system.
 
-What I do here (high level):
-1) Convert raw dates into *relative semester indices* from Registration Date.
-2) Train per-checkpoint *gap regressors* to recommend a realistic timeline.
+1) Convert raw dates into relative semester indices from Registration Date.
+2) Train per-checkpoint gap regressors to recommend a realistic timeline.
 3) Train a binary classifier (XGBoost) to estimate GoT probability.
-4) At inference time, if a checkpoint is missing, I predict its gap and fill it
-    forward while enforcing monotonic semesters.
+4) At inference time, if a checkpoint is missing, the model predict its gap and fill it
+    forward.
 
 Notes to keep in mind:
 - models are tabular (XGBoost), not neural.
@@ -98,9 +97,6 @@ CLASSIFIER_FEATURE_COLUMNS = [
 
 MIN_MODEL_ROWS = 8
 FULL_TIME_MAX_SEMESTERS = 10
-
-# Fallback models for small datasets or single-class targets.
-# (prevents training from crashing and keeps inference stable.)
 class MedianRegressor:
     def __init__(self) -> None:
         self.value = 1.0
@@ -233,11 +229,7 @@ class SemesterToken:
 
 
 def parse_dates(frame: pd.DataFrame) -> pd.DataFrame:
-    """Parse date columns robustly.
 
-    My dataset can contain mixed date formats, so I try ISO-first, then a
-    day-first fallback.
-    """
     result = frame.copy()
     for column in DATE_COLUMNS:
         if column in result.columns:
@@ -250,7 +242,7 @@ def parse_dates(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def semester_token(date_value: pd.Timestamp) -> SemesterToken:
-    """Map a calendar date to my academic-semester token.
+    """Map a calendar date to  academic-semester token.
 
     Semester definition (USM-like):
     - Semester 1: Sep–Feb
@@ -481,7 +473,7 @@ def _build_recommendation_feature_payload(
 ) -> dict[str, float]:
     payload: dict[str, float] = {}
     for column in feature_columns:
-        # I allow features to come from either:
+        #  allow features to come from either:
         # - already-filled semester_values (predicted checkpoints), or
         # - raw base_row columns (Cluster/registration_year/month).
         if column in semester_values:
@@ -513,7 +505,7 @@ def _build_classifier_row(base_row: pd.Series, semester_values: dict[str, int]) 
 
 
 def _extract_positive_probability(model: Any, feature_frame: pd.DataFrame) -> float:
-    # This handles both sklearn-style classifiers and my custom wrappers. (wrapper method = feature selection technique)
+    #  handles both sklearn-style classifiers and my custom wrappers. (wrapper method = feature selection technique)
     probabilities = model.predict_proba(feature_frame)[0]
     classes = getattr(model, "classes_", None)
 
@@ -565,10 +557,9 @@ def predict_student_payload(
             predicted_gap = float(checkpoint_models[semester_column].predict(feature_frame)[0])
             gap = _coerce_gap_value(predicted_gap, GAP_MINIMUMS[semester_column])
 
-            # I enforce monotonicity: each checkpoint semester must be >= previous.
+            #I enforce monotonicity: each checkpoint semester must be >= previous.
             semester_values[semester_column] = max(minimum, minimum + gap)
         else:
-            # If the student already has an observed date, I trust it (after coercion).
             semester_values[semester_column] = _coerce_semester_value(float(observed), minimum)
 
         minimum = semester_values[semester_column]

@@ -1,11 +1,9 @@
 """TF-IDF paper recommender.
 
-I use this as a simple, explainable recommender:
 - Input: student's cluster + a query (usually the student's research title/objective)
 - Data: Semantic Scholar first, then a local CSV fallback
 - Output: top-K papers ranked by TF-IDF with MMR diversification
 
-This is not a neural model and there's no fine-tuning — it's classic information retrieval:
 vectorize text with TF-IDF, then rank with Maximal Marginal Relevance (MMR) to keep
 results relevant while reducing repetition inside each suggestion batch.
 """
