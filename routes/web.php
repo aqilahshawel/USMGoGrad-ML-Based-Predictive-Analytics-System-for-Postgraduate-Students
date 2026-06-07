@@ -14,6 +14,11 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\CalendarOAuthController;
 use App\Http\Controllers\IpsDownloadController;
+
+// Profile Route (for profile.show)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+});
 use App\Notifications\CheckpointOverdueReminderNotification;
 
 
@@ -57,6 +62,7 @@ Route::middleware(['auth', 'role:student|lecturer'])->group(function () {
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::put('checkpoints', [TimelineController::class, 'updateCheckpoint'])->name('checkpoints.update');
     Route::put('timeline/checkpoints', [TimelineController::class, 'updateCheckpoint'])->name('timeline.checkpoints.update');
+    Route::put('timeline/{timeline}/completion', [TimelineController::class, 'updateCompletion'])->name('timeline.completion.update');
 });
 
 // SV Assign Page (Admin Only)
@@ -64,6 +70,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/supervisors', [SupervisorController::class, 'index'])->name('supervisors.index');
     Route::post('/assign-supervisor', [SupervisorController::class, 'assign'])->name('supervisors.assign');
     Route::post('/unassign-supervisor', [SupervisorController::class, 'unassign'])->name('supervisors.unassign');
+    Route::post('/feedback/{feedback}/delete', [SupervisorController::class, 'deleteFeedback'])->name('feedback.delete');
+    Route::get('/students/delete', function () {
+        return redirect()->route('supervisors.index')->with('error', 'Use the delete form on the Assignment page.');
+    });
     Route::post('/students/delete', [SupervisorController::class, 'deleteStudent'])->name('students.delete');
     Route::post('/students/cluster', [SupervisorController::class, 'updateCluster'])->name('students.cluster.update');
     Route::post('/students/research-title', [SupervisorController::class, 'updateResearchTitle'])->name('students.research-title.update');
